@@ -157,8 +157,16 @@ def main():
         # Time period selector
         time_period = create_time_period_selector("network")
         
+        # Convert time period to days
+        time_period_days = {
+            "Last 30 Days": 30,
+            "QTD": 90,
+            "YTD": 365,
+            "Last 12 Months": 365
+        }.get(time_period, 30)
+        
         # Render improved metric grid
-        network_metrics = get_network_metrics()
+        network_metrics = get_network_metrics(time_period_days)
         render_metric_grid(network_metrics, "network")
         
         # Charts section
@@ -191,8 +199,16 @@ def main():
         # Time period selector
         time_period = create_time_period_selector("customer")
         
+        # Convert time period to days
+        time_period_days = {
+            "Last 30 Days": 30,
+            "QTD": 90,
+            "YTD": 365,
+            "Last 12 Months": 365
+        }.get(time_period, 30)
+        
         # Render improved metric grid
-        customer_metrics = get_customer_metrics()
+        customer_metrics = get_customer_metrics(time_period_days)
         render_metric_grid(customer_metrics, "customer")
         
         # Charts
@@ -225,8 +241,16 @@ def main():
         # Time period selector
         time_period = create_time_period_selector("revenue")
         
+        # Convert time period to days
+        time_period_days = {
+            "Last 30 Days": 30,
+            "QTD": 90,
+            "YTD": 365,
+            "Last 12 Months": 365
+        }.get(time_period, 30)
+        
         # Render improved metric grid
-        revenue_metrics = get_revenue_metrics()
+        revenue_metrics = get_revenue_metrics(time_period_days)
         render_metric_grid(revenue_metrics, "revenue")
         
         # Charts
@@ -259,8 +283,16 @@ def main():
         # Time period selector
         time_period = create_time_period_selector("usage")
         
+        # Convert time period to days
+        time_period_days = {
+            "Last 30 Days": 30,
+            "QTD": 90,
+            "YTD": 365,
+            "Last 12 Months": 365
+        }.get(time_period, 30)
+        
         # Render improved metric grid
-        usage_metrics = get_usage_metrics()
+        usage_metrics = get_usage_metrics(time_period_days)
         render_metric_grid(usage_metrics, "usage")
         
         # Charts
@@ -293,8 +325,16 @@ def main():
         # Time period selector
         time_period = create_time_period_selector("operations")
         
+        # Convert time period to days
+        time_period_days = {
+            "Last 30 Days": 30,
+            "QTD": 90,
+            "YTD": 365,
+            "Last 12 Months": 365
+        }.get(time_period, 30)
+        
         # Render improved metric grid
-        operations_metrics = get_operations_metrics()
+        operations_metrics = get_operations_metrics(time_period_days)
         render_metric_grid(operations_metrics, "operations")
         
         # Charts
