@@ -1,0 +1,6 @@
+network_element_id,date_id,hour,uptime_seconds,downtime_seconds,calls_attempted,calls_dropped,packets_sent,packets_lost,bandwidth_capacity_mb,bandwidth_used_mb,outage_minutes,repair_minutes,availability_percent,dropped_call_rate,latency_ms,packet_loss_percent,bandwidth_utilization_percent,mttr_hours
+1,2023-08-01,0,86158,242,758,7,183726,230,1000,575,4.033333333333333,138,99.72,0.95,35.0,0.13,57.58,2.3
+2,2023-08-01,0,86138,262,883,13,233478,135,1000,544,4.366666666666666,146,99.7,1.49,26.5,0.06,54.49,2.44
+3,2023-08-01,0,86169,231,1142,4,127907,45,1000,701,3.85,116,99.73,0.37,46.7,0.04,70.18,1.94
+4,2023-08-01,0,86287,113,728,5,187224,141,1000,847,1.8833333333333333,128,99.87,0.8,48.5,0.08,84.75,2.14
+5,2023-08-01,0,86248,152,978,6,243756,236,1000,507,2.533333333333333,118,99.83,0.67,48.5,0.1,50.8,1.97

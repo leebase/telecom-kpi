@@ -1,0 +1,100 @@
+metadata:
+  name: "telecom_accelerator"
+  description: "Semantic star schema for telecom network reliability KPIs"
+  version: "1.2"
+  created_by: "vibe_team"
+
+databases:
+- name: "telecom_db"
+  schemas:
+  - name: "sch_gold"
+    tables:
+
+    # ---------- Dimension: Region ----------
+    - name: dim_region
+      comment: "Geographical grouping for network elements"
+      columns:
+      - {name: region_id,   types: {sqlite: INTEGER, snowflake: NUMBER}, primary_key: true}
+      - {name: region_name, types: {sqlite: TEXT,    snowflake: STRING}}
+
+    # ---------- Dimension: Network Element ----------
+    - name: dim_network_element
+      comment: "Network infrastructure inventory"
+      columns:
+      - {name: network_element_id, types: {sqlite: INTEGER, snowflake: NUMBER}, primary_key: true}
+      - {name: element_name,        types: {sqlite: TEXT,    snowflake: STRING}}
+      - {name: element_type,        types: {sqlite: TEXT,    snowflake: STRING}}
+      - {name: vendor,              types: {sqlite: TEXT,    snowflake: STRING}}
+      - {name: install_date,        types: {sqlite: TEXT,    snowflake: DATE}}
+      - {name: region_id,           types: {sqlite: INTEGER, snowflake: NUMBER},
+         foreign_key: {table: dim_region, column: region_id}}
+
+    # ---------- Dimension: Time (hourly grain) ----------
+    - name: dim_time
+      comment: "Canonical time dimension"
+      columns:
+      - {name: date_id,     types: {sqlite: TEXT, snowflake: DATE}, primary_key: true}
+      - {name: hour,        types: {sqlite: INTEGER, snowflake: NUMBER}, primary_key: true}
+      - {name: year,        types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: month,       types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: day,         types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: weekday,     types: {sqlite: TEXT,    snowflake: STRING}}
+      - {name: is_weekend,  types: {sqlite: INTEGER, snowflake: BOOLEAN}}
+
+    # ---------- Fact: Hourly Network Metrics ----------
+    - name: fact_network_metrics
+      grain: "network_element_id • date_id • hour"
+      comment: "Raw counters & pre-calc KPIs per hour"
+      columns:
+      # Foreign keys
+      - {name: network_element_id, types: {sqlite: INTEGER, snowflake: NUMBER},
+         foreign_key: {table: dim_network_element, column: network_element_id}}
+      - {name: region_id,          types: {sqlite: INTEGER, snowflake: NUMBER},
+         foreign_key: {table: dim_region, column: region_id}}
+      - {name: date_id,            types: {sqlite: TEXT, snowflake: DATE},
+         foreign_key: {table: dim_time, column: date_id}}
+      - {name: hour,               types: {sqlite: INTEGER, snowflake: NUMBER}}
+
+      # Freshness
+      - {name: last_updated_ts,    types: {sqlite: TEXT, snowflake: TIMESTAMP_NTZ}}
+
+      # Raw counters
+      - {name: uptime_seconds,        types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: downtime_seconds,      types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: calls_attempted,       types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: calls_dropped,         types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: packets_sent,          types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: packets_lost,          types: {sqlite: INTEGER, snowflake: NUMBER}}
+      - {name: bandwidth_capacity_mb, types: {sqlite: REAL,    snowflake: FLOAT}}
+      - {name: bandwidth_used_mb,     types: {sqlite: REAL,    snowflake: FLOAT}}
+      - {name: outage_minutes,        types: {sqlite: REAL,    snowflake: FLOAT}}
+      - {name: repair_minutes,        types: {sqlite: REAL,    snowflake: FLOAT}}
+
+      # Pre-calculated KPIs
+      - {name: availability_percent,           types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: dropped_call_rate,              types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: latency_ms,                     types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: latency_ms_p95,                 types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: packet_loss_percent,            types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: bandwidth_utilization_percent,  types: {sqlite: REAL, snowflake: FLOAT}}
+      - {name: mttr_hours,                     types: {sqlite: REAL, snowflake: FLOAT}}
+
+      constraints:
+      - {type: primary_key, columns: [network_element_id, date_id, hour]}
+
+    # ---------- View: Daily Aggregates ----------
+    - name: vw_network_metrics_daily
+      view: |
+        SELECT
+          date_id,
+          region_id,
+          AVG(latency_ms)                         AS avg_latency_ms,
+          AVG(latency_ms_p95)                     AS p95_latency_ms,
+          SUM(packets_lost)  / NULLIF(SUM(packets_sent),0)   * 100 AS packet_loss_percent,
+          SUM(calls_dropped) / NULLIF(SUM(calls_attempted),0) * 100 AS dropped_call_rate,
+          SUM(uptime_seconds) /
+          (SUM(uptime_seconds) + SUM(downtime_seconds)) * 100 AS availability_percent,
+          SUM(bandwidth_used_mb) / NULLIF(SUM(bandwidth_capacity_mb),0) * 100 AS bandwidth_utilization_percent,
+          AVG(repair_minutes) / 60 AS mttr_hours
+        FROM sch_gold.fact_network_metrics
+        GROUP BY date_id, region_id

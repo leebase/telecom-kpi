@@ -1,0 +1,6 @@
+network_element_id,region_id,date_id,hour,last_updated_ts,uptime_seconds,downtime_seconds,calls_attempted,calls_dropped,packets_sent,packets_lost,bandwidth_capacity_mb,bandwidth_used_mb,outage_minutes,repair_minutes,availability_percent,dropped_call_rate,latency_ms,latency_ms_p95,packet_loss_percent,bandwidth_utilization_percent,mttr_hours
+1,1,2023-08-01,0,2023-08-01,86201,199,1190,10,168915,132,1000,815,3.316666666666667,133,99.77,0.86,43.6,52.1,0.08,81.5,2.23
+2,2,2023-08-01,0,2023-08-01,86151,249,478,5,244753,212,1000,508,4.15,133,99.71,1.24,48.6,55.6,0.09,50.87,2.22
+3,3,2023-08-01,0,2023-08-01,86214,186,1196,11,186214,187,1000,597,3.1,134,99.79,0.99,43.6,54.5,0.1,59.74,2.23
+4,4,2023-08-01,0,2023-08-01,86256,144,1088,12,198027,224,1000,634,2.4,130,99.83,1.17,44.5,64.2,0.11,63.49,2.18
+5,5,2023-08-01,0,2023-08-01,86079,321,501,5,129946,92,1000,707,5.35,119,99.63,1.05,48.9,68.2,0.07,70.7,1.99

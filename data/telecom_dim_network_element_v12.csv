@@ -1,0 +1,11 @@
+network_element_id,element_name,element_type,vendor,install_date,region_id
+1,NE_001,Router,Ericsson,2022-04-04,1
+2,NE_002,Small Cell,Nokia,2020-10-01,2
+3,NE_003,Small Cell,Huawei,2020-11-26,3
+4,NE_004,Cell Tower,ZTE,2022-04-01,4
+5,NE_005,Router,Samsung,2021-12-16,5
+6,NE_006,Small Cell,Cisco,2022-03-27,6
+7,NE_007,Router,Juniper,2021-12-17,7
+8,NE_008,Small Cell,Alcatel,2021-05-13,8
+9,NE_009,Small Cell,Motorola,2022-06-16,9
+10,NE_010,Small Cell,NEC,2022-04-24,10
