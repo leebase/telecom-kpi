@@ -1,0 +1,6 @@
+channel_id,channel_name,channel_type,channel_category,is_digital,cost_per_interaction
+1,Online Store,Online,Sales,1,5.0
+2,Retail Store,Retail,Sales,0,25.0
+3,Call Center,Call Center,Support,0,15.0
+4,Mobile App,Online,Self-Service,1,2.0
+5,Partner Store,Partner,Sales,0,20.0 

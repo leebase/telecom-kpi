@@ -1,0 +1,6 @@
+region_id,region_name,country,timezone,market_type,population_density
+1,North Region,USA,UTC-5,Urban,High
+2,South Region,USA,UTC-6,Suburban,Medium
+3,East Region,USA,UTC-4,Urban,High
+4,West Region,USA,UTC-8,Mixed,Medium
+5,Central Region,USA,UTC-6,Rural,Low 

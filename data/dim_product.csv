@@ -1,0 +1,6 @@
+product_id,product_name,product_category,product_type,data_limit_gb,price_monthly,is_premium,launch_date
+1,Unlimited 5G,Data,Plan,100.0,89.99,1,2023-01-01
+2,Business Pro,Data,Plan,200.0,149.99,1,2023-02-01
+3,Basic 4G,Data,Plan,10.0,29.99,0,2023-03-01
+4,Enterprise Suite,Data,Plan,500.0,299.99,1,2023-01-15
+5,Standard 5G,Data,Plan,50.0,59.99,0,2023-04-01 

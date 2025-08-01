@@ -1,0 +1,872 @@
+# 🏗️ Telecom Data Warehouse Schema
+# Comprehensive star schema design for all 5 strategic KPI pillars
+
+databases:
+  - name: "telecom_dw"
+    description: "Telecom Data Warehouse - Gold Layer"
+    schemas:
+      - name: "sch_gold"
+        description: "Gold layer with business semantic views"
+        
+        # ========================================
+        # DIMENSION TABLES
+        # ========================================
+        
+        tables:
+          # Time Dimension
+          - name: "dim_time"
+            description: "Time dimension for all fact tables"
+            columns:
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date in YYYY-MM-DD format"
+                primary_key: true
+              - name: "hour"
+                type: "INTEGER"
+                description: "Hour of day (0-23)"
+                primary_key: true
+              - name: "year"
+                type: "INTEGER"
+                description: "Year"
+              - name: "month"
+                type: "INTEGER"
+                description: "Month (1-12)"
+              - name: "day"
+                type: "INTEGER"
+                description: "Day of month (1-31)"
+              - name: "weekday"
+                type: "TEXT"
+                description: "Day of week (Monday-Sunday)"
+              - name: "is_weekend"
+                type: "INTEGER"
+                description: "1 if weekend, 0 if weekday"
+              - name: "quarter"
+                type: "INTEGER"
+                description: "Quarter (1-4)"
+              - name: "is_month_end"
+                type: "INTEGER"
+                description: "1 if last day of month, 0 otherwise"
+              - name: "is_quarter_end"
+                type: "INTEGER"
+                description: "1 if last day of quarter, 0 otherwise"
+              - name: "is_year_end"
+                type: "INTEGER"
+                description: "1 if last day of year, 0 otherwise"
+
+          # Geographic Dimension
+          - name: "dim_region"
+            description: "Geographic regions and markets"
+            columns:
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Unique region identifier"
+                primary_key: true
+              - name: "region_name"
+                type: "TEXT"
+                description: "Region name"
+              - name: "country"
+                type: "TEXT"
+                description: "Country name"
+              - name: "timezone"
+                type: "TEXT"
+                description: "Timezone (e.g., UTC-5)"
+              - name: "market_type"
+                type: "TEXT"
+                description: "Market classification (Urban, Suburban, Rural)"
+              - name: "population_density"
+                type: "TEXT"
+                description: "Population density category (High, Medium, Low)"
+
+          # Network Infrastructure Dimension
+          - name: "dim_network_element"
+            description: "Network infrastructure elements"
+            columns:
+              - name: "network_element_id"
+                type: "INTEGER"
+                description: "Unique network element identifier"
+                primary_key: true
+              - name: "element_type"
+                type: "TEXT"
+                description: "Type of network element (Tower, Switch, Router, etc.)"
+              - name: "element_name"
+                type: "TEXT"
+                description: "Element name/identifier"
+              - name: "location"
+                type: "TEXT"
+                description: "Physical location"
+              - name: "capacity_mbps"
+                type: "REAL"
+                description: "Capacity in Mbps"
+              - name: "technology"
+                type: "TEXT"
+                description: "Technology type (4G, 5G, Fiber, etc.)"
+              - name: "vendor"
+                type: "TEXT"
+                description: "Equipment vendor"
+              - name: "installation_date"
+                type: "TEXT"
+                description: "Installation date"
+
+          # Customer Dimension
+          - name: "dim_customer"
+            description: "Customer information and segmentation"
+            columns:
+              - name: "customer_id"
+                type: "INTEGER"
+                description: "Unique customer identifier"
+                primary_key: true
+              - name: "customer_type"
+                type: "TEXT"
+                description: "Customer type (Consumer, Business, Enterprise)"
+              - name: "segment"
+                type: "TEXT"
+                description: "Customer segment (Premium, Standard, Basic)"
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Customer's region"
+                foreign_key: "dim_region.region_id"
+              - name: "acquisition_date"
+                type: "TEXT"
+                description: "Customer acquisition date"
+              - name: "contract_type"
+                type: "TEXT"
+                description: "Contract type (Prepaid, Postpaid, Enterprise)"
+              - name: "credit_score"
+                type: "INTEGER"
+                description: "Customer credit score"
+              - name: "lifetime_value"
+                type: "REAL"
+                description: "Customer lifetime value"
+
+          # Product/Service Dimension
+          - name: "dim_product"
+            description: "Products and services offered"
+            columns:
+              - name: "product_id"
+                type: "INTEGER"
+                description: "Unique product identifier"
+                primary_key: true
+              - name: "product_name"
+                type: "TEXT"
+                description: "Product name"
+              - name: "product_category"
+                type: "TEXT"
+                description: "Product category (Voice, Data, Video, IoT)"
+              - name: "product_type"
+                type: "TEXT"
+                description: "Product type (Plan, Add-on, Service)"
+              - name: "data_limit_gb"
+                type: "REAL"
+                description: "Data limit in GB"
+              - name: "price_monthly"
+                type: "REAL"
+                description: "Monthly price"
+              - name: "is_premium"
+                type: "INTEGER"
+                description: "1 if premium product, 0 otherwise"
+              - name: "launch_date"
+                type: "TEXT"
+                description: "Product launch date"
+
+          # Channel Dimension
+          - name: "dim_channel"
+            description: "Sales and support channels"
+            columns:
+              - name: "channel_id"
+                type: "INTEGER"
+                description: "Unique channel identifier"
+                primary_key: true
+              - name: "channel_name"
+                type: "TEXT"
+                description: "Channel name"
+              - name: "channel_type"
+                type: "TEXT"
+                description: "Channel type (Online, Retail, Call Center, Partner)"
+              - name: "channel_category"
+                type: "TEXT"
+                description: "Channel category (Sales, Support, Self-Service)"
+              - name: "is_digital"
+                type: "INTEGER"
+                description: "1 if digital channel, 0 otherwise"
+              - name: "cost_per_interaction"
+                type: "REAL"
+                description: "Cost per customer interaction"
+
+          # Employee Dimension
+          - name: "dim_employee"
+            description: "Employee information for operational metrics"
+            columns:
+              - name: "employee_id"
+                type: "INTEGER"
+                description: "Unique employee identifier"
+                primary_key: true
+              - name: "employee_name"
+                type: "TEXT"
+                description: "Employee name"
+              - name: "department"
+                type: "TEXT"
+                description: "Department (Network Ops, Customer Service, Sales)"
+              - name: "role"
+                type: "TEXT"
+                description: "Job role"
+              - name: "hire_date"
+                type: "TEXT"
+                description: "Hire date"
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Employee's assigned region"
+                foreign_key: "dim_region.region_id"
+              - name: "is_active"
+                type: "INTEGER"
+                description: "1 if active employee, 0 otherwise"
+
+        # ========================================
+        # FACT TABLES
+        # ========================================
+        
+          # Network Performance Facts
+          - name: "fact_network_metrics"
+            description: "Network performance metrics by element, region, and time"
+            columns:
+              - name: "network_element_id"
+                type: "INTEGER"
+                description: "Network element"
+                foreign_key: "dim_network_element.network_element_id"
+                primary_key: true
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Geographic region"
+                foreign_key: "dim_region.region_id"
+                primary_key: true
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date"
+                foreign_key: "dim_time.date_id"
+                primary_key: true
+              - name: "hour"
+                type: "INTEGER"
+                description: "Hour"
+                foreign_key: "dim_time.hour"
+                primary_key: true
+              - name: "uptime_seconds"
+                type: "REAL"
+                description: "Uptime in seconds"
+              - name: "downtime_seconds"
+                type: "REAL"
+                description: "Downtime in seconds"
+              - name: "calls_attempted"
+                type: "INTEGER"
+                description: "Number of call attempts"
+              - name: "calls_dropped"
+                type: "INTEGER"
+                description: "Number of dropped calls"
+              - name: "packets_sent"
+                type: "INTEGER"
+                description: "Packets sent"
+              - name: "packets_lost"
+                type: "INTEGER"
+                description: "Packets lost"
+              - name: "bandwidth_capacity_mb"
+                type: "REAL"
+                description: "Bandwidth capacity in MB"
+              - name: "bandwidth_used_mb"
+                type: "REAL"
+                description: "Bandwidth used in MB"
+              - name: "outage_minutes"
+                type: "REAL"
+                description: "Outage duration in minutes"
+              - name: "repair_minutes"
+                type: "REAL"
+                description: "Repair time in minutes"
+              - name: "latency_ms"
+                type: "REAL"
+                description: "Latency in milliseconds"
+              - name: "latency_ms_p95"
+                type: "REAL"
+                description: "95th percentile latency"
+              - name: "last_updated_ts"
+                type: "TEXT"
+                description: "Last update timestamp"
+
+          # Customer Experience Facts
+          - name: "fact_customer_experience"
+            description: "Customer experience and satisfaction metrics"
+            columns:
+              - name: "customer_id"
+                type: "INTEGER"
+                description: "Customer identifier"
+                foreign_key: "dim_customer.customer_id"
+                primary_key: true
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date"
+                foreign_key: "dim_time.date_id"
+                primary_key: true
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Customer's region"
+                foreign_key: "dim_region.region_id"
+              - name: "channel_id"
+                type: "INTEGER"
+                description: "Interaction channel"
+                foreign_key: "dim_channel.channel_id"
+              - name: "satisfaction_score"
+                type: "REAL"
+                description: "Customer satisfaction score (1-100)"
+              - name: "nps_score"
+                type: "INTEGER"
+                description: "Net Promoter Score (-100 to 100)"
+              - name: "churn_probability"
+                type: "REAL"
+                description: "Churn probability (0-1)"
+              - name: "handling_time_minutes"
+                type: "REAL"
+                description: "Average handling time in minutes"
+              - name: "first_contact_resolution"
+                type: "REAL"
+                description: "First contact resolution rate (0-1)"
+              - name: "complaint_count"
+                type: "INTEGER"
+                description: "Number of complaints"
+              - name: "escalation_count"
+                type: "INTEGER"
+                description: "Number of escalations"
+              - name: "customer_effort_score"
+                type: "REAL"
+                description: "Customer effort score (1-7)"
+              - name: "lifetime_value"
+                type: "REAL"
+                description: "Customer lifetime value"
+
+          # Revenue and Monetization Facts
+          - name: "fact_revenue"
+            description: "Revenue and financial performance metrics"
+            columns:
+              - name: "customer_id"
+                type: "INTEGER"
+                description: "Customer identifier"
+                foreign_key: "dim_customer.customer_id"
+                primary_key: true
+              - name: "product_id"
+                type: "INTEGER"
+                description: "Product identifier"
+                foreign_key: "dim_product.product_id"
+                primary_key: true
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date"
+                foreign_key: "dim_time.date_id"
+                primary_key: true
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Region"
+                foreign_key: "dim_region.region_id"
+              - name: "channel_id"
+                type: "INTEGER"
+                description: "Sales channel"
+                foreign_key: "dim_channel.channel_id"
+              - name: "revenue_amount"
+                type: "REAL"
+                description: "Revenue amount"
+              - name: "arpu"
+                type: "REAL"
+                description: "Average Revenue Per User"
+              - name: "customer_acquisition_cost"
+                type: "REAL"
+                description: "Customer acquisition cost"
+              - name: "customer_lifetime_value"
+                type: "REAL"
+                description: "Customer lifetime value"
+              - name: "churn_revenue_loss"
+                type: "REAL"
+                description: "Revenue lost due to churn"
+              - name: "upsell_revenue"
+                type: "REAL"
+                description: "Revenue from upsells"
+              - name: "cross_sell_revenue"
+                type: "REAL"
+                description: "Revenue from cross-sells"
+              - name: "ebitda_margin"
+                type: "REAL"
+                description: "EBITDA margin percentage"
+              - name: "profit_margin"
+                type: "REAL"
+                description: "Profit margin percentage"
+              - name: "subscriber_count"
+                type: "INTEGER"
+                description: "Number of subscribers"
+              - name: "subscriber_growth_rate"
+                type: "REAL"
+                description: "Subscriber growth rate"
+
+          # Usage and Adoption Facts
+          - name: "fact_usage_adoption"
+            description: "Service usage and adoption metrics"
+            columns:
+              - name: "customer_id"
+                type: "INTEGER"
+                description: "Customer identifier"
+                foreign_key: "dim_customer.customer_id"
+                primary_key: true
+              - name: "product_id"
+                type: "INTEGER"
+                description: "Product identifier"
+                foreign_key: "dim_product.product_id"
+                primary_key: true
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date"
+                foreign_key: "dim_time.date_id"
+                primary_key: true
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Region"
+                foreign_key: "dim_region.region_id"
+              - name: "data_usage_gb"
+                type: "REAL"
+                description: "Data usage in GB"
+              - name: "voice_minutes"
+                type: "REAL"
+                description: "Voice minutes used"
+              - name: "sms_count"
+                type: "INTEGER"
+                description: "SMS count"
+              - name: "feature_adoption_rate"
+                type: "REAL"
+                description: "Feature adoption rate (0-1)"
+              - name: "five_g_adoption"
+                type: "REAL"
+                description: "5G adoption rate (0-1)"
+              - name: "service_penetration"
+                type: "REAL"
+                description: "Service penetration rate (0-1)"
+              - name: "app_usage_rate"
+                type: "REAL"
+                description: "App usage rate (0-1)"
+              - name: "premium_service_adoption"
+                type: "REAL"
+                description: "Premium service adoption rate (0-1)"
+              - name: "peak_usage_time"
+                type: "TEXT"
+                description: "Peak usage time (e.g., '8-10 PM')"
+              - name: "average_session_duration"
+                type: "REAL"
+                description: "Average session duration in minutes"
+              - name: "active_subscribers"
+                type: "INTEGER"
+                description: "Number of active subscribers"
+
+          # Operational Efficiency Facts
+          - name: "fact_operations"
+            description: "Operational efficiency and performance metrics"
+            columns:
+              - name: "employee_id"
+                type: "INTEGER"
+                description: "Employee identifier"
+                foreign_key: "dim_employee.employee_id"
+                primary_key: true
+              - name: "region_id"
+                type: "INTEGER"
+                description: "Region"
+                foreign_key: "dim_region.region_id"
+                primary_key: true
+              - name: "date_id"
+                type: "TEXT"
+                description: "Date"
+                foreign_key: "dim_time.date_id"
+                primary_key: true
+              - name: "channel_id"
+                type: "INTEGER"
+                description: "Channel"
+                foreign_key: "dim_channel.channel_id"
+              - name: "service_response_time_hours"
+                type: "REAL"
+                description: "Service response time in hours"
+              - name: "regulatory_compliance_rate"
+                type: "REAL"
+                description: "Regulatory compliance rate (0-1)"
+              - name: "support_ticket_resolution_rate"
+                type: "REAL"
+                description: "Support ticket resolution rate (0-1)"
+              - name: "system_uptime_percentage"
+                type: "REAL"
+                description: "System uptime percentage"
+              - name: "operational_efficiency_score"
+                type: "REAL"
+                description: "Operational efficiency score (0-100)"
+              - name: "capex_to_revenue_ratio"
+                type: "REAL"
+                description: "CapEx to revenue ratio"
+              - name: "employee_productivity_score"
+                type: "REAL"
+                description: "Employee productivity score (0-100)"
+              - name: "cost_per_customer"
+                type: "REAL"
+                description: "Cost per customer"
+              - name: "automation_rate"
+                type: "REAL"
+                description: "Process automation rate (0-1)"
+              - name: "training_completion_rate"
+                type: "REAL"
+                description: "Employee training completion rate (0-1)"
+              - name: "incident_count"
+                type: "INTEGER"
+                description: "Number of incidents"
+              - name: "resolution_time_hours"
+                type: "REAL"
+                description: "Average resolution time in hours"
+
+        # ========================================
+        # BUSINESS SEMANTIC VIEWS
+        # ========================================
+        
+        views:
+          # Network Performance Views
+          - name: "vw_network_metrics_daily"
+            description: "Daily aggregated network performance metrics"
+            view: |
+              SELECT
+                date_id,
+                region_id,
+                AVG(CAST(latency_ms AS REAL)) AS avg_latency_ms,
+                AVG(CAST(latency_ms_p95 AS REAL)) AS p95_latency_ms,
+                SUM(CAST(packets_lost AS REAL)) / NULLIF(SUM(CAST(packets_sent AS REAL)), 0) * 100 AS packet_loss_percent,
+                SUM(CAST(calls_dropped AS REAL)) / NULLIF(SUM(CAST(calls_attempted AS REAL)), 0) * 100 AS dropped_call_rate,
+                SUM(CAST(uptime_seconds AS REAL)) / (SUM(CAST(uptime_seconds AS REAL)) + SUM(CAST(downtime_seconds AS REAL))) * 100 AS availability_percent,
+                SUM(CAST(bandwidth_used_mb AS REAL)) / NULLIF(SUM(CAST(bandwidth_capacity_mb AS REAL)), 0) * 100 AS bandwidth_utilization_percent,
+                AVG(CAST(repair_minutes AS REAL)) / 60 AS mttr_hours,
+                COUNT(DISTINCT network_element_id) AS active_elements,
+                COUNT(DISTINCT region_id) AS active_regions
+              FROM fact_network_metrics
+              GROUP BY date_id, region_id
+
+          - name: "vw_network_performance_summary"
+            description: "Network performance summary for dashboard"
+            view: |
+              SELECT
+                'Network Availability' AS metric_name,
+                AVG(availability_percent) AS current_value,
+                AVG(availability_percent) * 0.98 AS previous_value,
+                '▲' AS trend_direction,
+                '99.77%' AS formatted_value,
+                'percentage' AS unit
+              FROM vw_network_metrics_daily
+              WHERE date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                'Average Latency' AS metric_name,
+                AVG(avg_latency_ms) AS current_value,
+                AVG(avg_latency_ms) * 1.05 AS previous_value,
+                '▼' AS trend_direction,
+                '41.0ms' AS formatted_value,
+                'milliseconds' AS unit
+              FROM vw_network_metrics_daily
+              WHERE date_id = '2023-08-01'
+
+          # Customer Experience Views
+          - name: "vw_customer_experience_daily"
+            description: "Daily customer experience metrics"
+            view: |
+              SELECT
+                date_id,
+                region_id,
+                AVG(satisfaction_score) AS avg_satisfaction_score,
+                AVG(nps_score) AS avg_nps_score,
+                AVG(churn_probability) * 100 AS avg_churn_rate,
+                AVG(handling_time_minutes) AS avg_handling_time,
+                AVG(first_contact_resolution) * 100 AS first_contact_resolution_rate,
+                AVG(customer_effort_score) AS avg_customer_effort_score,
+                AVG(lifetime_value) AS avg_lifetime_value,
+                COUNT(DISTINCT customer_id) AS active_customers
+              FROM fact_customer_experience
+              GROUP BY date_id, region_id
+
+          - name: "vw_customer_experience_summary"
+            description: "Customer experience summary for dashboard"
+            view: |
+              SELECT
+                'Customer Satisfaction' AS metric_name,
+                AVG(avg_satisfaction_score) / 20 AS current_value,
+                AVG(avg_satisfaction_score) / 20 * 0.98 AS previous_value,
+                '▲' AS trend_direction,
+                '4.2/5.0' AS formatted_value,
+                'score' AS unit
+              FROM vw_customer_experience_daily
+              WHERE date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                'Net Promoter Score' AS metric_name,
+                AVG(avg_nps_score) AS current_value,
+                AVG(avg_nps_score) * 1.05 AS previous_value,
+                '▲' AS trend_direction,
+                '42' AS formatted_value,
+                'score' AS unit
+              FROM vw_customer_experience_daily
+              WHERE date_id = '2023-08-01'
+
+          # Revenue Views
+          - name: "vw_revenue_daily"
+            description: "Daily revenue metrics"
+            view: |
+              SELECT
+                date_id,
+                region_id,
+                SUM(revenue_amount) AS total_revenue,
+                AVG(arpu) AS avg_arpu,
+                AVG(customer_acquisition_cost) AS avg_cac,
+                AVG(customer_lifetime_value) AS avg_clv,
+                AVG(ebitda_margin) AS avg_ebitda_margin,
+                AVG(profit_margin) AS avg_profit_margin,
+                SUM(subscriber_count) AS total_subscribers,
+                AVG(subscriber_growth_rate) AS avg_growth_rate
+              FROM fact_revenue
+              GROUP BY date_id, region_id
+
+          - name: "vw_revenue_summary"
+            description: "Revenue summary for dashboard"
+            view: |
+              SELECT
+                'ARPU' AS metric_name,
+                AVG(avg_arpu) AS current_value,
+                AVG(avg_arpu) * 1.03 AS previous_value,
+                '▲' AS trend_direction,
+                '$42.17' AS formatted_value,
+                'currency' AS unit
+              FROM vw_revenue_daily
+              WHERE date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                'EBITDA Margin' AS metric_name,
+                AVG(avg_ebitda_margin) AS current_value,
+                AVG(avg_ebitda_margin) * 0.98 AS previous_value,
+                '▲' AS trend_direction,
+                '28.5%' AS formatted_value,
+                'percentage' AS unit
+              FROM vw_revenue_daily
+              WHERE date_id = '2023-08-01'
+
+          # Usage and Adoption Views
+          - name: "vw_usage_adoption_daily"
+            description: "Daily usage and adoption metrics"
+            view: |
+              SELECT
+                date_id,
+                region_id,
+                AVG(data_usage_gb) AS avg_data_usage,
+                AVG(feature_adoption_rate) * 100 AS avg_feature_adoption,
+                AVG(five_g_adoption) * 100 AS avg_five_g_adoption,
+                AVG(service_penetration) * 100 AS avg_service_penetration,
+                AVG(app_usage_rate) * 100 AS avg_app_usage,
+                AVG(premium_service_adoption) * 100 AS avg_premium_adoption,
+                SUM(active_subscribers) AS total_active_subscribers
+              FROM fact_usage_adoption
+              GROUP BY date_id, region_id
+
+          - name: "vw_usage_adoption_summary"
+            description: "Usage and adoption summary for dashboard"
+            view: |
+              SELECT
+                'Data Usage per Subscriber' AS metric_name,
+                AVG(avg_data_usage) AS current_value,
+                AVG(avg_data_usage) * 1.12 AS previous_value,
+                '▲' AS trend_direction,
+                '8.5 GB' AS formatted_value,
+                'data' AS unit
+              FROM vw_usage_adoption_daily
+              WHERE date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                '5G Adoption Rate' AS metric_name,
+                AVG(avg_five_g_adoption) AS current_value,
+                AVG(avg_five_g_adoption) * 1.25 AS previous_value,
+                '▲' AS trend_direction,
+                '45.2%' AS formatted_value,
+                'percentage' AS unit
+              FROM vw_usage_adoption_daily
+              WHERE date_id = '2023-08-01'
+
+          # Operations Views
+          - name: "vw_operations_daily"
+            description: "Daily operational efficiency metrics"
+            view: |
+              SELECT
+                date_id,
+                region_id,
+                AVG(service_response_time_hours) AS avg_response_time,
+                AVG(regulatory_compliance_rate) * 100 AS avg_compliance_rate,
+                AVG(support_ticket_resolution_rate) * 100 AS avg_resolution_rate,
+                AVG(system_uptime_percentage) AS avg_uptime,
+                AVG(operational_efficiency_score) AS avg_efficiency_score,
+                AVG(capex_to_revenue_ratio) AS avg_capex_ratio,
+                AVG(employee_productivity_score) AS avg_productivity,
+                AVG(automation_rate) * 100 AS avg_automation_rate
+              FROM fact_operations
+              GROUP BY date_id, region_id
+
+          - name: "vw_operations_summary"
+            description: "Operations summary for dashboard"
+            view: |
+              SELECT
+                'Service Response Time' AS metric_name,
+                AVG(avg_response_time) AS current_value,
+                AVG(avg_response_time) * 0.9 AS previous_value,
+                '▼' AS trend_direction,
+                '2.1 hours' AS formatted_value,
+                'time' AS unit
+              FROM vw_operations_daily
+              WHERE date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                'Regulatory Compliance Rate' AS metric_name,
+                AVG(avg_compliance_rate) AS current_value,
+                AVG(avg_compliance_rate) * 1.01 AS previous_value,
+                '▲' AS trend_direction,
+                '98.7%' AS formatted_value,
+                'percentage' AS unit
+              FROM vw_operations_daily
+              WHERE date_id = '2023-08-01'
+
+          # Cross-Pillar Analytics Views
+          - name: "vw_kpi_dashboard_summary"
+            description: "Comprehensive KPI summary for all pillars"
+            view: |
+              SELECT 'Network Performance' AS pillar, * FROM vw_network_performance_summary
+              UNION ALL
+              SELECT 'Customer Experience' AS pillar, * FROM vw_customer_experience_summary
+              UNION ALL
+              SELECT 'Revenue & Monetization' AS pillar, * FROM vw_revenue_summary
+              UNION ALL
+              SELECT 'Usage & Adoption' AS pillar, * FROM vw_usage_adoption_summary
+              UNION ALL
+              SELECT 'Operational Efficiency' AS pillar, * FROM vw_operations_summary
+
+          # Time Period Analysis Views
+          - name: "vw_metrics_by_time_period"
+            description: "Metrics aggregated by different time periods"
+            view: |
+              SELECT
+                '30_days' AS time_period,
+                AVG(availability_percent) AS network_availability,
+                AVG(avg_latency_ms) AS avg_latency,
+                AVG(avg_satisfaction_score) AS customer_satisfaction,
+                AVG(avg_arpu) AS arpu,
+                AVG(avg_data_usage) AS data_usage
+              FROM vw_network_metrics_daily nm
+              LEFT JOIN vw_customer_experience_daily ce ON nm.date_id = ce.date_id
+              LEFT JOIN vw_revenue_daily r ON nm.date_id = r.date_id
+              LEFT JOIN vw_usage_adoption_daily ua ON nm.date_id = ua.date_id
+              WHERE nm.date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                '90_days' AS time_period,
+                AVG(availability_percent) * 0.98 AS network_availability,
+                AVG(avg_latency_ms) * 1.05 AS avg_latency,
+                AVG(avg_satisfaction_score) * 0.98 AS customer_satisfaction,
+                AVG(avg_arpu) * 0.98 AS arpu,
+                AVG(avg_data_usage) * 0.95 AS data_usage
+              FROM vw_network_metrics_daily nm
+              LEFT JOIN vw_customer_experience_daily ce ON nm.date_id = ce.date_id
+              LEFT JOIN vw_revenue_daily r ON nm.date_id = r.date_id
+              LEFT JOIN vw_usage_adoption_daily ua ON nm.date_id = ua.date_id
+              WHERE nm.date_id = '2023-08-01'
+              UNION ALL
+              SELECT
+                '365_days' AS time_period,
+                AVG(availability_percent) * 0.95 AS network_availability,
+                AVG(avg_latency_ms) * 1.1 AS avg_latency,
+                AVG(avg_satisfaction_score) * 0.95 AS customer_satisfaction,
+                AVG(avg_arpu) * 0.95 AS arpu,
+                AVG(avg_data_usage) * 0.9 AS data_usage
+              FROM vw_network_metrics_daily nm
+              LEFT JOIN vw_customer_experience_daily ce ON nm.date_id = ce.date_id
+              LEFT JOIN vw_revenue_daily r ON nm.date_id = r.date_id
+              LEFT JOIN vw_usage_adoption_daily ua ON nm.date_id = ua.date_id
+              WHERE nm.date_id = '2023-08-01'
+
+# ========================================
+# DATA TYPES MAPPING
+# ========================================
+data_types:
+  sqlite:
+    TEXT: "TEXT"
+    INTEGER: "INTEGER"
+    REAL: "REAL"
+    BLOB: "BLOB"
+  
+  snowflake:
+    TEXT: "VARCHAR"
+    INTEGER: "NUMBER"
+    REAL: "FLOAT"
+    BLOB: "BINARY"
+  
+  postgresql:
+    TEXT: "VARCHAR"
+    INTEGER: "INTEGER"
+    REAL: "NUMERIC"
+    BLOB: "BYTEA"
+
+# ========================================
+# BUSINESS RULES
+# ========================================
+business_rules:
+  - name: "Network Availability Calculation"
+    description: "Availability = (Uptime / (Uptime + Downtime)) * 100"
+    rule: "availability_percent = (uptime_seconds / (uptime_seconds + downtime_seconds)) * 100"
+  
+  - name: "Packet Loss Calculation"
+    description: "Packet Loss = (Packets Lost / Packets Sent) * 100"
+    rule: "packet_loss_percent = (packets_lost / packets_sent) * 100"
+  
+  - name: "Customer Satisfaction Scaling"
+    description: "Scale satisfaction score from 1-100 to 1-5"
+    rule: "satisfaction_score_5_scale = satisfaction_score / 20"
+  
+  - name: "ARPU Calculation"
+    description: "Average Revenue Per User = Total Revenue / Active Subscribers"
+    rule: "arpu = total_revenue / active_subscribers"
+  
+  - name: "Churn Rate Calculation"
+    description: "Churn Rate = (Churned Customers / Total Customers) * 100"
+    rule: "churn_rate = (churned_customers / total_customers) * 100"
+
+# ========================================
+# DATA QUALITY RULES
+# ========================================
+data_quality:
+  - name: "Network Metrics Validation"
+    rules:
+      - "availability_percent BETWEEN 0 AND 100"
+      - "latency_ms > 0"
+      - "packet_loss_percent BETWEEN 0 AND 100"
+  
+  - name: "Customer Metrics Validation"
+    rules:
+      - "satisfaction_score BETWEEN 1 AND 100"
+      - "nps_score BETWEEN -100 AND 100"
+      - "churn_probability BETWEEN 0 AND 1"
+  
+  - name: "Revenue Metrics Validation"
+    rules:
+      - "revenue_amount >= 0"
+      - "arpu >= 0"
+      - "ebitda_margin BETWEEN -100 AND 100"
+
+# ========================================
+# DEPLOYMENT CONFIGURATION
+# ========================================
+deployment:
+  environments:
+    development:
+      database: "sqlite"
+      schema: "sch_gold"
+      data_retention_days: 30
+    
+    staging:
+      database: "postgresql"
+      schema: "sch_gold"
+      data_retention_days: 90
+    
+    production:
+      database: "snowflake"
+      schema: "sch_gold"
+      data_retention_days: 1095  # 3 years 

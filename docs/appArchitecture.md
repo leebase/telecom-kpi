@@ -2,7 +2,7 @@
 
 ## 🎯 Overview
 
-The Telecom KPI Dashboard is a **database-driven Streamlit application** that provides real-time insights into telecom network performance and business metrics. Built with a modular architecture for scalability and maintainability.
+The Telecom KPI Dashboard is a **comprehensive data warehouse-driven Streamlit application** that provides real-time insights into telecom network performance and business metrics. Built with a modular architecture for scalability and maintainability.
 
 ## 🛠️ Technology Stack
 
@@ -15,7 +15,8 @@ The Telecom KPI Dashboard is a **database-driven Streamlit application** that pr
 - **SQLite 3** - Embedded database for data storage
 - **Pandas** - Data manipulation and analysis
 - **PyYAML** - Schema configuration management
-- **Custom Views** - `vw_network_metrics_daily` for KPI calculations
+- **CSV Data Foundation** - 12 CSV files with 89 rows of sample data
+- **Business Views** - 5 daily aggregation views for KPI calculations
 
 ### **Data Processing**
 - **NumPy** - Numerical operations and calculations
@@ -41,8 +42,10 @@ telecomdashboard/
 ├── data/
 │   ├── telecom_db.sqlite         # SQLite database
 │   ├── network_performance_schema.yaml  # Database schema
-│   ├── setup_telecom_db.sql     # Generated SQL DDL
-│   └── fact_network_metrics_preview.csv # Sample data
+│   ├── DATA_CATALOG.md           # Complete data documentation
+│   ├── dim_*.csv                 # 7 dimension table CSV files
+│   ├── fact_*.csv                # 5 fact table CSV files
+│   └── setup_telecom_data_warehouse_final.sql  # Complete schema
 └── docs/
     ├── appRequirements.md         # Application requirements
     ├── appArchitecture.md         # This file
@@ -51,60 +54,55 @@ telecomdashboard/
 
 ## 🗄️ Database Architecture
 
-### **Star Schema Design**
+### **Complete Star Schema Design**
 ```
-fact_network_metrics (Fact Table)
-├── network_element_id (FK → dim_network_element)
-├── region_id (FK → dim_region)
-├── date_id (FK → dim_time)
-├── hour
-├── uptime_seconds
-├── downtime_seconds
-├── latency_ms
-├── packet_loss_percent
-├── bandwidth_utilization_percent
-└── mttr_hours
+Dimension Tables (7)
+├── dim_time - Time dimension with 24 hours
+├── dim_region - Geographic regions and markets
+├── dim_network_element - Network infrastructure
+├── dim_customer - Customer segmentation
+├── dim_product - Product and service catalog
+├── dim_channel - Sales and support channels
+└── dim_employee - Employee information
 
-dim_region (Dimension Table)
-├── region_id (PK)
-└── region_name
+Fact Tables (5)
+├── fact_network_metrics - Network performance
+├── fact_customer_experience - Customer satisfaction
+├── fact_revenue - Revenue and financial metrics
+├── fact_usage_adoption - Service usage metrics
+└── fact_operations - Operational efficiency
 
-dim_network_element (Dimension Table)
-├── network_element_id (PK)
-└── element_type
-
-dim_time (Dimension Table)
-├── date_id (PK)
-├── hour (PK)
-├── year
-├── month
-├── day
-├── weekday
-└── is_weekend
+Business Views (5)
+├── vw_network_metrics_daily - Network performance
+├── vw_customer_experience_daily - Customer experience
+├── vw_revenue_daily - Revenue metrics
+├── vw_usage_adoption_daily - Usage metrics
+└── vw_operations_daily - Operations metrics
 ```
 
-### **Views**
-- **`vw_network_metrics_daily`** - Daily aggregated metrics for KPI calculations
-  - Calculates availability percentages
-  - Aggregates latency and performance metrics
-  - Provides clean interface for dashboard queries
+### **CSV Data Foundation**
+- **12 CSV files** with **89 rows** of sample data
+- **Portable format** for easy migration to any database
+- **Complete documentation** in `data/DATA_CATALOG.md`
+- **Automated loading** with `load_csv_data.py`
 
 ## 🔄 Data Flow
 
-### **1. Database Setup**
+### **1. Data Warehouse Setup**
 ```python
 # setup_database.py
 1. Parse YAML schema → Generate SQL DDL
 2. Create SQLite database → Execute DDL
-3. Load dimension data → Insert reference data
-4. Load fact data → Insert network metrics
+3. Load CSV dimension data → Insert reference data
+4. Load CSV fact data → Insert all metrics
+5. Create business views → Generate aggregations
 ```
 
 ### **2. Dashboard Queries**
 ```python
 # database_connection.py
 1. User selects time period → Convert to days
-2. Query database → Get aggregated metrics
+2. Query business views → Get aggregated metrics
 3. Calculate deltas → Compare with baseline
 4. Format data → Return to UI components
 ```
@@ -179,15 +177,16 @@ time_periods = {
 ### **Schema Definition (`network_performance_schema.yaml`)**
 ```yaml
 databases:
-  - name: "telecom_db"
+  - name: "telecom_dw"
     schemas:
       - name: "sch_gold"
         tables:
-          - name: "fact_network_metrics"
-            columns:
-              - name: "network_element_id"
-                type: "INTEGER"
-              # ... additional columns
+          - name: "dim_time"           # Time dimension
+          - name: "dim_region"         # Geographic dimension
+          - name: "dim_customer"       # Customer dimension
+          - name: "fact_network_metrics"    # Network performance
+          - name: "fact_revenue"       # Financial metrics
+          # ... additional tables
 ```
 
 ### **Environment Configuration**
@@ -207,7 +206,7 @@ streamlit run app.py
 ```
 
 ### **Production Considerations**
-- **Database**: Replace SQLite with PostgreSQL/MySQL
+- **Database**: Migrate CSV data to PostgreSQL/MySQL/Snowflake
 - **Caching**: Implement Redis for query caching
 - **Load Balancing**: Multiple Streamlit instances
 - **Monitoring**: Add logging and metrics collection

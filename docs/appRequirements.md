@@ -2,7 +2,7 @@
 
 ## 🎯 Purpose
 
-This **production-ready KPI dashboard** provides telecom operators with real-time insights into network performance and business metrics using **actual SQLite data** with dynamic time period filtering. Designed for executive decision-making and operational monitoring.
+This **production-ready KPI dashboard** provides telecom operators with real-time insights into network performance and business metrics using **comprehensive CSV data warehouse** with dynamic time period filtering. Designed for executive decision-making and operational monitoring.
 
 ## 🧑‍💼 Target Users
 
@@ -14,9 +14,10 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 
 ## 🛠️ Core Functionality
 
-### ✅ **Database-Driven Architecture**
+### ✅ **Comprehensive Data Warehouse Architecture**
 
-- **Real SQLite Data** - All metrics sourced from `vw_network_metrics_daily` view
+- **Complete Star Schema** - 7 dimension tables and 5 fact tables
+- **CSV Data Foundation** - 12 CSV files with 89 rows of sample data
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 - **Professional KPI Display** - Trend indicators with color-coded performance
@@ -84,11 +85,12 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 
 ## 🧪 Implementation Details
 
-### **Database Integration**
+### **Data Warehouse Integration**
 - **SQLite Database**: `data/telecom_db.sqlite`
-- **Star Schema**: Fact and dimension tables
-- **Custom Views**: `vw_network_metrics_daily` for KPI calculations
-- **Real Data**: Network performance metrics from actual measurements
+- **Complete Star Schema**: 7 dimension tables and 5 fact tables
+- **Business Views**: 5 daily aggregation views for KPI calculations
+- **CSV Data Foundation**: 12 files with 89 rows of sample data
+- **Portable Format**: Easy migration to PostgreSQL, Snowflake, MySQL
 
 ### **Time Period Filtering**
 | Period | Days | Performance Variation |
@@ -123,7 +125,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Mobile Optimization** - Tablet/phone responsive design
 
 ### **Production Readiness**
-- **Enterprise Database** - Replace SQLite with PostgreSQL/MySQL
+- **Enterprise Database** - Migrate CSV data to PostgreSQL/MySQL/Snowflake
 - **Authentication** - SSO integration for enterprise users
 - **Monitoring** - Application performance and error tracking
 - **Deployment** - Docker containerization and Kubernetes scaling

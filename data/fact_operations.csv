@@ -1,0 +1,6 @@
+employee_id,region_id,date_id,channel_id,service_response_time_hours,regulatory_compliance_rate,support_ticket_resolution_rate,system_uptime_percentage,operational_efficiency_score,capex_to_revenue_ratio,employee_productivity_score,cost_per_customer,automation_rate,training_completion_rate,incident_count,resolution_time_hours
+1,1,2023-08-01,3,2.1,0.987,0.942,99.92,87.3,18.2,85.5,12.5,0.75,0.92,2,3.5
+2,2,2023-08-01,3,2.8,0.992,0.958,99.88,84.7,19.1,82.3,14.2,0.68,0.89,3,4.2
+3,3,2023-08-01,4,1.9,0.985,0.935,99.95,89.1,17.8,87.6,11.8,0.82,0.94,1,2.8
+4,4,2023-08-01,2,2.3,0.995,0.968,99.96,91.2,16.5,90.1,10.5,0.88,0.97,0,2.1
+5,5,2023-08-01,3,3.2,0.978,0.925,99.85,81.4,20.3,79.8,15.8,0.62,0.86,4,5.1 

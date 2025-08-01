@@ -1,11 +1,12 @@
 # 📊 Telecom KPI Dashboard
 
-A **plug-and-play KPI dashboard** for telecom operators showcasing key metrics across five strategic pillars using **real SQLite data** with dynamic time period filtering.
+A **plug-and-play KPI dashboard** for telecom operators showcasing key metrics across five strategic pillars using **comprehensive CSV data warehouse** with dynamic time period filtering.
 
 ## 🚀 Features
 
-### 📈 **Database-Driven Metrics**
-- **Real SQLite data** from `vw_network_metrics_daily` view
+### 📈 **Comprehensive Data Warehouse**
+- **Complete star schema** with 7 dimension tables and 5 fact tables
+- **CSV data foundation** - 12 CSV files with 89 rows of sample data
 - **Dynamic time period filtering** (30 days, QTD, YTD, 12 months)
 - **Live metric calculations** with realistic performance variations
 - **Professional KPI display** with trend indicators and tooltips
@@ -41,12 +42,15 @@ telecomdashboard/
 ├── improved_metric_cards.py        # Metric card components
 ├── generate_test_data.py           # Mock data generation
 ├── setup_database.py              # Database schema creation
-├── load_data.py                   # Data loading utilities
+├── load_csv_data.py               # CSV data loading script
 ├── requirements.txt               # Python dependencies
 ├── data/
 │   ├── telecom_db.sqlite         # SQLite database
 │   ├── network_performance_schema.yaml  # Database schema
-│   └── fact_network_metrics_preview.csv # Sample data
+│   ├── DATA_CATALOG.md           # Complete data documentation
+│   ├── dim_*.csv                 # 7 dimension table CSV files
+│   ├── fact_*.csv                # 5 fact table CSV files
+│   └── setup_telecom_data_warehouse_final.sql  # Complete schema
 └── docs/
     ├── appRequirements.md         # Application requirements
     ├── appArchitecture.md         # Technical architecture
@@ -67,9 +71,9 @@ pip install -r requirements.txt
 
 ### 2. **Database Setup**
 ```bash
-# Create database and load data
+# Create database and load CSV data
 python setup_database.py
-python load_data.py
+python load_csv_data.py
 ```
 
 ### 3. **Launch Dashboard**
@@ -79,24 +83,43 @@ streamlit run app.py
 
 **Access at**: http://localhost:8501
 
-## 📊 Database Schema
+## 📊 Data Warehouse Schema
 
-### **Core Tables**
-- `fact_network_metrics` - Hourly network performance data
-- `dim_region` - Geographic regions
+### **Dimension Tables (7)**
+- `dim_time` - Time dimension with 24 hours of data
+- `dim_region` - Geographic regions and market information
 - `dim_network_element` - Network infrastructure elements
-- `dim_time` - Time dimension for analysis
+- `dim_customer` - Customer segmentation and demographics
+- `dim_product` - Product and service catalog
+- `dim_channel` - Sales and support channels
+- `dim_employee` - Employee information for operations
 
-### **Views**
-- `vw_network_metrics_daily` - Daily aggregated metrics for KPI calculations
+### **Fact Tables (5)**
+- `fact_network_metrics` - Network performance metrics
+- `fact_customer_experience` - Customer satisfaction and experience
+- `fact_revenue` - Revenue and financial performance
+- `fact_usage_adoption` - Service usage and adoption metrics
+- `fact_operations` - Operational efficiency metrics
+
+### **Business Views (5)**
+- `vw_network_metrics_daily` - Daily network performance aggregations
+- `vw_customer_experience_daily` - Daily customer experience metrics
+- `vw_revenue_daily` - Daily revenue and financial metrics
+- `vw_usage_adoption_daily` - Daily usage and adoption metrics
+- `vw_operations_daily` - Daily operational efficiency metrics
+
+### **CSV Data Foundation**
+- **12 CSV files** with **89 rows** of sample data
+- **Portable format** for easy migration to any database
+- **Complete documentation** in `data/DATA_CATALOG.md`
+- **Automated loading** with `load_csv_data.py`
 
 ### **Key Metrics Available**
-- **Network Availability**: 99.77% (calculated from uptime/downtime)
-- **Average Latency**: 41.0ms (from actual network measurements)
-- **Bandwidth Utilization**: 63.48% (capacity vs usage)
-- **MTTR**: 2.15 hours (Mean Time To Repair)
-- **Packet Loss Rate**: 0.0% (network integrity)
-- **Dropped Call Rate**: 0.0% (voice quality)
+- **Network Performance**: Availability, latency, packet loss, bandwidth utilization
+- **Customer Experience**: Satisfaction scores, NPS, churn rates, response times
+- **Revenue & Financial**: ARPU, EBITDA margins, acquisition costs, CLV
+- **Usage & Adoption**: Data usage, 5G adoption, feature adoption rates
+- **Operations**: MTTR, compliance rates, system uptime, efficiency scores
 
 ## ⏰ Time Period Filtering
 
@@ -141,11 +164,18 @@ The dashboard supports **dynamic time period filtering** with realistic data var
 1. Update `database_connection.py` with new query methods
 2. Add metric definitions in `improved_metric_cards.py`
 3. Update the relevant tab in `app.py`
+4. Add corresponding CSV data if needed
 
 ### **Modifying Time Periods**
 1. Edit the time period mapping in `app.py`
 2. Update database queries in `database_connection.py`
 3. Adjust performance variations as needed
+
+### **Data Customization**
+1. **CSV Files**: Modify dimension and fact table CSV files
+2. **Schema**: Update `network_performance_schema.yaml`
+3. **Loading**: Use `load_csv_data.py` to reload data
+4. **Documentation**: Update `data/DATA_CATALOG.md`
 
 ### **Styling Changes**
 1. Modify CSS in `improved_metric_cards.py`
@@ -188,33 +218,40 @@ streamlit run app.py
 - **Multi-tenant architecture** for multiple operators
 
 ### **Integration Opportunities**
-- **Snowflake Data Warehouse** - Replace SQLite
+- **Snowflake Data Warehouse** - Replace SQLite with CSV loading
+- **PostgreSQL/MySQL** - Enterprise database migration
 - **Tableau/Power BI** - Enhanced visualizations
 - **Slack/Teams** - Automated alerts and notifications
 - **Jira/ServiceNow** - Incident management integration
 
 ## 📋 Data Schema
 
-### **Network Performance Schema**
+### **Complete Data Warehouse Schema**
+The project includes a comprehensive star schema with:
+
+- **7 Dimension Tables**: Time, Region, Network Element, Customer, Product, Channel, Employee
+- **5 Fact Tables**: Network Metrics, Customer Experience, Revenue, Usage Adoption, Operations
+- **5 Business Views**: Daily aggregations for each strategic pillar
+- **12 CSV Files**: Complete data foundation with 89 sample records
+
+### **Schema Documentation**
+- **`data/DATA_CATALOG.md`** - Complete data documentation
+- **`data/network_performance_schema.yaml`** - Full schema definition
+- **`load_csv_data.py`** - Automated data loading script
+
+### **Sample Schema Structure**
 ```yaml
 databases:
-  - name: "telecom_db"
+  - name: "telecom_dw"
     schemas:
       - name: "sch_gold"
         tables:
-          - name: "fact_network_metrics"
-            columns:
-              - name: "network_element_id"
-                type: "INTEGER"
-              - name: "date_id"
-                type: "TEXT"
-              - name: "hour"
-                type: "INTEGER"
-              - name: "availability_percent"
-                type: "REAL"
-              - name: "latency_ms"
-                type: "REAL"
-              # ... additional metrics
+          - name: "dim_time"           # Time dimension
+          - name: "dim_region"         # Geographic dimension
+          - name: "dim_customer"       # Customer dimension
+          - name: "fact_network_metrics"    # Network performance
+          - name: "fact_revenue"       # Financial metrics
+          # ... additional tables
 ```
 
 ## 🤝 Contributing

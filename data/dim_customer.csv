@@ -1,0 +1,6 @@
+customer_id,customer_type,segment,region_id,acquisition_date,contract_type,credit_score,lifetime_value
+1,Consumer,Premium,1,2023-01-15,Postpaid,750,2500.0
+2,Business,Standard,2,2023-02-20,Enterprise,800,5000.0
+3,Consumer,Basic,3,2023-03-10,Prepaid,650,1200.0
+4,Enterprise,Premium,4,2023-01-25,Enterprise,900,15000.0
+5,Consumer,Standard,5,2023-04-05,Postpaid,700,1800.0 
