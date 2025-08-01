@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import altair as alt
 from kpi_components import *
 from generate_test_data import *
+from improved_metric_cards import *
 
 # Page configuration
 st.set_page_config(
@@ -55,6 +56,77 @@ st.markdown("""
         background-color: #1f77b4;
         color: white;
     }
+    
+    /* Print-optimized styles for PDF output */
+    @media print {
+        /* Hide Streamlit elements that shouldn't print */
+        .stDeployButton, .stApp > header, .stApp > footer {
+            display: none !important;
+        }
+        
+        /* Ensure all content is visible for printing */
+        .stTabs [data-baseweb="tab-panel"] {
+            display: block !important;
+            page-break-inside: avoid;
+        }
+        
+        /* Force all tabs to be visible when printing */
+        .stTabs [data-baseweb="tab-panel"] {
+            opacity: 1 !important;
+            visibility: visible !important;
+            position: static !important;
+            transform: none !important;
+        }
+        
+        /* Optimize for PDF layout */
+        body {
+            font-size: 12pt;
+            line-height: 1.4;
+        }
+        
+        .main-header {
+            font-size: 24pt;
+            margin-bottom: 1rem;
+        }
+        
+        .metric-card {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+        }
+        
+        /* Ensure charts are visible in print */
+        .element-container {
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        /* Add page breaks between major sections */
+        .stTabs [data-baseweb="tab-panel"] {
+            page-break-before: always;
+        }
+        
+        .stTabs [data-baseweb="tab-panel"]:first-child {
+            page-break-before: auto;
+        }
+    }
+    
+    /* Print instruction overlay */
+    .print-instructions {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 1000;
+        display: none;
+    }
+    
+    .print-instructions.show {
+        display: block;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -82,20 +154,12 @@ def main():
     with tab1:
         st.header("📡 Network Performance & Reliability")
         
-        # Create 3 columns for metric cards
-        col1, col2, col3 = st.columns(3)
+        # Time period selector
+        time_period = create_time_period_selector("network")
         
-        with col1:
-            render_metric_card("Network Availability", "99.87%", "+0.12%", "uptime")
-            render_metric_card("Latency", "45.2 ms", "-2.1 ms", "latency")
-        
-        with col2:
-            render_metric_card("Bandwidth Utilization", "78.3%", "+3.2%", "bandwidth")
-            render_metric_card("Dropped Call Rate", "1.2%", "-0.3%", "dcr")
-        
-        with col3:
-            render_metric_card("Packet Loss Rate", "0.08%", "-0.02%", "packet_loss")
-            render_metric_card("MTTR", "2.3 hours", "-0.5 hours", "mttr")
+        # Render improved metric grid
+        network_metrics = get_network_metrics()
+        render_metric_grid(network_metrics, "network")
         
         # Charts section
         st.subheader("📈 Network Performance Trends")
@@ -124,19 +188,12 @@ def main():
     with tab2:
         st.header("😊 Customer Experience & Retention")
         
-        col1, col2, col3 = st.columns(3)
+        # Time period selector
+        time_period = create_time_period_selector("customer")
         
-        with col1:
-            render_metric_card("Customer Satisfaction", "4.2/5.0", "+0.3", "csat")
-            render_metric_card("Net Promoter Score", "42", "+5", "nps")
-        
-        with col2:
-            render_metric_card("Customer Churn Rate", "2.1%", "-0.4%", "churn")
-            render_metric_card("Average Handling Time", "4.2 min", "-0.8 min", "aht")
-        
-        with col3:
-            render_metric_card("First Contact Resolution", "78%", "+3%", "fcr")
-            render_metric_card("Customer Lifetime Value", "$1,247", "+$89", "clv")
+        # Render improved metric grid
+        customer_metrics = get_customer_metrics()
+        render_metric_grid(customer_metrics, "customer")
         
         # Charts
         st.subheader("📈 Customer Experience Trends")
@@ -165,19 +222,12 @@ def main():
     with tab3:
         st.header("💰 Revenue & Monetization")
         
-        col1, col2, col3 = st.columns(3)
+        # Time period selector
+        time_period = create_time_period_selector("revenue")
         
-        with col1:
-            render_metric_card("Average Revenue Per User", "$42.17", "+$3.25", "arpu")
-            render_metric_card("Customer Lifetime Value", "$1,247", "+$89", "clv")
-        
-        with col2:
-            render_metric_card("Customer Acquisition Cost", "$156", "-$12", "cac")
-            render_metric_card("Subscriber Growth Rate", "8.3%", "+1.2%", "growth")
-        
-        with col3:
-            render_metric_card("EBITDA Margin", "32.4%", "+2.1%", "ebitda")
-            render_metric_card("Monthly Recurring Revenue", "$2.4M", "+$180K", "mrr")
+        # Render improved metric grid
+        revenue_metrics = get_revenue_metrics()
+        render_metric_grid(revenue_metrics, "revenue")
         
         # Charts
         st.subheader("📈 Revenue Trends")
@@ -206,19 +256,12 @@ def main():
     with tab4:
         st.header("📶 Usage & Service Adoption")
         
-        col1, col2, col3 = st.columns(3)
+        # Time period selector
+        time_period = create_time_period_selector("usage")
         
-        with col1:
-            render_metric_card("Data Usage per Subscriber", "8.7 GB", "+1.2 GB", "data_usage")
-            render_metric_card("Average Data Throughput", "45.2 Mbps", "+3.8 Mbps", "throughput")
-        
-        with col2:
-            render_metric_card("Feature Adoption Rate", "67%", "+8%", "adoption")
-            render_metric_card("5G Adoption Rate", "34%", "+12%", "5g_adoption")
-        
-        with col3:
-            render_metric_card("Active Subscribers", "1.2M", "+45K", "active_subs")
-            render_metric_card("Peak Usage Time", "8-10 PM", "Stable", "peak_time")
+        # Render improved metric grid
+        usage_metrics = get_usage_metrics()
+        render_metric_grid(usage_metrics, "usage")
         
         # Charts
         st.subheader("📈 Usage Trends")
@@ -247,19 +290,12 @@ def main():
     with tab5:
         st.header("🛠️ Operational Efficiency")
         
-        col1, col2, col3 = st.columns(3)
+        # Time period selector
+        time_period = create_time_period_selector("operations")
         
-        with col1:
-            render_metric_card("Service Response Time", "2.1 hours", "-0.5 hours", "response_time")
-            render_metric_card("Regulatory Compliance Rate", "98.7%", "+0.3%", "compliance")
-        
-        with col2:
-            render_metric_card("Capex to Revenue Ratio", "18.2%", "-1.1%", "capex_ratio")
-            render_metric_card("Network Efficiency Score", "87.3", "+2.1", "efficiency")
-        
-        with col3:
-            render_metric_card("Support Ticket Resolution", "94.2%", "+1.8%", "resolution")
-            render_metric_card("System Uptime", "99.92%", "+0.05%", "system_uptime")
+        # Render improved metric grid
+        operations_metrics = get_operations_metrics()
+        render_metric_grid(operations_metrics, "operations")
         
         # Charts
         st.subheader("📈 Operational Trends")
