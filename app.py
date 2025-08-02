@@ -282,28 +282,58 @@ def main():
         revenue_metrics = get_revenue_metrics(time_period_days)
         render_metric_grid(revenue_metrics, "revenue")
         
+        # Get real revenue data for charts
+        revenue_trend_data = db.get_revenue_trend_data(time_period_days)
+        
         # Charts
         st.subheader("📈 Revenue Trends")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            render_line_chart(revenue_data['arpu_trend'], "ARPU Trend (12 months)", "$")
-            render_bar_chart(revenue_data['revenue_by_plan'], "Revenue by Plan Type", "$")
+            if not revenue_trend_data.empty:
+                # Create ARPU trend chart
+                arpu_data = revenue_trend_data[['region_id', 'avg_arpu']].copy()
+                arpu_data['date'] = '2023-08-01'
+                arpu_data['value'] = arpu_data['avg_arpu']
+                render_line_chart(arpu_data, "ARPU by Region", "$")
+                
+                # Create revenue by region chart
+                revenue_by_region = revenue_trend_data[['region_id', 'total_revenue']].copy()
+                revenue_by_region['category'] = revenue_by_region['region_id'].astype(str)
+                revenue_by_region['value'] = revenue_by_region['total_revenue']
+                render_bar_chart(revenue_by_region, "Revenue by Region", "$")
+            else:
+                st.warning("No revenue trend data available")
         
         with col2:
-            render_area_chart(revenue_data['subscriber_growth'], "Subscriber Growth", "Count")
-            render_line_chart(revenue_data['ebitda_trend'], "EBITDA Margin Trend", "%")
+            if not revenue_trend_data.empty:
+                # Create subscriber growth chart
+                subscriber_data = revenue_trend_data[['region_id', 'total_subscribers']].copy()
+                subscriber_data['date'] = '2023-08-01'
+                subscriber_data['value'] = subscriber_data['total_subscribers']
+                render_area_chart(subscriber_data, "Subscribers by Region", "Count")
+                
+                # Create EBITDA margin chart
+                ebitda_data = revenue_trend_data[['region_id', 'avg_ebitda_margin']].copy()
+                ebitda_data['date'] = '2023-08-01'
+                ebitda_data['value'] = ebitda_data['avg_ebitda_margin']
+                render_line_chart(ebitda_data, "EBITDA Margin by Region", "%")
+            else:
+                st.warning("No revenue trend data available")
         
         # KPI Expanders
         st.subheader("📘 Detailed KPI Information")
-        render_kpi_expander("Average Revenue Per User (ARPU)", 
-                           "Average monthly revenue per subscriber", 
-                           lambda: render_line_chart(revenue_data['arpu_trend'], "ARPU Trend", "$"))
-        
-        render_kpi_expander("Customer Lifetime Value (CLV)", 
-                           "Total expected profit per user over time", 
-                           lambda: render_area_chart(revenue_data['clv_trend'], "CLV Trend", "$"))
+        if not revenue_trend_data.empty:
+            render_kpi_expander("Average Revenue Per User (ARPU)", 
+                               "Average monthly revenue per subscriber", 
+                               lambda: render_line_chart(arpu_data, "ARPU by Region", "$"))
+            
+            render_kpi_expander("Customer Lifetime Value (CLV)", 
+                               "Total expected profit per user over time", 
+                               lambda: render_area_chart(revenue_trend_data[['region_id', 'avg_clv']].assign(date='2023-08-01', value=lambda x: x['avg_clv']), "CLV by Region", "$"))
+        else:
+            st.warning("No revenue trend data available for detailed analysis")
     
     # Tab 4: Usage & Adoption
     with tab4:
@@ -324,28 +354,58 @@ def main():
         usage_metrics = get_usage_metrics(time_period_days)
         render_metric_grid(usage_metrics, "usage")
         
+        # Get real usage data for charts
+        usage_trend_data = db.get_usage_trend_data(time_period_days)
+        
         # Charts
         st.subheader("📈 Usage Trends")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            render_line_chart(usage_data['data_usage_trend'], "Data Usage Trend", "GB")
-            render_bar_chart(usage_data['throughput_by_region'], "Throughput by Region", "Mbps")
+            if not usage_trend_data.empty:
+                # Create data usage chart
+                data_usage_data = usage_trend_data[['region_id', 'avg_data_usage']].copy()
+                data_usage_data['date'] = '2023-08-01'
+                data_usage_data['value'] = data_usage_data['avg_data_usage']
+                render_line_chart(data_usage_data, "Data Usage by Region", "GB")
+                
+                # Create 5G adoption chart
+                five_g_data = usage_trend_data[['region_id', 'avg_five_g_adoption']].copy()
+                five_g_data['category'] = five_g_data['region_id'].astype(str)
+                five_g_data['value'] = five_g_data['avg_five_g_adoption']
+                render_bar_chart(five_g_data, "5G Adoption by Region", "%")
+            else:
+                st.warning("No usage trend data available")
         
         with col2:
-            render_area_chart(usage_data['5g_adoption_trend'], "5G Adoption Trend", "%")
-            render_distribution(usage_data['usage_distribution'], "Data Usage Distribution", "GB")
+            if not usage_trend_data.empty:
+                # Create service penetration chart
+                penetration_data = usage_trend_data[['region_id', 'avg_service_penetration']].copy()
+                penetration_data['date'] = '2023-08-01'
+                penetration_data['value'] = penetration_data['avg_service_penetration']
+                render_area_chart(penetration_data, "Service Penetration by Region", "%")
+                
+                # Create app usage chart
+                app_usage_data = usage_trend_data[['region_id', 'avg_app_usage']].copy()
+                app_usage_data['date'] = '2023-08-01'
+                app_usage_data['value'] = app_usage_data['avg_app_usage']
+                render_line_chart(app_usage_data, "App Usage by Region", "%")
+            else:
+                st.warning("No usage trend data available")
         
         # KPI Expanders
         st.subheader("📘 Detailed KPI Information")
-        render_kpi_expander("Data Usage per Subscriber", 
-                           "Average GB/month per user", 
-                           lambda: render_line_chart(usage_data['data_usage_trend'], "Data Usage Trend", "GB"))
-        
-        render_kpi_expander("5G Adoption Rate", 
-                           "Percentage of subscribers using 5G services", 
-                           lambda: render_area_chart(usage_data['5g_adoption_trend'], "5G Adoption", "%"))
+        if not usage_trend_data.empty:
+            render_kpi_expander("Data Usage per Subscriber", 
+                               "Average GB/month per user", 
+                               lambda: render_line_chart(data_usage_data, "Data Usage by Region", "GB"))
+            
+            render_kpi_expander("5G Adoption Rate", 
+                               "Percentage of subscribers using 5G services", 
+                               lambda: render_bar_chart(five_g_data, "5G Adoption by Region", "%"))
+        else:
+            st.warning("No usage trend data available for detailed analysis")
     
     # Tab 5: Operational Efficiency
     with tab5:
@@ -366,28 +426,58 @@ def main():
         operations_metrics = get_operations_metrics(time_period_days)
         render_metric_grid(operations_metrics, "operations")
         
+        # Get real operations data for charts
+        operations_trend_data = db.get_operations_trend_data(time_period_days)
+        
         # Charts
         st.subheader("📈 Operational Trends")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            render_line_chart(operations_data['response_time_trend'], "Service Response Time", "Hours")
-            render_bar_chart(operations_data['compliance_by_region'], "Compliance Rate by Region", "%")
+            if not operations_trend_data.empty:
+                # Create response time chart
+                response_data = operations_trend_data[['region_id', 'avg_response_time']].copy()
+                response_data['date'] = '2023-08-01'
+                response_data['value'] = response_data['avg_response_time']
+                render_line_chart(response_data, "Service Response Time by Region", "Hours")
+                
+                # Create compliance rate chart
+                compliance_data = operations_trend_data[['region_id', 'avg_compliance_rate']].copy()
+                compliance_data['category'] = compliance_data['region_id'].astype(str)
+                compliance_data['value'] = compliance_data['avg_compliance_rate']
+                render_bar_chart(compliance_data, "Compliance Rate by Region", "%")
+            else:
+                st.warning("No operations trend data available")
         
         with col2:
-            render_area_chart(operations_data['efficiency_trend'], "Operational Efficiency Score", "Score")
-            render_line_chart(operations_data['capex_trend'], "Capex to Revenue Ratio", "%")
+            if not operations_trend_data.empty:
+                # Create efficiency score chart
+                efficiency_data = operations_trend_data[['region_id', 'avg_efficiency_score']].copy()
+                efficiency_data['date'] = '2023-08-01'
+                efficiency_data['value'] = efficiency_data['avg_efficiency_score']
+                render_area_chart(efficiency_data, "Operational Efficiency by Region", "Score")
+                
+                # Create capex ratio chart
+                capex_data = operations_trend_data[['region_id', 'avg_capex_ratio']].copy()
+                capex_data['date'] = '2023-08-01'
+                capex_data['value'] = capex_data['avg_capex_ratio']
+                render_line_chart(capex_data, "Capex to Revenue Ratio by Region", "%")
+            else:
+                st.warning("No operations trend data available")
         
         # KPI Expanders
         st.subheader("📘 Detailed KPI Information")
-        render_kpi_expander("Service Response Time", 
-                           "Time from issue reported to first action taken", 
-                           lambda: render_line_chart(operations_data['response_time_trend'], "Response Time", "Hours"))
-        
-        render_kpi_expander("Regulatory Compliance Rate", 
-                           "Percentage of audits or checks passed successfully", 
-                           lambda: render_bar_chart(operations_data['compliance_by_region'], "Compliance by Region", "%"))
+        if not operations_trend_data.empty:
+            render_kpi_expander("Service Response Time", 
+                               "Time from issue reported to first action taken", 
+                               lambda: render_line_chart(response_data, "Service Response Time by Region", "Hours"))
+            
+            render_kpi_expander("Regulatory Compliance Rate", 
+                               "Percentage of audits or checks passed successfully", 
+                               lambda: render_bar_chart(compliance_data, "Compliance Rate by Region", "%"))
+        else:
+            st.warning("No operations trend data available for detailed analysis")
 
 if __name__ == "__main__":
     main() 

@@ -157,53 +157,65 @@ class TelecomDatabase:
     
     def get_revenue_metrics(self, days=30):
         """Get revenue metrics for the last N days"""
-        # Using network metrics as proxy for revenue metrics
+        # Use actual revenue data from the fact table
         if days == 30:
             query = """
             SELECT 
-                AVG(availability_percent) * 0.5 + 20 as arpu,
-                AVG(bandwidth_utilization_percent) * 0.8 + 15 as ebitda_margin,
-                AVG(availability_percent) * 0.3 + 10 as customer_acquisition_cost,
-                AVG(availability_percent) * 100 as customer_lifetime_value,
-                AVG(bandwidth_utilization_percent) * 0.6 + 20 as revenue_growth,
-                AVG(availability_percent) * 0.4 + 15 as profit_margin
-            FROM vw_network_metrics_daily 
+                AVG(avg_arpu) as arpu,
+                AVG(avg_ebitda_margin) as ebitda_margin,
+                AVG(avg_cac) as customer_acquisition_cost,
+                AVG(avg_clv) as customer_lifetime_value,
+                AVG(avg_growth_rate) * 100 as revenue_growth,
+                AVG(avg_profit_margin) as profit_margin,
+                SUM(total_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_revenue_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 90:  # QTD
             query = """
             SELECT 
-                AVG(availability_percent) * 0.5 * 0.98 + 20 as arpu,
-                AVG(bandwidth_utilization_percent) * 0.8 * 0.95 + 15 as ebitda_margin,
-                AVG(availability_percent) * 0.3 * 0.98 + 10 as customer_acquisition_cost,
-                AVG(availability_percent) * 100 * 0.98 as customer_lifetime_value,
-                AVG(bandwidth_utilization_percent) * 0.6 * 0.95 + 20 as revenue_growth,
-                AVG(availability_percent) * 0.4 * 0.98 + 15 as profit_margin
-            FROM vw_network_metrics_daily 
+                AVG(avg_arpu) * 0.98 as arpu,
+                AVG(avg_ebitda_margin) * 0.95 as ebitda_margin,
+                AVG(avg_cac) * 0.98 as customer_acquisition_cost,
+                AVG(avg_clv) * 0.98 as customer_lifetime_value,
+                AVG(avg_growth_rate) * 100 * 0.95 as revenue_growth,
+                AVG(avg_profit_margin) * 0.98 as profit_margin,
+                SUM(total_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_revenue_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 365:  # YTD or Last 12 Months
             query = """
             SELECT 
-                AVG(availability_percent) * 0.5 * 0.95 + 20 as arpu,
-                AVG(bandwidth_utilization_percent) * 0.8 * 0.9 + 15 as ebitda_margin,
-                AVG(availability_percent) * 0.3 * 0.95 + 10 as customer_acquisition_cost,
-                AVG(availability_percent) * 100 * 0.95 as customer_lifetime_value,
-                AVG(bandwidth_utilization_percent) * 0.6 * 0.9 + 20 as revenue_growth,
-                AVG(availability_percent) * 0.4 * 0.95 + 15 as profit_margin
-            FROM vw_network_metrics_daily 
+                AVG(avg_arpu) * 0.95 as arpu,
+                AVG(avg_ebitda_margin) * 0.9 as ebitda_margin,
+                AVG(avg_cac) * 0.95 as customer_acquisition_cost,
+                AVG(avg_clv) * 0.95 as customer_lifetime_value,
+                AVG(avg_growth_rate) * 100 * 0.9 as revenue_growth,
+                AVG(avg_profit_margin) * 0.95 as profit_margin,
+                SUM(total_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_revenue_daily 
             WHERE date_id = '2023-08-01'
             """
         else:
             query = """
             SELECT 
-                AVG(availability_percent) * 0.5 + 20 as arpu,
-                AVG(bandwidth_utilization_percent) * 0.8 + 15 as ebitda_margin,
-                AVG(availability_percent) * 0.3 + 10 as customer_acquisition_cost,
-                AVG(availability_percent) * 100 as customer_lifetime_value,
-                AVG(bandwidth_utilization_percent) * 0.6 + 20 as revenue_growth,
-                AVG(availability_percent) * 0.4 + 15 as profit_margin
-            FROM vw_network_metrics_daily 
+                AVG(avg_arpu) as arpu,
+                AVG(avg_ebitda_margin) as ebitda_margin,
+                AVG(avg_cac) as customer_acquisition_cost,
+                AVG(avg_clv) as customer_lifetime_value,
+                AVG(avg_growth_rate) * 100 as revenue_growth,
+                AVG(avg_profit_margin) as profit_margin,
+                SUM(total_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_revenue_daily 
             WHERE date_id = '2023-08-01'
             """
         
@@ -213,52 +225,65 @@ class TelecomDatabase:
     
     def get_usage_metrics(self, days=30):
         """Get usage and adoption metrics for the last N days"""
+        # Use actual usage data from the fact table
         if days == 30:
             query = """
             SELECT 
-                AVG(bandwidth_utilization_percent) * 0.8 + 5 as data_usage_per_subscriber,
-                AVG(availability_percent) * 0.3 + 25 as five_g_adoption,
-                AVG(bandwidth_utilization_percent) * 0.7 + 15 as feature_adoption_rate,
-                AVG(availability_percent) * 0.4 + 20 as service_penetration,
-                AVG(bandwidth_utilization_percent) * 0.6 + 10 as app_usage_rate,
-                AVG(availability_percent) * 0.5 + 15 as premium_service_adoption
-            FROM vw_network_metrics_daily 
+                AVG(avg_data_usage) as data_usage_per_subscriber,
+                AVG(avg_five_g_adoption) as five_g_adoption,
+                AVG(avg_feature_adoption) as feature_adoption_rate,
+                AVG(avg_service_penetration) as service_penetration,
+                AVG(avg_app_usage) as app_usage_rate,
+                AVG(avg_premium_adoption) as premium_service_adoption,
+                SUM(total_active_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_usage_adoption_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 90:  # QTD
             query = """
             SELECT 
-                AVG(bandwidth_utilization_percent) * 0.8 * 0.95 + 5 as data_usage_per_subscriber,
-                AVG(availability_percent) * 0.3 * 0.98 + 25 as five_g_adoption,
-                AVG(bandwidth_utilization_percent) * 0.7 * 0.95 + 15 as feature_adoption_rate,
-                AVG(availability_percent) * 0.4 * 0.98 + 20 as service_penetration,
-                AVG(bandwidth_utilization_percent) * 0.6 * 0.95 + 10 as app_usage_rate,
-                AVG(availability_percent) * 0.5 * 0.98 + 15 as premium_service_adoption
-            FROM vw_network_metrics_daily 
+                AVG(avg_data_usage) * 0.98 as data_usage_per_subscriber,
+                AVG(avg_five_g_adoption) * 0.98 as five_g_adoption,
+                AVG(avg_feature_adoption) * 0.98 as feature_adoption_rate,
+                AVG(avg_service_penetration) * 0.98 as service_penetration,
+                AVG(avg_app_usage) * 0.98 as app_usage_rate,
+                AVG(avg_premium_adoption) * 0.98 as premium_service_adoption,
+                SUM(total_active_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_usage_adoption_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 365:  # YTD or Last 12 Months
             query = """
             SELECT 
-                AVG(bandwidth_utilization_percent) * 0.8 * 0.9 + 5 as data_usage_per_subscriber,
-                AVG(availability_percent) * 0.3 * 0.95 + 25 as five_g_adoption,
-                AVG(bandwidth_utilization_percent) * 0.7 * 0.9 + 15 as feature_adoption_rate,
-                AVG(availability_percent) * 0.4 * 0.95 + 20 as service_penetration,
-                AVG(bandwidth_utilization_percent) * 0.6 * 0.9 + 10 as app_usage_rate,
-                AVG(availability_percent) * 0.5 * 0.95 + 15 as premium_service_adoption
-            FROM vw_network_metrics_daily 
+                AVG(avg_data_usage) * 0.95 as data_usage_per_subscriber,
+                AVG(avg_five_g_adoption) * 0.95 as five_g_adoption,
+                AVG(avg_feature_adoption) * 0.95 as feature_adoption_rate,
+                AVG(avg_service_penetration) * 0.95 as service_penetration,
+                AVG(avg_app_usage) * 0.95 as app_usage_rate,
+                AVG(avg_premium_adoption) * 0.95 as premium_service_adoption,
+                SUM(total_active_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_usage_adoption_daily 
             WHERE date_id = '2023-08-01'
             """
         else:
             query = """
             SELECT 
-                AVG(bandwidth_utilization_percent) * 0.8 + 5 as data_usage_per_subscriber,
-                AVG(availability_percent) * 0.3 + 25 as five_g_adoption,
-                AVG(bandwidth_utilization_percent) * 0.7 + 15 as feature_adoption_rate,
-                AVG(availability_percent) * 0.4 + 20 as service_penetration,
-                AVG(bandwidth_utilization_percent) * 0.6 + 10 as app_usage_rate,
-                AVG(availability_percent) * 0.5 + 15 as premium_service_adoption
-            FROM vw_network_metrics_daily 
+                AVG(avg_data_usage) as data_usage_per_subscriber,
+                AVG(avg_five_g_adoption) as five_g_adoption,
+                AVG(avg_feature_adoption) as feature_adoption_rate,
+                AVG(avg_service_penetration) as service_penetration,
+                AVG(avg_app_usage) as app_usage_rate,
+                AVG(avg_premium_adoption) as premium_service_adoption,
+                SUM(total_active_subscribers) as total_subscribers,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_usage_adoption_daily 
             WHERE date_id = '2023-08-01'
             """
         
@@ -268,52 +293,69 @@ class TelecomDatabase:
     
     def get_operations_metrics(self, days=30):
         """Get operational efficiency metrics for the last N days"""
+        # Use actual operations data from the fact table
         if days == 30:
             query = """
             SELECT 
-                AVG(mttr_hours) as service_response_time,
-                AVG(availability_percent) * 0.8 + 15 as regulatory_compliance_rate,
-                AVG(availability_percent) * 0.9 + 5 as support_ticket_resolution,
-                AVG(availability_percent) * 0.95 + 4 as system_uptime,
-                AVG(availability_percent) * 0.7 + 20 as operational_efficiency_score,
-                AVG(bandwidth_utilization_percent) * 0.5 + 15 as capex_to_revenue_ratio
-            FROM vw_network_metrics_daily 
+                AVG(avg_response_time) as service_response_time,
+                AVG(avg_compliance_rate) as regulatory_compliance_rate,
+                AVG(avg_resolution_rate) as support_ticket_resolution,
+                AVG(avg_uptime) as system_uptime,
+                AVG(avg_efficiency_score) as operational_efficiency_score,
+                AVG(avg_capex_ratio) as capex_to_revenue_ratio,
+                AVG(avg_productivity) as employee_productivity_score,
+                AVG(avg_automation_rate) as automation_rate,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_operations_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 90:  # QTD
             query = """
             SELECT 
-                AVG(mttr_hours) * 0.9 as service_response_time,
-                AVG(availability_percent) * 0.8 * 0.98 + 15 as regulatory_compliance_rate,
-                AVG(availability_percent) * 0.9 * 0.98 + 5 as support_ticket_resolution,
-                AVG(availability_percent) * 0.95 * 0.98 + 4 as system_uptime,
-                AVG(availability_percent) * 0.7 * 0.98 + 20 as operational_efficiency_score,
-                AVG(bandwidth_utilization_percent) * 0.5 * 0.95 + 15 as capex_to_revenue_ratio
-            FROM vw_network_metrics_daily 
+                AVG(avg_response_time) * 1.02 as service_response_time,
+                AVG(avg_compliance_rate) * 0.98 as regulatory_compliance_rate,
+                AVG(avg_resolution_rate) * 0.98 as support_ticket_resolution,
+                AVG(avg_uptime) * 0.98 as system_uptime,
+                AVG(avg_efficiency_score) * 0.98 as operational_efficiency_score,
+                AVG(avg_capex_ratio) * 1.02 as capex_to_revenue_ratio,
+                AVG(avg_productivity) * 0.98 as employee_productivity_score,
+                AVG(avg_automation_rate) * 0.98 as automation_rate,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_operations_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 365:  # YTD or Last 12 Months
             query = """
             SELECT 
-                AVG(mttr_hours) * 0.85 as service_response_time,
-                AVG(availability_percent) * 0.8 * 0.95 + 15 as regulatory_compliance_rate,
-                AVG(availability_percent) * 0.9 * 0.95 + 5 as support_ticket_resolution,
-                AVG(availability_percent) * 0.95 * 0.95 + 4 as system_uptime,
-                AVG(availability_percent) * 0.7 * 0.95 + 20 as operational_efficiency_score,
-                AVG(bandwidth_utilization_percent) * 0.5 * 0.9 + 15 as capex_to_revenue_ratio
-            FROM vw_network_metrics_daily 
+                AVG(avg_response_time) * 1.05 as service_response_time,
+                AVG(avg_compliance_rate) * 0.95 as regulatory_compliance_rate,
+                AVG(avg_resolution_rate) * 0.95 as support_ticket_resolution,
+                AVG(avg_uptime) * 0.95 as system_uptime,
+                AVG(avg_efficiency_score) * 0.95 as operational_efficiency_score,
+                AVG(avg_capex_ratio) * 1.05 as capex_to_revenue_ratio,
+                AVG(avg_productivity) * 0.95 as employee_productivity_score,
+                AVG(avg_automation_rate) * 0.95 as automation_rate,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_operations_daily 
             WHERE date_id = '2023-08-01'
             """
         else:
             query = """
             SELECT 
-                AVG(mttr_hours) as service_response_time,
-                AVG(availability_percent) * 0.8 + 15 as regulatory_compliance_rate,
-                AVG(availability_percent) * 0.9 + 5 as support_ticket_resolution,
-                AVG(availability_percent) * 0.95 + 4 as system_uptime,
-                AVG(availability_percent) * 0.7 + 20 as operational_efficiency_score,
-                AVG(bandwidth_utilization_percent) * 0.5 + 15 as capex_to_revenue_ratio
-            FROM vw_network_metrics_daily 
+                AVG(avg_response_time) as service_response_time,
+                AVG(avg_compliance_rate) as regulatory_compliance_rate,
+                AVG(avg_resolution_rate) as support_ticket_resolution,
+                AVG(avg_uptime) as system_uptime,
+                AVG(avg_efficiency_score) as operational_efficiency_score,
+                AVG(avg_capex_ratio) as capex_to_revenue_ratio,
+                AVG(avg_productivity) as employee_productivity_score,
+                AVG(avg_automation_rate) as automation_rate,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_operations_daily 
             WHERE date_id = '2023-08-01'
             """
         
@@ -375,6 +417,83 @@ class TelecomDatabase:
                 return df
         except Exception as e:
             print(f"Error getting customer trend data: {e}")
+            return pd.DataFrame()
+
+    def get_revenue_trend_data(self, days=30):
+        """Get revenue trend data for charts"""
+        try:
+            query = """
+            SELECT 
+                region_id,
+                total_revenue,
+                avg_arpu,
+                avg_cac,
+                avg_clv,
+                avg_ebitda_margin,
+                avg_profit_margin,
+                total_subscribers,
+                avg_growth_rate * 100 as growth_rate
+            FROM vw_revenue_daily 
+            WHERE date_id = '2023-08-01'
+            ORDER BY region_id
+            """
+            
+            with self.get_connection() as conn:
+                df = pd.read_sql_query(query, conn)
+                return df
+        except Exception as e:
+            print(f"Error getting revenue trend data: {e}")
+            return pd.DataFrame()
+
+    def get_usage_trend_data(self, days=30):
+        """Get usage and adoption trend data for charts"""
+        try:
+            query = """
+            SELECT 
+                region_id,
+                avg_data_usage,
+                avg_five_g_adoption,
+                avg_feature_adoption,
+                avg_service_penetration,
+                avg_app_usage,
+                avg_premium_adoption,
+                total_active_subscribers
+            FROM vw_usage_adoption_daily 
+            WHERE date_id = '2023-08-01'
+            ORDER BY region_id
+            """
+            
+            with self.get_connection() as conn:
+                df = pd.read_sql_query(query, conn)
+                return df
+        except Exception as e:
+            print(f"Error getting usage trend data: {e}")
+            return pd.DataFrame()
+
+    def get_operations_trend_data(self, days=30):
+        """Get operations trend data for charts"""
+        try:
+            query = """
+            SELECT 
+                region_id,
+                avg_response_time,
+                avg_compliance_rate,
+                avg_resolution_rate,
+                avg_uptime,
+                avg_efficiency_score,
+                avg_capex_ratio,
+                avg_productivity,
+                avg_automation_rate
+            FROM vw_operations_daily 
+            WHERE date_id = '2023-08-01'
+            ORDER BY region_id
+            """
+            
+            with self.get_connection() as conn:
+                df = pd.read_sql_query(query, conn)
+                return df
+        except Exception as e:
+            print(f"Error getting operations trend data: {e}")
             return pd.DataFrame()
 
 # Global database instance

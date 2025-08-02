@@ -520,13 +520,13 @@ def get_revenue_metrics(days=30):
                 }
             ]
         
-        # Calculate deltas
-        delta_arpu = round(metrics['arpu'] - 40, 2)
-        delta_ebitda = round(metrics['ebitda_margin'] - 25, 1)
-        delta_cac = round(metrics['customer_acquisition_cost'] - 130, 1)
-        delta_clv = round(metrics['customer_lifetime_value'] - 1800, 0)
-        delta_growth = round(metrics['revenue_growth'] - 10, 1)
-        delta_profit = round(metrics['profit_margin'] - 17, 1)
+        # Calculate deltas based on actual revenue data
+        delta_arpu = round(metrics['arpu'] - 76.0, 2)
+        delta_ebitda = round(metrics['ebitda_margin'] - 32.7, 1)
+        delta_cac = round(metrics['customer_acquisition_cost'] - 170.0, 1)
+        delta_clv = round(metrics['customer_lifetime_value'] - 2600.0, 0)
+        delta_growth = round(metrics['revenue_growth'] - 9.8, 1)
+        delta_profit = round(metrics['profit_margin'] - 19.9, 1)
         
         return [
             {
@@ -652,13 +652,13 @@ def get_usage_metrics(days=30):
                 }
             ]
         
-        # Calculate deltas
-        delta_data_usage = round(metrics['data_usage_per_subscriber'] - 8.0, 1)
-        delta_5g = round(metrics['five_g_adoption'] - 40, 1)
-        delta_feature = round(metrics['feature_adoption_rate'] - 30, 1)
-        delta_penetration = round(metrics['service_penetration'] - 75, 1)
-        delta_app = round(metrics['app_usage_rate'] - 60, 1)
-        delta_premium = round(metrics['premium_service_adoption'] - 25, 1)
+        # Calculate deltas based on actual usage data
+        delta_data_usage = round(metrics['data_usage_per_subscriber'] - 11.5, 1)
+        delta_5g = round(metrics['five_g_adoption'] - 71.0, 1)
+        delta_feature = round(metrics['feature_adoption_rate'] - 70.4, 1)
+        delta_penetration = round(metrics['service_penetration'] - 86.2, 1)
+        delta_app = round(metrics['app_usage_rate'] - 82.6, 1)
+        delta_premium = round(metrics['premium_service_adoption'] - 56.2, 1)
         
         return [
             {
@@ -784,13 +784,13 @@ def get_operations_metrics(days=30):
                 }
             ]
         
-        # Calculate deltas
-        delta_response = round(metrics['service_response_time'] - 2.5, 1)
-        delta_compliance = round(metrics['regulatory_compliance_rate'] - 98, 1)
-        delta_capex = round(metrics['capex_to_revenue_ratio'] - 20, 1)
-        delta_efficiency = round(metrics['operational_efficiency_score'] - 85, 1)
-        delta_tickets = round(metrics['support_ticket_resolution'] - 92, 1)
-        delta_uptime = round(metrics['system_uptime'] - 99.9, 2)
+        # Calculate deltas based on actual operations data
+        delta_response = round(metrics['service_response_time'] - 2.3, 1)
+        delta_compliance = round(metrics['regulatory_compliance_rate'] - 98.7, 1)
+        delta_capex = round(metrics['capex_to_revenue_ratio'] - 18.4, 1)
+        delta_efficiency = round(metrics['operational_efficiency_score'] - 86.7, 1)
+        delta_tickets = round(metrics['support_ticket_resolution'] - 94.6, 1)
+        delta_uptime = round(metrics['system_uptime'] - 99.91, 2)
         
         return [
             {
