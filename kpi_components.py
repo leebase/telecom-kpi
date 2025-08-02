@@ -78,7 +78,7 @@ def render_line_chart(df, title, y_label="Value"):
     
     st.altair_chart(chart, use_container_width=True)
 
-def render_bar_chart(df, title, y_label="Value"):
+def render_bar_chart(df, title, y_label="Value", horizontal=False):
     """
     Render a bar chart using Altair
     """
@@ -86,22 +86,42 @@ def render_bar_chart(df, title, y_label="Value"):
         st.warning(f"No data available for {title}")
         return
     
-    chart = alt.Chart(df).mark_bar(
-        cornerRadiusTopLeft=3,
-        cornerRadiusTopRight=3
-    ).encode(
-        x=alt.X('category:N', title='Category'),
-        y=alt.Y('value:Q', title=y_label),
-        color=alt.Color('category:N', legend=None)
-    ).properties(
-        title=title,
-        width=400,
-        height=250
-    ).configure_axis(
-        gridOpacity=0.3
-    ).configure_view(
-        strokeOpacity=0
-    )
+    if horizontal:
+        # Horizontal bar chart for "by region" charts
+        chart = alt.Chart(df).mark_bar(
+            cornerRadiusTopLeft=3,
+            cornerRadiusTopRight=3
+        ).encode(
+            x=alt.X('value:Q', title=y_label),
+            y=alt.Y('category:N', title='Region', sort='-x'),
+            color=alt.Color('category:N', legend=None)
+        ).properties(
+            title=title,
+            width=400,
+            height=250
+        ).configure_axis(
+            gridOpacity=0.3
+        ).configure_view(
+            strokeOpacity=0
+        )
+    else:
+        # Vertical bar chart for regular charts
+        chart = alt.Chart(df).mark_bar(
+            cornerRadiusTopLeft=3,
+            cornerRadiusTopRight=3
+        ).encode(
+            x=alt.X('category:N', title='Category'),
+            y=alt.Y('value:Q', title=y_label),
+            color=alt.Color('category:N', legend=None)
+        ).properties(
+            title=title,
+            width=400,
+            height=250
+        ).configure_axis(
+            gridOpacity=0.3
+        ).configure_view(
+            strokeOpacity=0
+        )
     
     st.altair_chart(chart, use_container_width=True)
 

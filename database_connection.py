@@ -20,10 +20,10 @@ class TelecomDatabase:
             SELECT 
                 AVG(availability_percent) as avg_availability,
                 AVG(avg_latency_ms) as avg_latency,
-                AVG(packet_loss_percent) as avg_packet_loss,
-                AVG(bandwidth_utilization_percent) as avg_bandwidth_util,
-                AVG(mttr_hours) as avg_mttr,
-                AVG(dropped_call_rate) as avg_dropped_call_rate,
+                AVG(avg_packet_loss_percent) as avg_packet_loss,
+                AVG(avg_bandwidth_utilization_percent) as avg_bandwidth_util,
+                AVG(avg_mttr_hours) as avg_mttr,
+                AVG(avg_dropped_call_rate) as avg_dropped_call_rate,
                 MAX(availability_percent) as max_availability,
                 MIN(avg_latency_ms) as min_latency,
                 COUNT(DISTINCT region_id) as active_regions,
@@ -37,10 +37,10 @@ class TelecomDatabase:
             SELECT 
                 AVG(availability_percent) * 0.98 as avg_availability,
                 AVG(avg_latency_ms) * 1.05 as avg_latency,
-                AVG(packet_loss_percent) * 1.1 as avg_packet_loss,
-                AVG(bandwidth_utilization_percent) * 0.95 as avg_bandwidth_util,
-                AVG(mttr_hours) * 0.9 as avg_mttr,
-                AVG(dropped_call_rate) * 1.2 as avg_dropped_call_rate,
+                AVG(avg_packet_loss_percent) * 1.1 as avg_packet_loss,
+                AVG(avg_bandwidth_utilization_percent) * 0.95 as avg_bandwidth_util,
+                AVG(avg_mttr_hours) * 0.9 as avg_mttr,
+                AVG(avg_dropped_call_rate) * 1.2 as avg_dropped_call_rate,
                 MAX(availability_percent) * 0.98 as max_availability,
                 MIN(avg_latency_ms) * 1.05 as min_latency,
                 COUNT(DISTINCT region_id) as active_regions,
@@ -54,10 +54,10 @@ class TelecomDatabase:
             SELECT 
                 AVG(availability_percent) * 0.95 as avg_availability,
                 AVG(avg_latency_ms) * 1.1 as avg_latency,
-                AVG(packet_loss_percent) * 1.3 as avg_packet_loss,
-                AVG(bandwidth_utilization_percent) * 0.9 as avg_bandwidth_util,
-                AVG(mttr_hours) * 0.85 as avg_mttr,
-                AVG(dropped_call_rate) * 1.5 as avg_dropped_call_rate,
+                AVG(avg_packet_loss_percent) * 1.3 as avg_packet_loss,
+                AVG(avg_bandwidth_utilization_percent) * 0.9 as avg_bandwidth_util,
+                AVG(avg_mttr_hours) * 0.85 as avg_mttr,
+                AVG(avg_dropped_call_rate) * 1.5 as avg_dropped_call_rate,
                 MAX(availability_percent) * 0.95 as max_availability,
                 MIN(avg_latency_ms) * 1.1 as min_latency,
                 COUNT(DISTINCT region_id) as active_regions,
@@ -71,10 +71,10 @@ class TelecomDatabase:
             SELECT 
                 AVG(availability_percent) as avg_availability,
                 AVG(avg_latency_ms) as avg_latency,
-                AVG(packet_loss_percent) as avg_packet_loss,
-                AVG(bandwidth_utilization_percent) as avg_bandwidth_util,
-                AVG(mttr_hours) as avg_mttr,
-                AVG(dropped_call_rate) as avg_dropped_call_rate,
+                AVG(avg_packet_loss_percent) as avg_packet_loss,
+                AVG(avg_bandwidth_utilization_percent) as avg_bandwidth_util,
+                AVG(avg_mttr_hours) as avg_mttr,
+                AVG(avg_dropped_call_rate) as avg_dropped_call_rate,
                 MAX(availability_percent) as max_availability,
                 MIN(avg_latency_ms) as min_latency,
                 COUNT(DISTINCT region_id) as active_regions,
@@ -399,17 +399,19 @@ class TelecomDatabase:
         try:
             query = """
             SELECT 
-                region_id,
-                avg_satisfaction_score as satisfaction,
-                avg_nps_score as nps,
-                avg_churn_rate as churn,
-                avg_handling_time as handling_time,
-                first_contact_resolution_rate as fcr,
-                avg_customer_effort_score as effort_score,
-                avg_lifetime_value as clv
-            FROM vw_customer_experience_daily 
-            WHERE date_id = '2023-08-01'
-            ORDER BY region_id
+                r.region_name,
+                ce.date_id,
+                ce.avg_satisfaction_score as satisfaction,
+                ce.avg_nps_score as nps,
+                ce.avg_churn_rate as churn,
+                ce.avg_handling_time as handling_time,
+                ce.first_contact_resolution_rate as fcr,
+                ce.avg_customer_effort_score as effort_score,
+                ce.avg_lifetime_value as clv
+            FROM vw_customer_experience_daily ce
+            JOIN dim_region r ON ce.region_id = r.region_id
+            WHERE ce.date_id >= date('2023-08-01', '-30 days')
+            ORDER BY ce.date_id, r.region_name
             """
             
             with self.get_connection() as conn:
@@ -424,18 +426,20 @@ class TelecomDatabase:
         try:
             query = """
             SELECT 
-                region_id,
-                total_revenue,
-                avg_arpu,
-                avg_cac,
-                avg_clv,
-                avg_ebitda_margin,
-                avg_profit_margin,
-                total_subscribers,
-                avg_growth_rate * 100 as growth_rate
-            FROM vw_revenue_daily 
-            WHERE date_id = '2023-08-01'
-            ORDER BY region_id
+                r.region_name,
+                rd.date_id,
+                rd.total_revenue,
+                rd.avg_arpu,
+                rd.avg_cac,
+                rd.avg_clv,
+                rd.avg_ebitda_margin,
+                rd.avg_profit_margin,
+                rd.total_subscribers,
+                rd.avg_growth_rate * 100 as growth_rate
+            FROM vw_revenue_daily rd
+            JOIN dim_region r ON rd.region_id = r.region_id
+            WHERE rd.date_id >= date('2023-08-01', '-30 days')
+            ORDER BY rd.date_id, r.region_name
             """
             
             with self.get_connection() as conn:
@@ -450,17 +454,19 @@ class TelecomDatabase:
         try:
             query = """
             SELECT 
-                region_id,
-                avg_data_usage,
-                avg_five_g_adoption,
-                avg_feature_adoption,
-                avg_service_penetration,
-                avg_app_usage,
-                avg_premium_adoption,
-                total_active_subscribers
-            FROM vw_usage_adoption_daily 
-            WHERE date_id = '2023-08-01'
-            ORDER BY region_id
+                r.region_name,
+                ua.date_id,
+                ua.avg_data_usage,
+                ua.avg_five_g_adoption,
+                ua.avg_feature_adoption,
+                ua.avg_service_penetration,
+                ua.avg_app_usage,
+                ua.avg_premium_adoption,
+                ua.total_active_subscribers
+            FROM vw_usage_adoption_daily ua
+            JOIN dim_region r ON ua.region_id = r.region_id
+            WHERE ua.date_id >= date('2023-08-01', '-30 days')
+            ORDER BY ua.date_id, r.region_name
             """
             
             with self.get_connection() as conn:
@@ -475,18 +481,20 @@ class TelecomDatabase:
         try:
             query = """
             SELECT 
-                region_id,
-                avg_response_time,
-                avg_compliance_rate,
-                avg_resolution_rate,
-                avg_uptime,
-                avg_efficiency_score,
-                avg_capex_ratio,
-                avg_productivity,
-                avg_automation_rate
-            FROM vw_operations_daily 
-            WHERE date_id = '2023-08-01'
-            ORDER BY region_id
+                r.region_name,
+                op.date_id,
+                op.avg_response_time,
+                op.avg_compliance_rate,
+                op.avg_resolution_rate,
+                op.avg_uptime,
+                op.avg_efficiency_score,
+                op.avg_capex_ratio,
+                op.avg_productivity,
+                op.avg_automation_rate
+            FROM vw_operations_daily op
+            JOIN dim_region r ON op.region_id = r.region_id
+            WHERE op.date_id >= date('2023-08-01', '-30 days')
+            ORDER BY op.date_id, r.region_name
             """
             
             with self.get_connection() as conn:

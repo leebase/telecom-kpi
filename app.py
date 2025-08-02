@@ -221,15 +221,15 @@ def main():
         
         with col1:
             if not customer_trend_data.empty:
-                # Create satisfaction trend chart
-                satisfaction_data = customer_trend_data[['region_id', 'satisfaction']].copy()
-                satisfaction_data['date'] = '2023-08-01'
+                # Create satisfaction by region chart (aggregated by region)
+                satisfaction_data = customer_trend_data.groupby('region_name')['satisfaction'].mean().reset_index()
+                satisfaction_data['category'] = satisfaction_data['region_name']
                 satisfaction_data['value'] = satisfaction_data['satisfaction']
-                render_line_chart(satisfaction_data, "Customer Satisfaction by Region", "Score")
+                render_bar_chart(satisfaction_data, "Customer Satisfaction by Region", "Score")
                 
                 # Create churn by region chart
-                churn_data = customer_trend_data[['region_id', 'churn']].copy()
-                churn_data['category'] = churn_data['region_id'].astype(str)
+                churn_data = customer_trend_data[['region_name', 'churn']].copy()
+                churn_data['category'] = churn_data['region_name']
                 churn_data['value'] = churn_data['churn']
                 render_bar_chart(churn_data, "Churn Rate by Region", "%")
             else:
@@ -237,16 +237,17 @@ def main():
         
         with col2:
             if not customer_trend_data.empty:
-                # Create NPS trend chart
-                nps_data = customer_trend_data[['region_id', 'nps']].copy()
-                nps_data['date'] = '2023-08-01'
+                # Create NPS by region chart (aggregated by region)
+                nps_data = customer_trend_data.groupby('region_name')['nps'].mean().reset_index()
+                nps_data['category'] = nps_data['region_name']
                 nps_data['value'] = nps_data['nps']
-                render_area_chart(nps_data, "Net Promoter Score by Region", "Score")
+                render_bar_chart(nps_data, "Net Promoter Score by Region", "Score")
                 
-                # Create handling time distribution chart
-                handling_data = customer_trend_data[['region_id', 'handling_time']].copy()
+                # Create handling time chart (Duration on x-axis, Region on y-axis)
+                handling_data = customer_trend_data[['region_name', 'handling_time']].copy()
+                handling_data['category'] = handling_data['region_name']
                 handling_data['value'] = handling_data['handling_time']
-                render_distribution(handling_data, "Support Call Duration by Region", "Minutes")
+                render_bar_chart(handling_data, "Support Call Duration by Region", "Minutes")
             else:
                 st.warning("No customer trend data available")
         
@@ -255,11 +256,11 @@ def main():
         if not customer_trend_data.empty:
             render_kpi_expander("Customer Satisfaction (CSAT)", 
                                "Post-interaction score (0-100 scale)", 
-                               lambda: render_line_chart(satisfaction_data, "CSAT by Region", "Score"))
+                               lambda: render_bar_chart(satisfaction_data, "Customer Satisfaction by Region", "Score"))
             
             render_kpi_expander("Net Promoter Score (NPS)", 
                                "% Promoters - % Detractors (-100 to +100 scale)", 
-                               lambda: render_area_chart(nps_data, "NPS by Region", "Score"))
+                               lambda: render_bar_chart(nps_data, "Net Promoter Score by Region", "Score"))
         else:
             st.warning("No customer trend data available for detailed analysis")
     
@@ -292,15 +293,15 @@ def main():
         
         with col1:
             if not revenue_trend_data.empty:
-                # Create ARPU trend chart
-                arpu_data = revenue_trend_data[['region_id', 'avg_arpu']].copy()
-                arpu_data['date'] = '2023-08-01'
+                # Create ARPU by region chart (aggregated by region)
+                arpu_data = revenue_trend_data.groupby('region_name')['avg_arpu'].mean().reset_index()
+                arpu_data['category'] = arpu_data['region_name']
                 arpu_data['value'] = arpu_data['avg_arpu']
-                render_line_chart(arpu_data, "ARPU by Region", "$")
+                render_bar_chart(arpu_data, "ARPU by Region", "$")
                 
                 # Create revenue by region chart
-                revenue_by_region = revenue_trend_data[['region_id', 'total_revenue']].copy()
-                revenue_by_region['category'] = revenue_by_region['region_id'].astype(str)
+                revenue_by_region = revenue_trend_data[['region_name', 'total_revenue']].copy()
+                revenue_by_region['category'] = revenue_by_region['region_name']
                 revenue_by_region['value'] = revenue_by_region['total_revenue']
                 render_bar_chart(revenue_by_region, "Revenue by Region", "$")
             else:
@@ -308,17 +309,17 @@ def main():
         
         with col2:
             if not revenue_trend_data.empty:
-                # Create subscriber growth chart
-                subscriber_data = revenue_trend_data[['region_id', 'total_subscribers']].copy()
-                subscriber_data['date'] = '2023-08-01'
+                # Create subscriber by region chart (aggregated by region)
+                subscriber_data = revenue_trend_data.groupby('region_name')['total_subscribers'].mean().reset_index()
+                subscriber_data['category'] = subscriber_data['region_name']
                 subscriber_data['value'] = subscriber_data['total_subscribers']
-                render_area_chart(subscriber_data, "Subscribers by Region", "Count")
+                render_bar_chart(subscriber_data, "Subscribers by Region", "Count")
                 
-                # Create EBITDA margin chart
-                ebitda_data = revenue_trend_data[['region_id', 'avg_ebitda_margin']].copy()
-                ebitda_data['date'] = '2023-08-01'
+                # Create EBITDA margin by region chart (aggregated by region)
+                ebitda_data = revenue_trend_data.groupby('region_name')['avg_ebitda_margin'].mean().reset_index()
+                ebitda_data['category'] = ebitda_data['region_name']
                 ebitda_data['value'] = ebitda_data['avg_ebitda_margin']
-                render_line_chart(ebitda_data, "EBITDA Margin by Region", "%")
+                render_bar_chart(ebitda_data, "EBITDA Margin by Region", "%")
             else:
                 st.warning("No revenue trend data available")
         
@@ -327,11 +328,11 @@ def main():
         if not revenue_trend_data.empty:
             render_kpi_expander("Average Revenue Per User (ARPU)", 
                                "Average monthly revenue per subscriber", 
-                               lambda: render_line_chart(arpu_data, "ARPU by Region", "$"))
+                               lambda: render_bar_chart(arpu_data, "ARPU by Region", "$"))
             
             render_kpi_expander("Customer Lifetime Value (CLV)", 
                                "Total expected profit per user over time", 
-                               lambda: render_area_chart(revenue_trend_data[['region_id', 'avg_clv']].assign(date='2023-08-01', value=lambda x: x['avg_clv']), "CLV by Region", "$"))
+                               lambda: render_bar_chart(revenue_trend_data.groupby('region_name')['avg_clv'].mean().reset_index().assign(category=lambda x: x['region_name'], value=lambda x: x['avg_clv']), "CLV by Region", "$"))
         else:
             st.warning("No revenue trend data available for detailed analysis")
     
@@ -364,15 +365,15 @@ def main():
         
         with col1:
             if not usage_trend_data.empty:
-                # Create data usage chart
-                data_usage_data = usage_trend_data[['region_id', 'avg_data_usage']].copy()
-                data_usage_data['date'] = '2023-08-01'
+                # Create data usage by region chart (aggregated by region)
+                data_usage_data = usage_trend_data.groupby('region_name')['avg_data_usage'].mean().reset_index()
+                data_usage_data['category'] = data_usage_data['region_name']
                 data_usage_data['value'] = data_usage_data['avg_data_usage']
-                render_line_chart(data_usage_data, "Data Usage by Region", "GB")
+                render_bar_chart(data_usage_data, "Data Usage by Region", "GB")
                 
                 # Create 5G adoption chart
-                five_g_data = usage_trend_data[['region_id', 'avg_five_g_adoption']].copy()
-                five_g_data['category'] = five_g_data['region_id'].astype(str)
+                five_g_data = usage_trend_data[['region_name', 'avg_five_g_adoption']].copy()
+                five_g_data['category'] = five_g_data['region_name']
                 five_g_data['value'] = five_g_data['avg_five_g_adoption']
                 render_bar_chart(five_g_data, "5G Adoption by Region", "%")
             else:
@@ -380,17 +381,17 @@ def main():
         
         with col2:
             if not usage_trend_data.empty:
-                # Create service penetration chart
-                penetration_data = usage_trend_data[['region_id', 'avg_service_penetration']].copy()
-                penetration_data['date'] = '2023-08-01'
+                # Create service penetration by region chart (aggregated by region)
+                penetration_data = usage_trend_data.groupby('region_name')['avg_service_penetration'].mean().reset_index()
+                penetration_data['category'] = penetration_data['region_name']
                 penetration_data['value'] = penetration_data['avg_service_penetration']
-                render_area_chart(penetration_data, "Service Penetration by Region", "%")
+                render_bar_chart(penetration_data, "Service Penetration by Region", "%")
                 
-                # Create app usage chart
-                app_usage_data = usage_trend_data[['region_id', 'avg_app_usage']].copy()
-                app_usage_data['date'] = '2023-08-01'
+                # Create app usage by region chart (aggregated by region)
+                app_usage_data = usage_trend_data.groupby('region_name')['avg_app_usage'].mean().reset_index()
+                app_usage_data['category'] = app_usage_data['region_name']
                 app_usage_data['value'] = app_usage_data['avg_app_usage']
-                render_line_chart(app_usage_data, "App Usage by Region", "%")
+                render_bar_chart(app_usage_data, "App Usage by Region", "%")
             else:
                 st.warning("No usage trend data available")
         
@@ -399,7 +400,7 @@ def main():
         if not usage_trend_data.empty:
             render_kpi_expander("Data Usage per Subscriber", 
                                "Average GB/month per user", 
-                               lambda: render_line_chart(data_usage_data, "Data Usage by Region", "GB"))
+                               lambda: render_bar_chart(data_usage_data, "Data Usage by Region", "GB"))
             
             render_kpi_expander("5G Adoption Rate", 
                                "Percentage of subscribers using 5G services", 
@@ -436,15 +437,15 @@ def main():
         
         with col1:
             if not operations_trend_data.empty:
-                # Create response time chart
-                response_data = operations_trend_data[['region_id', 'avg_response_time']].copy()
-                response_data['date'] = '2023-08-01'
+                # Create response time by region chart (aggregated by region)
+                response_data = operations_trend_data.groupby('region_name')['avg_response_time'].mean().reset_index()
+                response_data['category'] = response_data['region_name']
                 response_data['value'] = response_data['avg_response_time']
-                render_line_chart(response_data, "Service Response Time by Region", "Hours")
+                render_bar_chart(response_data, "Service Response Time by Region", "Hours")
                 
                 # Create compliance rate chart
-                compliance_data = operations_trend_data[['region_id', 'avg_compliance_rate']].copy()
-                compliance_data['category'] = compliance_data['region_id'].astype(str)
+                compliance_data = operations_trend_data[['region_name', 'avg_compliance_rate']].copy()
+                compliance_data['category'] = compliance_data['region_name']
                 compliance_data['value'] = compliance_data['avg_compliance_rate']
                 render_bar_chart(compliance_data, "Compliance Rate by Region", "%")
             else:
@@ -452,17 +453,17 @@ def main():
         
         with col2:
             if not operations_trend_data.empty:
-                # Create efficiency score chart
-                efficiency_data = operations_trend_data[['region_id', 'avg_efficiency_score']].copy()
-                efficiency_data['date'] = '2023-08-01'
+                # Create efficiency score by region chart (aggregated by region)
+                efficiency_data = operations_trend_data.groupby('region_name')['avg_efficiency_score'].mean().reset_index()
+                efficiency_data['category'] = efficiency_data['region_name']
                 efficiency_data['value'] = efficiency_data['avg_efficiency_score']
-                render_area_chart(efficiency_data, "Operational Efficiency by Region", "Score")
+                render_bar_chart(efficiency_data, "Operational Efficiency by Region", "Score")
                 
-                # Create capex ratio chart
-                capex_data = operations_trend_data[['region_id', 'avg_capex_ratio']].copy()
-                capex_data['date'] = '2023-08-01'
+                # Create capex ratio by region chart (aggregated by region)
+                capex_data = operations_trend_data.groupby('region_name')['avg_capex_ratio'].mean().reset_index()
+                capex_data['category'] = capex_data['region_name']
                 capex_data['value'] = capex_data['avg_capex_ratio']
-                render_line_chart(capex_data, "Capex to Revenue Ratio by Region", "%")
+                render_bar_chart(capex_data, "Capex to Revenue Ratio by Region", "%")
             else:
                 st.warning("No operations trend data available")
         
@@ -471,7 +472,7 @@ def main():
         if not operations_trend_data.empty:
             render_kpi_expander("Service Response Time", 
                                "Time from issue reported to first action taken", 
-                               lambda: render_line_chart(response_data, "Service Response Time by Region", "Hours"))
+                               lambda: render_bar_chart(response_data, "Service Response Time by Region", "Hours"))
             
             render_kpi_expander("Regulatory Compliance Rate", 
                                "Percentage of audits or checks passed successfully", 
