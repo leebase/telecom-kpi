@@ -89,54 +89,65 @@ class TelecomDatabase:
     
     def get_customer_metrics(self, days=30):
         """Get customer experience metrics for the last N days"""
-        # For now, we'll use network metrics as proxy for customer metrics
-        # In a real scenario, you'd have separate customer tables
+        # Use actual customer experience data from the fact table
         if days == 30:
             query = """
             SELECT 
-                AVG(availability_percent) as csat_score,
-                AVG(availability_percent) * 0.8 + 20 as nps_score,
-                AVG(dropped_call_rate) as churn_rate,
-                AVG(availability_percent) * 100 as customer_lifetime_value,
-                AVG(avg_latency_ms) as avg_response_time,
-                AVG(availability_percent) * 0.9 + 10 as customer_satisfaction
-            FROM vw_network_metrics_daily 
+                AVG(avg_satisfaction_score) as csat_score,
+                AVG(avg_nps_score) as nps_score,
+                AVG(avg_churn_rate) as churn_rate,
+                AVG(avg_lifetime_value) as customer_lifetime_value,
+                AVG(avg_handling_time) as avg_response_time,
+                AVG(first_contact_resolution_rate) as first_contact_resolution,
+                AVG(avg_customer_effort_score) as customer_effort_score,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_customer_experience_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 90:  # QTD
             query = """
             SELECT 
-                AVG(availability_percent) * 0.98 as csat_score,
-                AVG(availability_percent) * 0.8 * 0.98 + 20 as nps_score,
-                AVG(dropped_call_rate) * 1.1 as churn_rate,
-                AVG(availability_percent) * 100 * 0.98 as customer_lifetime_value,
-                AVG(avg_latency_ms) * 1.05 as avg_response_time,
-                AVG(availability_percent) * 0.9 * 0.98 + 10 as customer_satisfaction
-            FROM vw_network_metrics_daily 
+                AVG(avg_satisfaction_score) * 0.98 as csat_score,
+                AVG(avg_nps_score) * 0.98 as nps_score,
+                AVG(avg_churn_rate) * 1.05 as churn_rate,
+                AVG(avg_lifetime_value) * 0.98 as customer_lifetime_value,
+                AVG(avg_handling_time) * 1.02 as avg_response_time,
+                AVG(first_contact_resolution_rate) * 0.98 as first_contact_resolution,
+                AVG(avg_customer_effort_score) * 1.02 as customer_effort_score,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_customer_experience_daily 
             WHERE date_id = '2023-08-01'
             """
         elif days == 365:  # YTD or Last 12 Months
             query = """
             SELECT 
-                AVG(availability_percent) * 0.95 as csat_score,
-                AVG(availability_percent) * 0.8 * 0.95 + 20 as nps_score,
-                AVG(dropped_call_rate) * 1.3 as churn_rate,
-                AVG(availability_percent) * 100 * 0.95 as customer_lifetime_value,
-                AVG(avg_latency_ms) * 1.1 as avg_response_time,
-                AVG(availability_percent) * 0.9 * 0.95 + 10 as customer_satisfaction
-            FROM vw_network_metrics_daily 
+                AVG(avg_satisfaction_score) * 0.95 as csat_score,
+                AVG(avg_nps_score) * 0.95 as nps_score,
+                AVG(avg_churn_rate) * 1.1 as churn_rate,
+                AVG(avg_lifetime_value) * 0.95 as customer_lifetime_value,
+                AVG(avg_handling_time) * 1.05 as avg_response_time,
+                AVG(first_contact_resolution_rate) * 0.95 as first_contact_resolution,
+                AVG(avg_customer_effort_score) * 1.05 as customer_effort_score,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_customer_experience_daily 
             WHERE date_id = '2023-08-01'
             """
         else:
             query = """
             SELECT 
-                AVG(availability_percent) as csat_score,
-                AVG(availability_percent) * 0.8 + 20 as nps_score,
-                AVG(dropped_call_rate) as churn_rate,
-                AVG(availability_percent) * 100 as customer_lifetime_value,
-                AVG(avg_latency_ms) as avg_response_time,
-                AVG(availability_percent) * 0.9 + 10 as customer_satisfaction
-            FROM vw_network_metrics_daily 
+                AVG(avg_satisfaction_score) as csat_score,
+                AVG(avg_nps_score) as nps_score,
+                AVG(avg_churn_rate) as churn_rate,
+                AVG(avg_lifetime_value) as customer_lifetime_value,
+                AVG(avg_handling_time) as avg_response_time,
+                AVG(first_contact_resolution_rate) as first_contact_resolution,
+                AVG(avg_customer_effort_score) as customer_effort_score,
+                COUNT(DISTINCT region_id) as active_regions,
+                COUNT(DISTINCT date_id) as days_with_data
+            FROM vw_customer_experience_daily 
             WHERE date_id = '2023-08-01'
             """
         
@@ -340,6 +351,31 @@ class TelecomDatabase:
         
         with self.get_connection() as conn:
             return pd.read_sql_query(query, conn)
+
+    def get_customer_trend_data(self, days=30):
+        """Get customer experience trend data for charts"""
+        try:
+            query = """
+            SELECT 
+                region_id,
+                avg_satisfaction_score as satisfaction,
+                avg_nps_score as nps,
+                avg_churn_rate as churn,
+                avg_handling_time as handling_time,
+                first_contact_resolution_rate as fcr,
+                avg_customer_effort_score as effort_score,
+                avg_lifetime_value as clv
+            FROM vw_customer_experience_daily 
+            WHERE date_id = '2023-08-01'
+            ORDER BY region_id
+            """
+            
+            with self.get_connection() as conn:
+                df = pd.read_sql_query(query, conn)
+                return df
+        except Exception as e:
+            print(f"Error getting customer trend data: {e}")
+            return pd.DataFrame()
 
 # Global database instance
 db = TelecomDatabase() 

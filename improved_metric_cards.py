@@ -332,13 +332,13 @@ def get_customer_metrics(days=30):
                 }
             ]
         
-        # Calculate deltas
-        delta_csat = round(metrics['csat_score'] - 4.0, 1)
-        delta_nps = round(metrics['nps_score'] - 40, 1)
-        delta_churn = round(metrics['churn_rate'] - 2.5, 1)
-        delta_handling = round(metrics['avg_response_time'] - 5.0, 1)
-        delta_fcr = round(metrics['customer_satisfaction'] - 75, 1)
-        delta_clv = round(metrics['customer_lifetime_value'] - 1200, 0)
+        # Calculate deltas based on actual customer experience data
+        delta_csat = round(metrics['csat_score'] - 85.0, 1)
+        delta_nps = round(metrics['nps_score'] - 45.0, 1)
+        delta_churn = round(metrics['churn_rate'] - 4.8, 1)
+        delta_handling = round(metrics['avg_response_time'] - 4.1, 1)
+        delta_fcr = round(metrics['first_contact_resolution'] - 86.4, 1)
+        delta_clv = round(metrics['customer_lifetime_value'] - 2500, 0)
         
         return [
             {
@@ -346,8 +346,8 @@ def get_customer_metrics(days=30):
                 'value': round(metrics['csat_score'], 1),
                 'delta': delta_csat,
                 'delta_direction': 'up' if delta_csat > 0 else 'down',
-                'unit': '/5.0',
-                'tooltip': 'Post-interaction satisfaction score (1-5 scale). Short-term measure of service quality.',
+                'unit': '/100',
+                'tooltip': 'Customer satisfaction score (0-100 scale). Post-interaction satisfaction measure.',
                 'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
             },
             {
@@ -356,7 +356,7 @@ def get_customer_metrics(days=30):
                 'delta': delta_nps,
                 'delta_direction': 'up' if delta_nps > 0 else 'down',
                 'unit': '',
-                'tooltip': 'Net Promoter Score - % Promoters - % Detractors (0-10 scale). Predicts loyalty and referrals.',
+                'tooltip': 'Net Promoter Score - % Promoters - % Detractors (-100 to +100 scale). Predicts loyalty and referrals.',
                 'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M')
             },
             {
@@ -379,7 +379,7 @@ def get_customer_metrics(days=30):
             },
             {
                 'label': 'First Contact Resolution',
-                'value': round(metrics['customer_satisfaction'], 1),
+                'value': round(metrics['first_contact_resolution'], 1),
                 'delta': delta_fcr,
                 'delta_direction': 'up' if delta_fcr > 0 else 'down',
                 'unit': '%',

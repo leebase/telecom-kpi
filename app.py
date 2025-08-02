@@ -211,28 +211,57 @@ def main():
         customer_metrics = get_customer_metrics(time_period_days)
         render_metric_grid(customer_metrics, "customer")
         
+        # Get real customer experience data for charts
+        customer_trend_data = db.get_customer_trend_data(time_period_days)
+        
         # Charts
         st.subheader("📈 Customer Experience Trends")
         
         col1, col2 = st.columns(2)
         
         with col1:
-            render_line_chart(customer_data['csat_trend'], "Customer Satisfaction Trend", "Score")
-            render_bar_chart(customer_data['churn_by_region'], "Churn Rate by Region", "%")
+            if not customer_trend_data.empty:
+                # Create satisfaction trend chart
+                satisfaction_data = customer_trend_data[['region_id', 'satisfaction']].copy()
+                satisfaction_data['date'] = '2023-08-01'
+                satisfaction_data['value'] = satisfaction_data['satisfaction']
+                render_line_chart(satisfaction_data, "Customer Satisfaction by Region", "Score")
+                
+                # Create churn by region chart
+                churn_data = customer_trend_data[['region_id', 'churn']].copy()
+                churn_data['category'] = churn_data['region_id'].astype(str)
+                churn_data['value'] = churn_data['churn']
+                render_bar_chart(churn_data, "Churn Rate by Region", "%")
+            else:
+                st.warning("No customer trend data available")
         
         with col2:
-            render_area_chart(customer_data['nps_trend'], "Net Promoter Score Trend", "Score")
-            render_distribution(customer_data['handling_time_dist'], "Support Call Duration Distribution", "Minutes")
+            if not customer_trend_data.empty:
+                # Create NPS trend chart
+                nps_data = customer_trend_data[['region_id', 'nps']].copy()
+                nps_data['date'] = '2023-08-01'
+                nps_data['value'] = nps_data['nps']
+                render_area_chart(nps_data, "Net Promoter Score by Region", "Score")
+                
+                # Create handling time distribution chart
+                handling_data = customer_trend_data[['region_id', 'handling_time']].copy()
+                handling_data['value'] = handling_data['handling_time']
+                render_distribution(handling_data, "Support Call Duration by Region", "Minutes")
+            else:
+                st.warning("No customer trend data available")
         
         # KPI Expanders
         st.subheader("📘 Detailed KPI Information")
-        render_kpi_expander("Customer Satisfaction (CSAT)", 
-                           "Post-interaction score (1-5 scale)", 
-                           lambda: render_line_chart(customer_data['csat_trend'], "CSAT Trend", "Score"))
-        
-        render_kpi_expander("Net Promoter Score (NPS)", 
-                           "% Promoters - % Detractors (0-10 scale)", 
-                           lambda: render_area_chart(customer_data['nps_trend'], "NPS Trend", "Score"))
+        if not customer_trend_data.empty:
+            render_kpi_expander("Customer Satisfaction (CSAT)", 
+                               "Post-interaction score (0-100 scale)", 
+                               lambda: render_line_chart(satisfaction_data, "CSAT by Region", "Score"))
+            
+            render_kpi_expander("Net Promoter Score (NPS)", 
+                               "% Promoters - % Detractors (-100 to +100 scale)", 
+                               lambda: render_area_chart(nps_data, "NPS by Region", "Score"))
+        else:
+            st.warning("No customer trend data available for detailed analysis")
     
     # Tab 3: Revenue & Monetization
     with tab3:
