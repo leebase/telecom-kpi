@@ -6,6 +6,8 @@ import altair as alt
 from kpi_components import *
 from generate_test_data import *
 from improved_metric_cards import *
+from theme_manager import get_current_theme_css, get_current_theme_header, get_current_theme_page_header
+from theme_switcher import create_theme_switcher
 
 # Page configuration
 st.set_page_config(
@@ -15,124 +17,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for professional styling
-st.markdown("""
-<style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        margin-bottom: 2rem;
-    }
-    .metric-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1rem;
-        border-radius: 10px;
-        color: white;
-        margin: 0.5rem 0;
-    }
-    .metric-value {
-        font-size: 2rem;
-        font-weight: bold;
-    }
-    .metric-delta {
-        font-size: 1rem;
-        opacity: 0.9;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 2rem;
-    }
-    .stTabs [data-baseweb="tab"] {
-        height: 4rem;
-        white-space: pre-wrap;
-        background-color: #f0f2f6;
-        border-radius: 4px 4px 0px 0px;
-        gap: 1rem;
-        padding-top: 10px;
-        padding-bottom: 10px;
-    }
-    .stTabs [aria-selected="true"] {
-        background-color: #1f77b4;
-        color: white;
-    }
-    
-    /* Print-optimized styles for PDF output */
-    @media print {
-        /* Hide Streamlit elements that shouldn't print */
-        .stDeployButton, .stApp > header, .stApp > footer {
-            display: none !important;
-        }
-        
-        /* Ensure all content is visible for printing */
-        .stTabs [data-baseweb="tab-panel"] {
-            display: block !important;
-            page-break-inside: avoid;
-        }
-        
-        /* Force all tabs to be visible when printing */
-        .stTabs [data-baseweb="tab-panel"] {
-            opacity: 1 !important;
-            visibility: visible !important;
-            position: static !important;
-            transform: none !important;
-        }
-        
-        /* Optimize for PDF layout */
-        body {
-            font-size: 12pt;
-            line-height: 1.4;
-        }
-        
-        .main-header {
-            font-size: 24pt;
-            margin-bottom: 1rem;
-        }
-        
-        .metric-card {
-            break-inside: avoid;
-            margin-bottom: 1rem;
-        }
-        
-        /* Ensure charts are visible in print */
-        .element-container {
-            break-inside: avoid;
-            page-break-inside: avoid;
-        }
-        
-        /* Add page breaks between major sections */
-        .stTabs [data-baseweb="tab-panel"] {
-            page-break-before: always;
-        }
-        
-        .stTabs [data-baseweb="tab-panel"]:first-child {
-            page-break-before: auto;
-        }
-    }
-    
-    /* Print instruction overlay */
-    .print-instructions {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        z-index: 1000;
-        display: none;
-    }
-    
-    .print-instructions.show {
-        display: block;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Apply current theme
+st.markdown(get_current_theme_css(), unsafe_allow_html=True)
+
+# Add theme header
+st.markdown(get_current_theme_header(), unsafe_allow_html=True)
 
 def main():
-    # Header
-    st.markdown('<h1 class="main-header">📡 Telecom KPI Dashboard</h1>', unsafe_allow_html=True)
+    # Theme switcher in sidebar
+    create_theme_switcher()
+    
+    # Page header with current theme styling
+    st.markdown(get_current_theme_page_header(
+        "Network Performance & Reliability",
+        "Select a time period and explore KPIs across Network Performance, Customer Experience, Revenue & Monetization, Usage & Adoption, and Operational Efficiency."
+    ), unsafe_allow_html=True)
     
     # Generate test data
     network_data = generate_network_data()

@@ -5,7 +5,7 @@ from database_connection import db
 
 def create_metric_card(label, value, delta, delta_direction="up", unit="", tooltip="", last_updated=None, tab_name=""):
     """
-    Create a professional metric card using Streamlit components
+    Create a Cognizant-style metric card using HTML
     """
     
     # Format the value with unit
@@ -18,16 +18,16 @@ def create_metric_card(label, value, delta, delta_direction="up", unit="", toolt
     else:
         formatted_value = f"{value}{unit}"
     
-    # Format delta
+    # Format delta with Cognizant styling
     if delta_direction == "up":
+        delta_class = "cognizant-kpi-delta up"
         delta_arrow = "▲"
-        delta_color = "#10B981"  # Green
     elif delta_direction == "down":
+        delta_class = "cognizant-kpi-delta down"
         delta_arrow = "▼"
-        delta_color = "#EF4444"  # Red
     else:  # stable
+        delta_class = "cognizant-kpi-delta flat"
         delta_arrow = "●"
-        delta_color = "#6B7280"  # Gray
     
     # Format delta value
     if isinstance(delta, str):
@@ -43,39 +43,33 @@ def create_metric_card(label, value, delta, delta_direction="up", unit="", toolt
     if last_updated is None:
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M")
     
-    # Create the card using Streamlit components
-    with st.container():
-        # Add custom CSS for the card
-        st.markdown(f"""
-        <style>
-        .metric-card-{tab_name}-{label.replace(' ', '-').lower()} {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-left: 4px solid {delta_color};
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 0.5rem 0;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            color: white;
-            min-height: 120px;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Create the card content
-        st.markdown(f"""
-        <div class="metric-card-{tab_name}-{label.replace(' ', '-').lower()}">
-            <div style="position: absolute; top: 1rem; right: 1rem; font-size: 1.2rem; cursor: help;" title="{tooltip}">ℹ️</div>
-            <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem; font-weight: 500;">{label}</div>
-            <div style="font-size: 2rem; font-weight: bold; margin-bottom: 0.5rem; line-height: 1;">{formatted_value}</div>
-            <div style="font-size: 1rem; color: {delta_color}; font-weight: 500;">{formatted_delta}</div>
-            <div style="font-size: 0.7rem; opacity: 0.7; margin-top: 0.5rem;">Updated: {last_updated}</div>
+    # Create the Cognizant-style card
+    card_html = f"""
+    <div class="cognizant-kpi-tile">
+        <div class="cognizant-kpi-head">
+            <div class="cognizant-kpi-label">{label}</div>
+            <div class="cognizant-kpi-updated">Updated: {last_updated}</div>
         </div>
-        """, unsafe_allow_html=True)
+        <div class="cognizant-kpi-value">{formatted_value}</div>
+        <div class="{delta_class}">
+            <span class="arrow" aria-hidden="true"></span>
+            <span>{formatted_delta}</span>
+        </div>
+        <div class="cognizant-sparkline" aria-hidden="true">
+            <div class="line" style="top: 38%"></div>
+        </div>
+        <div class="cognizant-kpi-footer">
+            <span title="{tooltip}">ℹ️ {label}</span>
+            <span>Target: {formatted_value}</span>
+        </div>
+    </div>
+    """
+    
+    st.markdown(card_html, unsafe_allow_html=True)
 
 def render_metric_grid(metrics_data, tab_name=""):
     """
-    Render a responsive 3x2 grid of metric cards
+    Render a responsive 3-column grid of metric cards
     
     Args:
         metrics_data (list): List of dictionaries with metric data

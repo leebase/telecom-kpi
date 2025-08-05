@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+    <title>Telecom KPI Dashboard · Cognizant Style</title>
+    <meta name="description" content="Telecom KPI Dashboard" />
+    <style>
+      /* 
+        Design goals:
+        - Cognizant-inspired: deep blues (#001833, #00254d), cyan accents (#00bcd4 / #00a3d9),
+          neutral grays, high contrast typography.
+        - Accessible contrasts and focus rings.
+        - Responsive 12-column-like grid using CSS grid and flex.
+        - Clean KPI tiles with deltas and clear labels.
+        - Lightweight chart placeholders (simple bars/lines).
+      */
+
+      :root {
+        --bg: #0a1222;
+        --bg-elev: #0f1a2e;
+        --bg-card: #13223d;
+        --ink: #e6effa;
+        --muted: #a7b3c7;
+        --link: #79e0ff;
+        --accent: #00bcd4;
+        --accent-2: #00a3d9;
+        --danger: #ff6b6b;
+        --success: #3ad29f;
+        --warning: #ffc857;
+
+        --tile-border: rgba(255, 255, 255, 0.08);
+        --tile-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+
+        --tw-1: 0.875rem;
+        --tw-2: 1rem;
+        --tw-3: 1.125rem;
+        --tw-4: 1.25rem;
+        --tw-5: 1.5rem;
+        --tw-6: 1.875rem;
+        --tw-7: 2.25rem;
+
+        --grid-gap: 16px;
+        --container: 1280px;
+
+        --focus-ring: 0 0 0 3px rgba(0, 188, 212, 0.35);
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(180deg, #061023 0%, #0b152a 60%, #0d1730 100%);
+        color: var(--ink);
+        font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+      }
+
+      a {
+        color: var(--link);
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .app-shell {
+        min-height: 100dvh;
+        display: grid;
+        grid-template-rows: auto 1fr;
+      }
+
+      /* Top nav with subtle Cognizant feel */
+      .topbar {
+        background: linear-gradient(
+          90deg,
+          #001833 0%,
+          #00254d 40%,
+          #003869 100%
+        );
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+      .topbar-inner {
+        max-width: var(--container);
+        margin: 0 auto;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .brand-logo {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: conic-gradient(
+          from 210deg,
+          #00a3d9 0 30%,
+          #00bcd4 30% 58%,
+          #43e0ff 58% 100%
+        );
+        box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+      }
+      .brand-name {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+      .brand-sub {
+        color: var(--muted);
+        font-size: var(--tw-1);
+        margin-left: 6px;
+      }
+
+      .topbar-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--ink);
+        padding: 8px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        font-size: var(--tw-2);
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .btn:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+      }
+      .btn.primary {
+        background: linear-gradient(180deg, var(--accent-2), var(--accent));
+        border: none;
+        color: #042a35;
+        font-weight: 600;
+      }
+      .btn.primary:hover {
+        filter: brightness(1.05);
+      }
+
+      main {
+        max-width: var(--container);
+        margin: 0 auto;
+        padding: 20px;
+        display: grid;
+        gap: 20px;
+      }
+
+      /* Header section with filters */
+      .page-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: end;
+      }
+
+      .title-block h1 {
+        margin: 0;
+        font-size: var(--tw-6);
+        letter-spacing: 0.2px;
+      }
+      .title-block p {
+        margin: 6px 0 0 0;
+        color: var(--muted);
+        font-size: var(--tw-2);
+      }
+
+      .filters {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .control {
+        display: grid;
+        gap: 6px;
+      }
+      .control label {
+        font-size: var(--tw-1);
+        color: var(--muted);
+      }
+      .select,
+      .date {
+        background: var(--bg-card);
+        color: var(--ink);
+        border: 1px solid var(--tile-border);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        min-width: 180px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      .select:focus-visible,
+      .date:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+      }
+
+      /* Category tabs */
+      .tabs {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .tab {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--ink);
+        font-size: var(--tw-2);
+        cursor: pointer;
+      }
+      .tab[aria-selected='true'] {
+        background: linear-gradient(180deg, #0b2b4a, #134a79);
+        border-color: rgba(0, 188, 212, 0.35);
+        box-shadow: 0 4px 16px rgba(0, 163, 217, 0.25);
+      }
+      .tab:focus-visible {
+        outline: none;
+        box-shadow: var(--focus-ring);
+      }
+
+      /* KPI grid */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: var(--grid-gap);
+      }
+      .kpi-tile {
+        grid-column: span 3;
+        background: linear-gradient(
+          180deg,
+          rgba(19, 34, 61, 0.95),
+          rgba(10, 22, 44, 0.95)
+        );
+        border: 1px solid var(--tile-border);
+        border-radius: var(--radius-md);
+        box-shadow: var(--tile-shadow);
+        padding: 14px;
+        display: grid;
+        gap: 8px;
+        position: relative;
+        overflow: hidden;
+      }
+      @media (max-width: 1100px) {
+        .kpi-tile {
+          grid-column: span 4;
+        }
+      }
+      @media (max-width: 760px) {
+        .kpi-tile {
+          grid-column: span 6;
+        }
+      }
+      @media (max-width: 520px) {
+        .kpi-tile {
+          grid-column: span 12;
+        }
+      }
+
+      .kpi-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .kpi-label {
+        font-size: var(--tw-2);
+        color: var(--muted);
+      }
+      .kpi-updated {
+        font-size: 0.8rem;
+        color: var(--muted);
+        opacity: 0.8;
+      }
+
+      .kpi-value {
+        font-size: var(--tw-7);
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+
+      .kpi-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: var(--tw-3);
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        width: fit-content;
+      }
+      .kpi-delta .arrow {
+        width: 10px;
+        height: 10px;
+        display: inline-block;
+        transform: rotate(0deg);
+        border-right: 2px solid currentColor;
+        border-bottom: 2px solid currentColor;
+        margin-right: 2px;
+      }
+      .kpi-delta.up {
+        color: var(--success);
+      }
+      .kpi-delta.up .arrow {
+        transform: rotate(-45deg);
+      }
+      .kpi-delta.down {
+        color: var(--danger);
+      }
+      .kpi-delta.down .arrow {
+        transform: rotate(135deg);
+      }
+      .kpi-delta.flat {
+        color: var(--muted);
+      }
+      .kpi-delta.flat .arrow {
+        opacity: 0.4;
+        transform: rotate(45deg);
+      }
+
+      .kpi-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted);
+        font-size: var(--tw-1);
+        margin-top: 8px;
+      }
+
+      /* Tiny sparkline placeholder */
+      .sparkline {
+        height: 44px;
+        width: 100%;
+        border-radius: 6px;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 188, 212, 0.12),
+          rgba(0, 163, 217, 0.06)
+        );
+        position: relative;
+        overflow: hidden;
+      }
+      .sparkline .line {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 2px;
+        background: linear-gradient(90deg, #43e0ff, #00a3d9);
+        transform: translateY(-50%);
+        opacity: 0.7;
+      }
+
+      /* Section cards */
+      .section-card {
+        background: var(--bg-card);
+        border: 1px solid var(--tile-border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--tile-shadow);
+        padding: 16px;
+      }
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .section-title {
+        font-size: var(--tw-5);
+        margin: 0;
+      }
+      .section-sub {
+        color: var(--muted);
+        font-size: var(--tw-2);
+      }
+
+      /* Simple bar chart placeholder */
+      .bar-chart {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 8px;
+        align-items: end;
+        height: 160px;
+        padding: 6px 0;
+      }
+      .bar {
+        background: linear-gradient(180deg, #00bcd4, #007c9b);
+        border-radius: 6px 6px 0 0;
+        min-height: 6px;
+        transition: transform 160ms ease-out, filter 160ms ease-out;
+        filter: drop-shadow(0 4px 10px rgba(0, 188, 212, 0.25));
+      }
+      .bar:hover {
+        transform: translateY(-4px);
+        filter: brightness(1.1);
+      }
+
+      /* Footer */
+      .page-footer {
+        color: var(--muted);
+        font-size: var(--tw-1);
+        text-align: center;
+        padding: 16px 0 24px;
+      }
+
+      /* Accessibility helpers */
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar" role="banner">
+        <div class="topbar-inner">
+          <div class="brand" aria-label="Cognizant Telecom Dashboard">
+            <div class="brand-logo" aria-hidden="true"></div>
+            <div>
+              <div class="brand-name">Cognizant</div>
+              <div class="brand-sub">Telecom KPI Dashboard</div>
+            </div>
+          </div>
+          <nav class="topbar-actions" aria-label="Global actions">
+            <button class="btn" type="button">Export</button>
+            <button class="btn" type="button">Share</button>
+            <button class="btn primary" type="button">Create Alert</button>
+          </nav>
+        </div>
+      </header>
+
+      <main role="main">
+        <section class="page-header" aria-labelledby="page-title">
+          <div class="title-block">
+            <h1 id="page-title">Network Performance & Reliability</h1>
+            <p>
+              Select a time period and explore KPIs across Network Performance,
+              Customer Experience, Revenue & Monetization, Usage & Adoption, and
+              Operational Efficiency.
+            </p>
+          </div>
+          <div class="filters">
+            <div class="control">
+              <label for="period">Select Time Period</label>
+              <select class="select" id="period" name="period">
+                <option>Last 7 Days</option>
+                <option selected>Last 12 Months</option>
+                <option>Year to Date</option>
+                <option>Previous Quarter</option>
+                <option>Custom Range</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="region">Region</label>
+              <select class="select" id="region" name="region">
+                <option selected>All Regions</option>
+                <option>North</option>
+                <option>South</option>
+                <option>East</option>
+                <option>West</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="tabs" role="tablist" aria-label="Dashboard sections">
+          <button class="tab" role="tab" aria-selected="true">
+            Network Performance
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Customer Experience
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Revenue & Monetization
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Usage & Adoption
+          </button>
+          <button class="tab" role="tab" aria-selected="false">
+            Operational Efficiency
+          </button>
+        </section>
+
+        <!-- KPI Tiles -->
+        <section aria-label="Key Metrics" class="kpi-grid">
+          <!-- Network Availability -->
+          <article class="kpi-tile" aria-label="Network Availability">
+            <div class="kpi-head">
+              <div class="kpi-label">Network Availability</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">99.77%</div>
+            <div class="kpi-delta up" aria-label="Up 0.27%">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>+0.27%</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 38%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: 99.8%</span>
+              <span>Variance: -0.03%</span>
+            </div>
+          </article>
+
+          <!-- Dropped Call Rate -->
+          <article class="kpi-tile" aria-label="Dropped Call Rate">
+            <div class="kpi-head">
+              <div class="kpi-label">Dropped Call Rate</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">0.00%</div>
+            <div class="kpi-delta down" aria-label="Down 1.00%">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-1.00%</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 62%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≤ 0.30%</span>
+              <span>Best: 0.00%</span>
+            </div>
+          </article>
+
+          <!-- Latency -->
+          <article class="kpi-tile" aria-label="Latency">
+            <div class="kpi-head">
+              <div class="kpi-label">Latency</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">41.0 ms</div>
+            <div class="kpi-delta down" aria-label="Down 8.96 ms">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-8.96 ms</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 55%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≤ 40 ms</span>
+              <span>P95: 58 ms</span>
+            </div>
+          </article>
+
+          <!-- Packet Loss Rate -->
+          <article class="kpi-tile" aria-label="Packet Loss Rate">
+            <div class="kpi-head">
+              <div class="kpi-label">Packet Loss Rate</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">0.00%</div>
+            <div class="kpi-delta down" aria-label="Down 0.10%">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-0.10%</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 64%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≤ 0.1%</span>
+              <span>P99: 0.04%</span>
+            </div>
+          </article>
+
+          <!-- Bandwidth Utilization -->
+          <article class="kpi-tile" aria-label="Bandwidth Utilization">
+            <div class="kpi-head">
+              <div class="kpi-label">Bandwidth Utilization</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">63.50%</div>
+            <div class="kpi-delta down" aria-label="Down 1.50%">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-1.50%</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 48%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: 65–75%</span>
+              <span>Peak: 82%</span>
+            </div>
+          </article>
+
+          <!-- MTTR -->
+          <article class="kpi-tile" aria-label="Mean Time To Repair">
+            <div class="kpi-head">
+              <div class="kpi-label">MTTR</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">2.2 hours</div>
+            <div class="kpi-delta down" aria-label="Down 0.3 hours">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-0.3 hours</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 52%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≤ 2.0 h</span>
+              <span>P80: 3.1 h</span>
+            </div>
+          </article>
+
+          <!-- Placeholder tiles to complete row if needed -->
+          <article class="kpi-tile" aria-label="Throughput">
+            <div class="kpi-head">
+              <div class="kpi-label">Throughput</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">128 Mbps</div>
+            <div class="kpi-delta up" aria-label="Up 6.4 Mbps">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>+6.4 Mbps</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 42%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≥ 120 Mbps</span>
+              <span>P95: 210 Mbps</span>
+            </div>
+          </article>
+
+          <article class="kpi-tile" aria-label="Jitter">
+            <div class="kpi-head">
+              <div class="kpi-label">Jitter</div>
+              <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+            </div>
+            <div class="kpi-value">5.8 ms</div>
+            <div class="kpi-delta down" aria-label="Down 0.6 ms">
+              <span class="arrow" aria-hidden="true"></span>
+              <span>-0.6 ms</span>
+            </div>
+            <div class="sparkline" aria-hidden="true">
+              <div class="line" style="top: 60%"></div>
+            </div>
+            <div class="kpi-footer">
+              <span>Target: ≤ 6 ms</span>
+              <span>P95: 9.1 ms</span>
+            </div>
+          </article>
+        </section>
+
+        <!-- Network Performance Trends -->
+        <section class="section-card" aria-labelledby="trends-title">
+          <div class="section-header">
+            <h2 id="trends-title" class="section-title">
+              Network Performance Trends
+            </h2>
+            <div class="section-sub">Last 12 months</div>
+          </div>
+          <div class="bar-chart" aria-label="12-month trend bars">
+            <!-- Bar heights are illustrative. Replace with dynamic heights. -->
+            <div class="bar" style="height: 48%"></div>
+            <div class="bar" style="height: 53%"></div>
+            <div class="bar" style="height: 59%"></div>
+            <div class="bar" style="height: 64%"></div>
+            <div class="bar" style="height: 58%"></div>
+            <div class="bar" style="height: 61%"></div>
+            <div class="bar" style="height: 66%"></div>
+            <div class="bar" style="height: 63%"></div>
+            <div class="bar" style="height: 69%"></div>
+            <div class="bar" style="height: 72%"></div>
+            <div class="bar" style="height: 70%"></div>
+            <div class="bar" style="height: 74%"></div>
+          </div>
+        </section>
+
+        <!-- Detailed KPI Information -->
+        <section class="section-card" aria-labelledby="detail-title">
+          <div class="section-header">
+            <h2 id="detail-title" class="section-title">Detailed KPI Information</h2>
+            <div class="section-sub">Drill into distributions, outliers, and SLA impact</div>
+          </div>
+          <div
+            class="kpi-grid"
+            style="grid-template-columns: repeat(12, 1fr); gap: var(--grid-gap)"
+          >
+            <div class="kpi-tile" style="grid-column: span 6">
+              <div class="kpi-head">
+                <div class="kpi-label">Latency Distribution (ms)</div>
+                <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+              </div>
+              <div class="sparkline" style="height: 120px">
+                <div
+                  class="line"
+                  style="top: 60%; height: 2px; background: #3ad29f"
+                ></div>
+              </div>
+              <div class="kpi-footer">
+                <span>P50: 27 ms</span>
+                <span>P95: 58 ms · P99: 91 ms</span>
+              </div>
+            </div>
+
+            <div class="kpi-tile" style="grid-column: span 6">
+              <div class="kpi-head">
+                <div class="kpi-label">Availability by Region</div>
+                <div class="kpi-updated">Updated: 2025-07-31 20:18</div>
+              </div>
+              <div class="bar-chart" style="height: 140px">
+                <div class="bar" style="height: 92%" title="North 99.92%"></div>
+                <div class="bar" style="height: 88%" title="South 99.88%"></div>
+                <div class="bar" style="height: 90%" title="East 99.90%"></div>
+                <div class="bar" style="height: 85%" title="West 99.85%"></div>
+                <div class="bar" style="height: 91%" title="Central 99.91%"></div>
+                <div class="bar" style="height: 89%" title="Metro 99.89%"></div>
+                <div class="bar" style="height: 93%" title="Rural 99.93%"></div>
+                <div class="bar" style="height: 86%" title="Coastal 99.86%"></div>
+                <div class="bar" style="height: 90%" title="Valley 99.90%"></div>
+                <div class="bar" style="height: 84%" title="Mountain 99.84%"></div>
+                <div class="bar" style="height: 92%" title="Urban 99.92%"></div>
+                <div class="bar" style="height: 88%" title="Suburban 99.88%"></div>
+              </div>
+              <div class="kpi-footer">
+                <span>Threshold: 99.8%</span>
+                <span>Watchlist: West, Mountain</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          Data source: Snowflake · Last sync: 2025-07-31 20:18 · Owner: NOC
+          Analytics
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

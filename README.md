@@ -19,6 +19,7 @@ A **plug-and-play KPI dashboard** for telecom operators showcasing key metrics a
 - **🛠️ Operational Efficiency** - MTTR, compliance rates, system uptime, efficiency scores
 
 ### 🎨 **Professional UI/UX**
+- **Modular theme system** with Cognizant-inspired design and easy theme switching
 - **Responsive metric cards** with gradient backgrounds and trend arrows
 - **Info tooltips** (ℹ️) for quick KPI definitions on hover
 - **Time period selectors** for each tab with independent filtering
@@ -40,6 +41,9 @@ telecomdashboard/
 ├── app.py                          # Main Streamlit application
 ├── database_connection.py          # SQLite database interface
 ├── improved_metric_cards.py        # Metric card components
+├── cognizant_theme.py             # Cognizant theme implementation
+├── theme_manager.py               # Theme management system
+├── theme_switcher.py              # Theme switching UI component
 ├── generate_test_data.py           # Mock data generation
 ├── setup_database.py              # Database schema creation
 ├── load_csv_data.py               # CSV data loading script
@@ -54,7 +58,8 @@ telecomdashboard/
 └── docs/
     ├── appRequirements.md         # Application requirements
     ├── appArchitecture.md         # Technical architecture
-    └── consolidatedKPI.md        # KPI definitions
+    ├── consolidatedKPI.md        # KPI definitions
+    └── THEME_GUIDE.md            # Theme customization guide
 ```
 
 ## 🚀 Quick Start

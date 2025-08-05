@@ -53,129 +53,228 @@ def render_info_icon(kpi_name, detailed_help):
 
 def render_line_chart(df, title, y_label="Value"):
     """
-    Render a line chart using Altair
+    Render a Cognizant-style line chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
+    # Cognizant color scheme
+    cognizant_colors = ['#00bcd4', '#00a3d9', '#43e0ff', '#3ad29f', '#ff6b6b']
+    
     chart = alt.Chart(df).mark_line(
         point=True,
-        strokeWidth=3
+        strokeWidth=3,
+        stroke='cyan'
     ).encode(
-        x=alt.X('date:T', title='Date'),
-        y=alt.Y('value:Q', title=y_label),
-        color=alt.value('#1f77b4')
+        x=alt.X('date:T', title='Date', axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        )),
+        y=alt.Y('value:Q', title=y_label, axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        ))
     ).properties(
-        title=title,
+        title=alt.TitleParams(
+            text=title,
+            color='#e6effa',
+            fontSize=16,
+            fontWeight='bold'
+        ),
         width=400,
         height=250
     ).configure_axis(
         gridOpacity=0.3
     ).configure_view(
-        strokeOpacity=0
+        strokeOpacity=0,
+        stroke='#13223d'
+    ).configure_legend(
+        titleColor='#a7b3c7',
+        labelColor='#a7b3c7'
+    ).configure(
+        background='#13223d'
     )
     
+    # Wrap in Cognizant-style container
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.altair_chart(chart, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def render_bar_chart(df, title, y_label="Value", horizontal=False):
     """
-    Render a bar chart using Altair
+    Render a Cognizant-style bar chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
+    # Cognizant color scheme
+    cognizant_colors = ['#00bcd4', '#00a3d9', '#43e0ff', '#3ad29f', '#ff6b6b']
+    
     if horizontal:
         # Horizontal bar chart for "by region" charts
         chart = alt.Chart(df).mark_bar(
             cornerRadiusTopLeft=3,
-            cornerRadiusTopRight=3
+            cornerRadiusTopRight=3,
+            color='cyan'
         ).encode(
-            x=alt.X('value:Q', title=y_label),
-            y=alt.Y('category:N', title='Region', sort='-x'),
-            color=alt.Color('category:N', legend=None)
+            x=alt.X('value:Q', title=y_label, axis=alt.Axis(
+                titleColor='#a7b3c7',
+                labelColor='#a7b3c7',
+                gridColor='rgba(167, 179, 199, 0.2)'
+            )),
+            y=alt.Y('category:N', title='Region', sort='-x', axis=alt.Axis(
+                titleColor='#a7b3c7',
+                labelColor='#a7b3c7'
+            ))
         ).properties(
-            title=title,
+            title=alt.TitleParams(
+                text=title,
+                color='#e6effa',
+                fontSize=16,
+                fontWeight='bold'
+            ),
             width=400,
             height=250
         ).configure_axis(
             gridOpacity=0.3
         ).configure_view(
-            strokeOpacity=0
+            strokeOpacity=0,
+            stroke='#13223d'
+        ).configure(
+            background='#13223d'
         )
     else:
         # Vertical bar chart for regular charts
         chart = alt.Chart(df).mark_bar(
             cornerRadiusTopLeft=3,
-            cornerRadiusTopRight=3
+            cornerRadiusTopRight=3,
+            color='cyan'
         ).encode(
-            x=alt.X('category:N', title='Category'),
-            y=alt.Y('value:Q', title=y_label),
-            color=alt.Color('category:N', legend=None)
+            x=alt.X('category:N', title='Category', axis=alt.Axis(
+                titleColor='#a7b3c7',
+                labelColor='#a7b3c7'
+            )),
+            y=alt.Y('value:Q', title=y_label, axis=alt.Axis(
+                titleColor='#a7b3c7',
+                labelColor='#a7b3c7',
+                gridColor='rgba(167, 179, 199, 0.2)'
+            ))
         ).properties(
-            title=title,
+            title=alt.TitleParams(
+                text=title,
+                color='#e6effa',
+                fontSize=16,
+                fontWeight='bold'
+            ),
             width=400,
             height=250
         ).configure_axis(
             gridOpacity=0.3
         ).configure_view(
-            strokeOpacity=0
+            strokeOpacity=0,
+            stroke='#13223d'
+        ).configure(
+            background='#13223d'
         )
     
+    # Wrap in Cognizant-style container
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.altair_chart(chart, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def render_area_chart(df, title, y_label="Value"):
     """
-    Render an area chart using Altair
+    Render a Cognizant-style area chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
     chart = alt.Chart(df).mark_area(
-        opacity=0.7
+        opacity=0.6,
+        color='cyan'
     ).encode(
-        x=alt.X('date:T', title='Date'),
-        y=alt.Y('value:Q', title=y_label),
-        color=alt.value('#1f77b4')
+        x=alt.X('date:T', title='Date', axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        )),
+        y=alt.Y('value:Q', title=y_label, axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        ))
     ).properties(
-        title=title,
+        title=alt.TitleParams(
+            text=title,
+            color='#e6effa',
+            fontSize=16,
+            fontWeight='bold'
+        ),
         width=400,
         height=250
     ).configure_axis(
         gridOpacity=0.3
     ).configure_view(
-        strokeOpacity=0
+        strokeOpacity=0,
+        stroke='#13223d'
+    ).configure(
+        background='#13223d'
     )
     
+    # Wrap in Cognizant-style container
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.altair_chart(chart, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def render_distribution(df, title, x_label="Value"):
     """
-    Render a histogram/distribution chart using Altair
+    Render a Cognizant-style histogram/distribution chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
     chart = alt.Chart(df).mark_bar(
-        opacity=0.7
+        opacity=0.7,
+        color='cyan'
     ).encode(
-        x=alt.X('value:Q', bin=alt.Bin(maxbins=20), title=x_label),
-        y=alt.Y('count():Q', title='Frequency'),
-        color=alt.value('#1f77b4')
+        x=alt.X('value:Q', bin=alt.Bin(maxbins=20), title=x_label, axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        )),
+        y=alt.Y('count():Q', title='Frequency', axis=alt.Axis(
+            titleColor='#a7b3c7',
+            labelColor='#a7b3c7',
+            gridColor='rgba(167, 179, 199, 0.2)'
+        ))
     ).properties(
-        title=title,
+        title=alt.TitleParams(
+            text=title,
+            color='#e6effa',
+            fontSize=16,
+            fontWeight='bold'
+        ),
         width=400,
         height=250
     ).configure_axis(
         gridOpacity=0.3
     ).configure_view(
-        strokeOpacity=0
+        strokeOpacity=0,
+        stroke='#13223d'
+    ).configure(
+        background='#13223d'
     )
     
+    # Wrap in Cognizant-style container
+    st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.altair_chart(chart, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 def render_kpi_expander(name, definition, chart_fn):
     """
