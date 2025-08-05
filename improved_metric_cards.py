@@ -52,13 +52,13 @@ def create_metric_card(label, value, delta, delta_direction="up", unit="", toolt
         <div class="verizon-kpi-tile">
             <div class="verizon-kpi-head">
                 <div class="verizon-kpi-label">{label}</div>
-                <div class="verizon-kpi-updated">Updated: {last_updated}</div>
             </div>
             <div class="verizon-kpi-value">{formatted_value}</div>
             <div class="{delta_class}">
                 <span class="arrow" aria-hidden="true"></span>
                 <span>{formatted_delta}</span>
             </div>
+            <div class="verizon-kpi-updated">Updated: {last_updated}</div>
             <div class="verizon-sparkline" aria-hidden="true">
                 <div class="line" style="top: 38%"></div>
             </div>
@@ -94,13 +94,13 @@ def create_metric_card(label, value, delta, delta_direction="up", unit="", toolt
         <div class="cognizant-kpi-tile">
             <div class="cognizant-kpi-head">
                 <div class="cognizant-kpi-label">{label}</div>
-                <div class="cognizant-kpi-updated">Updated: {last_updated}</div>
             </div>
             <div class="cognizant-kpi-value">{formatted_value}</div>
             <div class="{delta_class}">
                 <span class="arrow" aria-hidden="true"></span>
                 <span>{formatted_delta}</span>
             </div>
+            <div class="cognizant-kpi-updated">Updated: {last_updated}</div>
             <div class="cognizant-sparkline" aria-hidden="true">
                 <div class="line" style="top: 38%"></div>
             </div>
