@@ -5,8 +5,15 @@ from database_connection import db
 
 def create_metric_card(label, value, delta, delta_direction="up", unit="", tooltip="", last_updated=None, tab_name=""):
     """
-    Create a Cognizant-style metric card using HTML
+    Create a theme-appropriate metric card using HTML
     """
+    
+    # Get current theme to determine styling
+    try:
+        from theme_manager import get_current_theme
+        current_theme = get_current_theme()
+    except:
+        current_theme = "cognizant"  # Default fallback
     
     # Format the value with unit
     if isinstance(value, str):
@@ -18,52 +25,91 @@ def create_metric_card(label, value, delta, delta_direction="up", unit="", toolt
     else:
         formatted_value = f"{value}{unit}"
     
-    # Format delta with Cognizant styling
-    if delta_direction == "up":
-        delta_class = "cognizant-kpi-delta up"
-        delta_arrow = "▲"
-    elif delta_direction == "down":
-        delta_class = "cognizant-kpi-delta down"
-        delta_arrow = "▼"
-    else:  # stable
-        delta_class = "cognizant-kpi-delta flat"
-        delta_arrow = "●"
-    
     # Format delta value
     if isinstance(delta, str):
-        formatted_delta = f"{delta_arrow} {delta}"
+        formatted_delta = f"{delta}"
     elif unit == "$":
-        formatted_delta = f"{delta_arrow} ${delta:,.2f}"
+        formatted_delta = f"${delta:,.2f}"
     elif unit == "%":
-        formatted_delta = f"{delta_arrow} {delta:.2f}%"
+        formatted_delta = f"{delta:.2f}%"
     else:
-        formatted_delta = f"{delta_arrow} {delta}{unit}"
+        formatted_delta = f"{delta}{unit}"
     
     # Default last updated
     if last_updated is None:
         last_updated = datetime.now().strftime("%Y-%m-%d %H:%M")
     
-    # Create the Cognizant-style card
-    card_html = f"""
-    <div class="cognizant-kpi-tile">
-        <div class="cognizant-kpi-head">
-            <div class="cognizant-kpi-label">{label}</div>
-            <div class="cognizant-kpi-updated">Updated: {last_updated}</div>
+    if current_theme == "verizon":
+        # Verizon styling
+        if delta_direction == "up":
+            delta_class = "verizon-kpi-delta up"
+        elif delta_direction == "down":
+            delta_class = "verizon-kpi-delta down"
+        else:  # stable
+            delta_class = "verizon-kpi-delta flat"
+        
+        card_html = f"""
+        <div class="verizon-kpi-tile">
+            <div class="verizon-kpi-head">
+                <div class="verizon-kpi-label">{label}</div>
+                <div class="verizon-kpi-updated">Updated: {last_updated}</div>
+            </div>
+            <div class="verizon-kpi-value">{formatted_value}</div>
+            <div class="{delta_class}">
+                <span class="arrow" aria-hidden="true"></span>
+                <span>{formatted_delta}</span>
+            </div>
+            <div class="verizon-sparkline" aria-hidden="true">
+                <div class="line" style="top: 38%"></div>
+            </div>
+            <div class="verizon-kpi-footer">
+                <span title="{tooltip}">ℹ️ {label}</span>
+                <span>Target: {formatted_value}</span>
+            </div>
         </div>
-        <div class="cognizant-kpi-value">{formatted_value}</div>
-        <div class="{delta_class}">
-            <span class="arrow" aria-hidden="true"></span>
-            <span>{formatted_delta}</span>
+        """
+    else:
+        # Cognizant styling (default)
+        if delta_direction == "up":
+            delta_class = "cognizant-kpi-delta up"
+            delta_arrow = "▲"
+        elif delta_direction == "down":
+            delta_class = "cognizant-kpi-delta down"
+            delta_arrow = "▼"
+        else:  # stable
+            delta_class = "cognizant-kpi-delta flat"
+            delta_arrow = "●"
+        
+        # Format delta with arrow for Cognizant
+        if isinstance(delta, str):
+            formatted_delta = f"{delta_arrow} {delta}"
+        elif unit == "$":
+            formatted_delta = f"{delta_arrow} ${delta:,.2f}"
+        elif unit == "%":
+            formatted_delta = f"{delta_arrow} {delta:.2f}%"
+        else:
+            formatted_delta = f"{delta_arrow} {delta}{unit}"
+        
+        card_html = f"""
+        <div class="cognizant-kpi-tile">
+            <div class="cognizant-kpi-head">
+                <div class="cognizant-kpi-label">{label}</div>
+                <div class="cognizant-kpi-updated">Updated: {last_updated}</div>
+            </div>
+            <div class="cognizant-kpi-value">{formatted_value}</div>
+            <div class="{delta_class}">
+                <span class="arrow" aria-hidden="true"></span>
+                <span>{formatted_delta}</span>
+            </div>
+            <div class="cognizant-sparkline" aria-hidden="true">
+                <div class="line" style="top: 38%"></div>
+            </div>
+            <div class="cognizant-kpi-footer">
+                <span title="{tooltip}">ℹ️ {label}</span>
+                <span>Target: {formatted_value}</span>
+            </div>
         </div>
-        <div class="cognizant-sparkline" aria-hidden="true">
-            <div class="line" style="top: 38%"></div>
-        </div>
-        <div class="cognizant-kpi-footer">
-            <span title="{tooltip}">ℹ️ {label}</span>
-            <span>Target: {formatted_value}</span>
-        </div>
-    </div>
-    """
+        """
     
     st.markdown(card_html, unsafe_allow_html=True)
 

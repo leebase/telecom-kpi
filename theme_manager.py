@@ -5,6 +5,7 @@ Allows easy switching between different visual themes
 """
 
 from cognizant_theme import get_cognizant_css, create_cognizant_header, create_cognizant_page_header
+from verizon_theme import get_verizon_css, create_verizon_header, get_verizon_page_header
 
 class ThemeManager:
     """
@@ -29,6 +30,24 @@ class ThemeManager:
                     "surface": "#13223d",
                     "text": "#e6effa",
                     "text_muted": "#a7b3c7"
+                }
+            },
+            "verizon": {
+                "name": "Verizon",
+                "description": "Verizon pitch theme with bold blacks and red accents",
+                "css_function": get_verizon_css,
+                "header_function": create_verizon_header,
+                "page_header_function": get_verizon_page_header,
+                "colors": {
+                    "primary": "#cd040b",
+                    "secondary": "#ff4b51",
+                    "success": "#2ecc71",
+                    "danger": "#cd040b",
+                    "warning": "#f5a623",
+                    "background": "#0a0a0a",
+                    "surface": "#1b1d21",
+                    "text": "#f5f7fa",
+                    "text_muted": "#b7c0cc"
                 }
             }
             # Future themes can be added here:

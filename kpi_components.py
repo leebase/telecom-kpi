@@ -53,19 +53,29 @@ def render_info_icon(kpi_name, detailed_help):
 
 def render_line_chart(df, title, y_label="Value"):
     """
-    Render a Cognizant-style line chart using Altair
+    Render a theme-appropriate line chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
-    # Cognizant color scheme
-    cognizant_colors = ['#00bcd4', '#00a3d9', '#43e0ff', '#3ad29f', '#ff6b6b']
+    # Get current theme to determine colors
+    try:
+        from theme_manager import get_current_theme
+        current_theme = get_current_theme()
+    except:
+        current_theme = "cognizant"  # Default fallback
+    
+    # Set color based on theme
+    if current_theme == "verizon":
+        stroke_color = '#cd040b'  # Verizon red
+    else:
+        stroke_color = 'cyan'  # Cognizant cyan
     
     chart = alt.Chart(df).mark_line(
         point=True,
         strokeWidth=3,
-        stroke='cyan'
+        stroke=stroke_color
     ).encode(
         x=alt.X('date:T', title='Date', axis=alt.Axis(
             titleColor='#a7b3c7',
@@ -105,21 +115,31 @@ def render_line_chart(df, title, y_label="Value"):
 
 def render_bar_chart(df, title, y_label="Value", horizontal=False):
     """
-    Render a Cognizant-style bar chart using Altair
+    Render a theme-appropriate bar chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
-    # Cognizant color scheme
-    cognizant_colors = ['#00bcd4', '#00a3d9', '#43e0ff', '#3ad29f', '#ff6b6b']
+    # Get current theme to determine colors
+    try:
+        from theme_manager import get_current_theme
+        current_theme = get_current_theme()
+    except:
+        current_theme = "cognizant"  # Default fallback
+    
+    # Set color based on theme
+    if current_theme == "verizon":
+        bar_color = '#cd040b'  # Verizon red
+    else:
+        bar_color = 'cyan'  # Cognizant cyan
     
     if horizontal:
         # Horizontal bar chart for "by region" charts
         chart = alt.Chart(df).mark_bar(
             cornerRadiusTopLeft=3,
             cornerRadiusTopRight=3,
-            color='cyan'
+            color=bar_color
         ).encode(
             x=alt.X('value:Q', title=y_label, axis=alt.Axis(
                 titleColor='#a7b3c7',
@@ -152,7 +172,7 @@ def render_bar_chart(df, title, y_label="Value", horizontal=False):
         chart = alt.Chart(df).mark_bar(
             cornerRadiusTopLeft=3,
             cornerRadiusTopRight=3,
-            color='cyan'
+            color=bar_color
         ).encode(
             x=alt.X('category:N', title='Category', axis=alt.Axis(
                 titleColor='#a7b3c7',
@@ -188,15 +208,28 @@ def render_bar_chart(df, title, y_label="Value", horizontal=False):
 
 def render_area_chart(df, title, y_label="Value"):
     """
-    Render a Cognizant-style area chart using Altair
+    Render a theme-appropriate area chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
+    # Get current theme to determine colors
+    try:
+        from theme_manager import get_current_theme
+        current_theme = get_current_theme()
+    except:
+        current_theme = "cognizant"  # Default fallback
+    
+    # Set color based on theme
+    if current_theme == "verizon":
+        area_color = '#cd040b'  # Verizon red
+    else:
+        area_color = 'cyan'  # Cognizant cyan
+    
     chart = alt.Chart(df).mark_area(
         opacity=0.6,
-        color='cyan'
+        color=area_color
     ).encode(
         x=alt.X('date:T', title='Date', axis=alt.Axis(
             titleColor='#a7b3c7',
@@ -233,15 +266,28 @@ def render_area_chart(df, title, y_label="Value"):
 
 def render_distribution(df, title, x_label="Value"):
     """
-    Render a Cognizant-style histogram/distribution chart using Altair
+    Render a theme-appropriate histogram/distribution chart using Altair
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
         return
     
+    # Get current theme to determine colors
+    try:
+        from theme_manager import get_current_theme
+        current_theme = get_current_theme()
+    except:
+        current_theme = "cognizant"  # Default fallback
+    
+    # Set color based on theme
+    if current_theme == "verizon":
+        dist_color = '#cd040b'  # Verizon red
+    else:
+        dist_color = 'cyan'  # Cognizant cyan
+    
     chart = alt.Chart(df).mark_bar(
         opacity=0.7,
-        color='cyan'
+        color=dist_color
     ).encode(
         x=alt.X('value:Q', bin=alt.Bin(maxbins=20), title=x_label, axis=alt.Axis(
             titleColor='#a7b3c7',
