@@ -2,7 +2,7 @@
 
 ## 🎯 Purpose
 
-This **production-ready KPI dashboard** provides telecom operators with real-time insights into network performance and business metrics using **comprehensive CSV data warehouse** with dynamic time period filtering. Designed for executive decision-making and operational monitoring.
+This **production-ready KPI dashboard** provides telecom operators with real-time insights into network performance and business metrics using **comprehensive CSV data warehouse** with dynamic time period filtering and **modular theming system**. Designed for executive decision-making and operational monitoring with professional branding capabilities.
 
 ## 🧑‍💼 Target Users
 
@@ -11,6 +11,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Network Operations Managers** - Real-time performance monitoring
 - **Finance Teams** - Revenue and cost metric analysis
 - **Product Managers** - Service adoption and usage insights
+- **Marketing Teams** - Brand-consistent dashboard presentations
 
 ## 🛠️ Core Functionality
 
@@ -21,6 +22,16 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 - **Professional KPI Display** - Trend indicators with color-coded performance
+
+### ✅ **Modular Theming System**
+
+- **Multiple Professional Themes** - Cognizant and Verizon themes included
+- **Dynamic Theme Switching** - Real-time theme changes without page reload
+- **Customizable Components** - KPI cards, charts, and layouts adapt to theme
+- **Extensible Architecture** - Easy to add new themes with CSS and Python modules
+- **Theme-Aware Charts** - Altair charts automatically adapt to theme colors
+- **Professional Branding** - Logo integration and brand-specific styling
+- **Print Optimization** - Theme-aware print layouts for PDF export
 
 ### ✅ **Strategic KPI Pillars**
 
@@ -72,6 +83,8 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Print-Optimized Layout** - PDF export via browser print
 - **Color-Coded Deltas** - Green/red/gray for accessibility
 - **Real-Time Timestamps** - Last update indicators
+- **Theme-Aware Components** - All elements adapt to selected theme
+- **Professional Branding** - Logo integration and brand-specific styling
 
 ### ✅ **Developer Goals**
 
@@ -80,6 +93,42 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Error Handling** - Graceful fallbacks for data issues
 - **Performance Optimization** - Efficient query patterns
 - **Scalable Design** - Ready for production deployment
+- **Theme Extensibility** - Easy addition of new themes
+- **Brand Consistency** - Professional appearance across themes
+
+---
+
+## 🎨 Theming System Requirements
+
+### **Theme Architecture**
+- **Central Theme Registry** - `theme_manager.py` for theme management
+- **Dynamic CSS Loading** - External stylesheets for each theme
+- **Logo Integration** - Base64-encoded logos for header branding
+- **Color Coordination** - Theme-aware chart colors and component styling
+- **Responsive Design** - Mobile-friendly layouts for all themes
+
+### **Available Themes**
+
+#### **Cognizant Theme**
+- **Color Scheme**: Professional blue/cyan palette
+- **Design**: Clean, modern corporate aesthetic
+- **Features**: Dark mode support, professional typography
+- **Branding**: Cognizant logo integration
+- **Accessibility**: High contrast for color-blind users
+
+#### **Verizon Theme**
+- **Color Scheme**: Verizon red (#cd040b) with dark backgrounds
+- **Design**: Telecom industry-focused styling
+- **Features**: High contrast, accessibility-friendly
+- **Branding**: Verizon logo integration
+- **Print Optimization**: Theme-aware print layouts
+
+### **Theme Development Process**
+1. **CSS Creation** - Create `styles/[theme_name]/[theme_name].css`
+2. **Python Module** - Create `[theme_name]_theme.py` with theme functions
+3. **Asset Integration** - Add logo to `styles/[theme_name]/logojpg.jpg`
+4. **Theme Registration** - Register theme in `theme_manager.py`
+5. **Testing** - Verify theme switching and print functionality
 
 ---
 
@@ -91,6 +140,13 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Business Views**: 5 daily aggregation views for KPI calculations
 - **CSV Data Foundation**: 12 files with 89 rows of sample data
 - **Portable Format**: Easy migration to PostgreSQL, Snowflake, MySQL
+
+### **Theming System Integration**
+- **Theme Manager**: Central registry for all available themes
+- **Dynamic Switching**: Real-time theme changes without page reload
+- **Component Adaptation**: KPI cards and charts adapt to theme colors
+- **Print Optimization**: Theme-aware print layouts for PDF export
+- **Logo Integration**: Base64-encoded logos for professional branding
 
 ### **Time Period Filtering**
 | Period | Days | Performance Variation |
@@ -113,6 +169,8 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 | Time Period | `create_time_period_selector()` | User-selectable filtering |
 | Grid Layout | `render_metric_grid()` | Responsive 3x2 layout |
 | Tooltip | HTML `title` attribute | Hover definitions |
+| Theme Switching | `theme_switcher()` | Real-time theme changes |
+| Theme CSS | `get_current_theme_css()` | Dynamic stylesheet loading |
 
 ---
 
@@ -123,19 +181,22 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Advanced Analytics** - Machine learning insights
 - **Custom Dashboards** - User-defined KPI configurations
 - **Mobile Optimization** - Tablet/phone responsive design
+- **Additional Themes** - More telecom operator themes
 
 ### **Production Readiness**
 - **Enterprise Database** - Migrate CSV data to PostgreSQL/MySQL/Snowflake
 - **Authentication** - SSO integration for enterprise users
 - **Monitoring** - Application performance and error tracking
 - **Deployment** - Docker containerization and Kubernetes scaling
+- **Theme Customization** - Client-specific theme development
 
 ### **Integration Opportunities**
 - **Snowflake Data Warehouse** - Enhanced data processing
 - **Tableau/Power BI** - Advanced visualizations
 - **Slack/Teams** - Automated alerts and notifications
 - **Jira/ServiceNow** - Incident management integration
+- **Custom Branding** - Client-specific theme development
 
 ---
 
-**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence.**
+**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence with professional theming and comprehensive data analytics.**
