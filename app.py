@@ -100,7 +100,9 @@ def render_network_performance(network_data):
     with col2:
         st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
         if st.button("🤖 AI Insights", key="ai_insights_btn_network", type="secondary", use_container_width=True):
+            # When button is clicked, both show the panel and trigger analysis
             st.session_state.show_ai_insights_network = True
+            st.session_state.trigger_analysis_network = True
         st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector

@@ -213,29 +213,28 @@ def generate_ai_prompt(tab_name, bundled_data):
     if not config:
         return "Error: Could not load prompt configuration"
     
-    # Get prompt template for this tab
-    if tab_name not in config['prompts']:
-        return f"Error: No prompt template found for {tab_name}"
+    # Format KPI data
+    kpi_details = []
+    for kpi in bundled_data:
+        detail = (
+            f"{kpi['kpi_name']}:\n"
+            f"  Current Value: {kpi['current_value']}{kpi['unit']}\n"
+            f"  Prior Period: {kpi['prior_value']:.2f}{kpi['unit']}\n"
+            f"  Trend: {kpi['delta_direction']}\n"
+            f"  Peer Average: {kpi['peer_avg']:.2f}{kpi['unit']}\n"
+            f"  Industry Average: {kpi['industry_avg']:.2f}{kpi['unit']}\n"
+            f"  Status vs Peer: {'Above' if kpi['current_value'] > kpi['peer_avg'] else 'Below'}\n"
+            f"  Direction: {kpi['direction']}\n"
+        )
+        kpi_details.append(detail)
     
-    prompt_config = config['prompts'][tab_name]
+    # Get template for the tab
+    template = config['templates'].get(tab_name, config['templates']['network'])
     
-    # Generate context
-    kpi_context = get_insights_prompt_context(bundled_data)
+    # Format the prompt with the KPI data
+    prompt = template.format(kpi_data="\n".join(kpi_details))
     
-    # Build the complete prompt
-    system_prompt = prompt_config['system_prompt']
-    user_prompt = prompt_config['user_prompt_template'].format(kpi_context=kpi_context)
-    output_format = prompt_config['output_format']
-    
-    full_prompt = f"""
-{system_prompt}
-
-{user_prompt}
-
-{output_format}
-"""
-    
-    return full_prompt
+    return prompt
 
 def preview_llm_prompt(tab_name, days=30):
     """

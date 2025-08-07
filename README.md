@@ -1,6 +1,6 @@
 # 📊 Telecom KPI Dashboard
 
-A **production-ready KPI dashboard** for telecom operators with **comprehensive CSV data warehouse** and **modular theming system**. Provides real-time insights into network performance, customer experience, revenue, usage, and operational efficiency with dynamic time period filtering and professional UI/UX.
+A **production-ready KPI dashboard** for telecom operators with **comprehensive CSV data warehouse**, **modular theming system**, and **AI-powered insights**. Provides real-time insights into network performance, customer experience, revenue, usage, and operational efficiency with dynamic time period filtering, professional UI/UX, and intelligent analysis.
 
 ## 🎯 Features
 
@@ -9,6 +9,15 @@ A **production-ready KPI dashboard** for telecom operators with **comprehensive 
 - **CSV Data Foundation** - 12 CSV files with 89 rows of sample data
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
+
+### ✅ **AI-Powered Insights** 🤖
+- **One-Click Analysis** - Single button to generate comprehensive insights
+- **GPT-4.1 Turbo Integration** - Advanced LLM analysis via OpenRouter
+- **Multi-Subject Analysis** - Network, Customer, Revenue, Usage, and Operations insights
+- **Structured Output** - Executive summary, key insights, trends, and recommended actions
+- **Benchmark Comparison** - Peer and industry performance analysis
+- **Real-Time Processing** - Live analysis with loading indicators and error handling
+- **Configurable Prompts** - YAML-based prompt customization for different use cases
 
 ### ✅ **Modular Theming System**
 - **Multiple Professional Themes** - Cognizant and Verizon themes included
@@ -32,6 +41,36 @@ A **production-ready KPI dashboard** for telecom operators with **comprehensive 
 - **Print-Optimized Layout** - PDF export via browser print
 - **Color-Coded Deltas** - Green/red/gray for accessibility
 - **Real-Time Timestamps** - Last update indicators
+
+## 🤖 AI Insights Feature
+
+### **Intelligent Analysis**
+The dashboard includes an advanced AI Insights feature that provides intelligent analysis of KPI data using GPT-4.1 Turbo:
+
+- **Executive Summary** - High-level overview of key findings and business impact
+- **Key Insights** - 3-5 important observations with specific business implications
+- **Trends** - 2-3 significant patterns and directional changes
+- **Recommended Actions** - 3-5 specific, actionable recommendations
+
+### **Subject Area Coverage**
+- **Network Performance** - Analysis of availability, latency, dropped calls, packet loss, bandwidth utilization, and MTTR
+- **Customer Experience** - Satisfaction, NPS, churn rate, resolution metrics, and handling time analysis
+- **Revenue & Financial** - Growth, ARPU, margins, profitability, and financial optimization insights
+- **Usage & Adoption** - Service utilization, feature adoption, data usage, and engagement analysis
+- **Operations** - Efficiency, cost management, process optimization, and automation opportunities
+
+### **Technical Implementation**
+- **LLM Integration** - OpenRouter API with GPT-4.1 Turbo for advanced analysis
+- **Data Bundling** - Real-time KPI data with peer and industry benchmarks
+- **Prompt Engineering** - YAML-based configuration for customized analysis
+- **Error Handling** - Graceful fallback and user-friendly error messages
+- **Security** - Secure API key management and data privacy protection
+
+### **User Experience**
+- **One-Click Access** - AI Insights button in each subject area header
+- **Loading States** - Clear progress indicators during analysis
+- **Refresh Capability** - Manual refresh for updated insights
+- **Structured Display** - Clean, organized presentation of insights and recommendations
 
 ## 🎨 Available Themes
 
@@ -85,6 +124,15 @@ python load_csv_data.py
 ls data/telecom_db.sqlite
 ```
 
+### **AI Insights Configuration**
+```bash
+# Copy configuration template
+cp config.template.yaml config.secrets.yaml
+
+# Edit config.secrets.yaml with your OpenRouter API key
+# Get API key from https://openrouter.ai/
+```
+
 ### **Run the Application**
 ```bash
 streamlit run app.py
@@ -105,6 +153,7 @@ telecomdashboard/
 │   ├── telecom_db.sqlite         # SQLite database
 │   ├── dim_*.csv                 # Dimension tables (7 files)
 │   ├── fact_*.csv                # Fact tables (5 files)
+│   ├── benchmark_targets.csv     # Peer/industry benchmarks
 │   ├── DATA_CATALOG.md           # Data documentation
 │   └── load_csv_data.py          # Data loading script
 ├── docs/                          # Documentation
@@ -112,6 +161,10 @@ telecomdashboard/
 │   ├── appArchitecture.md        # Technical architecture
 │   ├── consolidatedKPI.md        # KPI definitions
 │   ├── THEME_GUIDE.md           # Theme development guide
+│   ├── AI-Insights/             # AI Insights documentation
+│   │   ├── ai-insightsArchitecture.md
+│   │   ├── insightsRequirements.md
+│   │   └── ai-insights-mermaid.md
 │   └── ux-design1.html          # Design reference
 ├── styles/                        # Theming system
 │   ├── cognizant/                # Cognizant theme
@@ -128,6 +181,12 @@ telecomdashboard/
 │   ├── theme_switcher.py        # Theme switching UI
 │   ├── cognizant_theme.py       # Cognizant theme module
 │   └── verizon_theme.py         # Verizon theme module
+├── ai_insights_data_bundler.py   # AI Insights data processing
+├── ai_insights_ui.py             # AI Insights UI components
+├── llm_service.py                # LLM integration service
+├── config_loader.py              # Configuration management
+├── ai_insights_prompts.yaml      # AI prompt configuration
+├── config.template.yaml          # Configuration template
 └── scripts/                      # Data generation
     ├── generate_comprehensive_data.py
     └── fix_network_metrics_schema.py
@@ -196,6 +255,13 @@ telecomdashboard/
 - **Theme Switching**: Real-time via sidebar
 - **Theme Persistence**: Maintains selection across sessions
 
+### **AI Insights Configuration**
+- **LLM Provider**: OpenRouter with GPT-4.1 Turbo
+- **API Key**: Secure storage in `config.secrets.yaml`
+- **Prompt Templates**: YAML-based configuration in `ai_insights_prompts.yaml`
+- **Benchmark Data**: CSV-based peer and industry targets
+- **Response Format**: Structured JSON with executive summary, insights, trends, and actions
+
 ## 🎯 Key Metrics Available
 
 ### **Network Performance**
@@ -244,6 +310,13 @@ telecomdashboard/
 - **CSV Files**: Modify `data/*.csv` files for custom data
 - **Database**: Use `load_csv_data.py` to reload custom data
 - **Views**: Update SQL views in `data/setup_telecom_data_warehouse_final.sql`
+- **Benchmarks**: Update `data/benchmark_targets.csv` for custom peer/industry targets
+
+### **AI Insights Customization**
+- **Prompts**: Modify `ai_insights_prompts.yaml` for custom analysis focus
+- **LLM Settings**: Adjust model, temperature, and token limits in configuration
+- **Benchmark Data**: Update peer and industry averages in CSV files
+- **Response Format**: Customize JSON structure and insight categories
 
 ### **Theme Customization**
 - **CSS Styling**: Modify `styles/[theme]/[theme].css`
@@ -267,7 +340,8 @@ streamlit run app.py
 1. **Database Migration**: Load CSV data to PostgreSQL/MySQL/Snowflake
 2. **Environment Setup**: Configure production database connection
 3. **Theme Deployment**: Ensure all theme assets are accessible
-4. **Performance Optimization**: Enable caching and monitoring
+4. **AI Configuration**: Set up OpenRouter API key and LLM settings
+5. **Performance Optimization**: Enable caching and monitoring
 
 ### **Docker Deployment**
 ```dockerfile
@@ -287,6 +361,12 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501"]
 - **PostgreSQL/MySQL**: Enterprise database deployment
 - **Real-time APIs**: Live network performance data feeds
 
+### **AI/ML Integration**
+- **Custom Models**: Integrate proprietary ML models for specialized analysis
+- **Predictive Analytics**: Add forecasting capabilities to AI Insights
+- **Anomaly Detection**: Implement automated issue detection
+- **Multi-Model Support**: Switch between different LLM providers
+
 ### **Visualization Integration**
 - **Tableau**: Export data for advanced visualizations
 - **Power BI**: Microsoft BI integration
@@ -304,12 +384,16 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501"]
 - **Advanced Analytics** - Machine learning insights
 - **Custom Dashboards** - User-defined KPI configurations
 - **Mobile Optimization** - Tablet/phone responsive design
+- **Historical Analysis** - Trend analysis across multiple time periods
+- **Action Tracking** - Monitor implementation of AI recommendations
 
 ### **Long-term Vision**
 - **Multi-tenant Architecture** - Support for multiple telecom operators
 - **Advanced Theming** - AI-powered theme generation
 - **Predictive Analytics** - Proactive issue detection
 - **API Ecosystem** - RESTful APIs for external integrations
+- **Custom Insights** - User-defined analysis criteria
+- **Multi-Model Support** - Switch between different LLM providers
 
 ## 🤝 Contributing
 
@@ -318,6 +402,12 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501"]
 2. Create theme assets in `styles/[theme_name]/`
 3. Implement theme module in `[theme_name]_theme.py`
 4. Test theme switching and print functionality
+
+### **AI Insights Development**
+1. Follow the AI architecture in `docs/AI-Insights/ai-insightsArchitecture.md`
+2. Update prompts in `ai_insights_prompts.yaml`
+3. Modify benchmark data in `data/benchmark_targets.csv`
+4. Test LLM integration and response parsing
 
 ### **Data Enhancement**
 1. Update CSV files with realistic telecom data
@@ -341,4 +431,4 @@ For technical support and customization requests, refer to `client_onboarding_gu
 
 ---
 
-**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence with professional theming and comprehensive data analytics.** 
+**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence with professional theming, comprehensive data analytics, and AI-powered intelligent insights.** 

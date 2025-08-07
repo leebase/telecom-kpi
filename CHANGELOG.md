@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2024-08-07
+
+### 🤖 **Major Feature: AI-Powered Insights**
+- **GPT-4.1 Turbo Integration** - Advanced LLM analysis via OpenRouter
+- **One-Click Analysis** - Single button to generate comprehensive insights
+- **Multi-Subject Analysis** - Network, Customer, Revenue, Usage, and Operations insights
+- **Structured Output** - Executive summary, key insights, trends, and recommended actions
+- **Benchmark Comparison** - Peer and industry performance analysis
+- **Real-Time Processing** - Live analysis with loading indicators and error handling
+- **Configurable Prompts** - YAML-based prompt customization for different use cases
+
+### 🏗️ **AI Architecture**
+- **LLM Service** (`llm_service.py`) - OpenRouter API integration with GPT-4.1 Turbo
+- **Data Bundler** (`ai_insights_data_bundler.py`) - KPI data transformation and context building
+- **UI Components** (`ai_insights_ui.py`) - Streamlit-based interface with custom styling
+- **Configuration Management** (`config_loader.py`) - Secure API key and setting management
+- **Prompt Templates** (`ai_insights_prompts.yaml`) - YAML-based configuration for customized analysis
+
+### 📊 **Data Integration**
+- **Benchmark Data** (`data/benchmark_targets.csv`) - Peer and industry comparison targets
+- **Real-Time KPI Access** - Database integration for current and historical KPI values
+- **Trend Analysis** - Prior period comparisons and directional indicators
+- **Threshold Management** - Green/yellow/red performance indicators
+
+### 🎯 **User Experience**
+- **AI Insights Button** - Integrated in each subject area header
+- **Loading States** - Clear progress indicators during analysis
+- **Refresh Capability** - Manual refresh for updated insights
+- **Structured Display** - Clean, organized presentation of insights and recommendations
+- **Error Handling** - Graceful fallback and user-friendly error messages
+
+### 🔧 **Technical Implementation**
+- **Secure API Management** - API keys in `.gitignore` protected files
+- **JSON Response Formatting** - Structured output for reliable parsing
+- **Error Handling** - Comprehensive error logging and user feedback
+- **Performance Optimization** - Efficient data bundling and processing
+- **Theme Integration** - AI Insights adapt to selected dashboard theme
+
+### 📚 **Documentation**
+- **AI Architecture Guide** (`docs/AI-Insights/ai-insightsArchitecture.md`) - Technical implementation details
+- **Requirements Specification** (`docs/AI-Insights/insightsRequirements.md`) - Feature requirements and user stories
+- **Configuration Guide** - Setup instructions for OpenRouter API and LLM settings
+- **Updated README** - Comprehensive documentation of AI Insights feature
+
 ## [2.0.0] - 2024-08-04
 
 ### 🎨 **Major Feature: Modular Theming System**
@@ -135,25 +179,25 @@ All notable changes to this project will be documented in this file.
 
 ## 🔮 **Future Roadmap**
 
-### **Version 2.1.0** (Planned)
-- **Real-time Data Streaming** - Live network API integration
-- **Advanced Analytics** - Machine learning insights
-- **Custom Dashboards** - User-defined KPI configurations
-- **Mobile Optimization** - Tablet/phone responsive design
-- **Additional Themes** - More telecom operator themes
-
 ### **Version 2.2.0** (Planned)
-- **Multi-tenant Architecture** - Support for multiple telecom operators
+- **Historical Analysis** - Trend analysis across multiple time periods
+- **Custom Insights** - User-defined analysis criteria and focus areas
+- **Action Tracking** - Monitor implementation of AI recommendations
+- **Multi-Model Support** - Switch between different LLM providers
+- **Predictive Analytics** - Forecast future performance based on trends
+
+### **Version 2.3.0** (Planned)
+- **Anomaly Detection** - Automatic identification of unusual patterns
+- **Comparative Analysis** - Side-by-side comparison of different periods
+- **Export Functionality** - PDF/Excel export of insights and recommendations
 - **Advanced Theming** - AI-powered theme generation
-- **Predictive Analytics** - Proactive issue detection
-- **API Ecosystem** - RESTful APIs for external integrations
-- **Custom Branding** - Client-specific theme development
+- **Mobile Optimization** - Tablet/phone responsive design
 
 ### **Version 3.0.0** (Long-term)
+- **Multi-tenant Architecture** - Support for multiple telecom operators
 - **Enterprise Integration** - SSO, authentication, and security
 - **Cloud Deployment** - Docker, Kubernetes, and cloud platforms
 - **Advanced Visualizations** - Interactive charts and dashboards
-- **Alert System** - KPI threshold notifications
 - **Third-party Integrations** - Tableau, Power BI, Slack, Teams
 
 ---
@@ -167,4 +211,4 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ---
 
-**This changelog tracks the evolution of the Telecom KPI Dashboard from initial concept to production-ready enterprise solution with comprehensive theming and data analytics capabilities.** 
+**This changelog tracks the evolution of the Telecom KPI Dashboard from initial concept to production-ready enterprise solution with comprehensive theming, data analytics, and AI-powered intelligent insights capabilities.** 
