@@ -8,6 +8,9 @@ from generate_test_data import *
 from improved_metric_cards import *
 from theme_manager import get_current_theme_css, get_current_theme_header, get_current_theme_page_header
 from theme_switcher import create_theme_switcher
+from ai_insights_data_bundler import create_ai_insights_button, preview_llm_prompt
+from ai_insights_ui import render_ai_insights_panel
+from benchmark_manager import create_benchmark_tab
 
 # Page configuration
 st.set_page_config(
@@ -89,7 +92,16 @@ st.markdown(get_current_theme_header(), unsafe_allow_html=True)
 
 # Render functions for each section
 def render_network_performance(network_data):
-    st.header("📡 Network Performance & Reliability")
+    # Header with AI Insights button
+    # Header with AI Insights button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("📡 Network Performance & Reliability", divider=False)
+    with col2:
+        st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
+        if st.button("🤖 AI Insights", key="ai_insights_btn_network", type="secondary", use_container_width=True):
+            st.session_state.show_ai_insights_network = True
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector
     time_period = create_time_period_selector("network")
@@ -101,6 +113,13 @@ def render_network_performance(network_data):
         "YTD": 365,
         "Last 12 Months": 365
     }.get(time_period, 30)
+    
+    # Show AI Insights in a dialog if button was clicked
+    if st.session_state.get('show_ai_insights_network', False):
+        with st.expander("🤖 AI Insights Analysis", expanded=True):
+            render_ai_insights_panel("network", time_period_days)
+            if st.button("✖️ Close AI Insights", key="close_ai_insights_network", type="secondary"):
+                st.session_state.show_ai_insights_network = False
     
     # Render improved metric grid
     network_metrics = get_network_metrics(time_period_days)
@@ -130,7 +149,16 @@ def render_network_performance(network_data):
                        lambda: render_line_chart(network_data['dcr_trend'], "Dropped Call Rate", "%"))
 
 def render_customer_experience(customer_data):
-    st.header("😊 Customer Experience & Retention")
+    # Header with AI Insights button
+    # Header with AI Insights button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("😊 Customer Experience & Retention", divider=False)
+    with col2:
+        st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
+        if st.button("🤖 AI Insights", key="ai_insights_btn_customer", type="secondary", use_container_width=True):
+            st.session_state.show_ai_insights_customer = True
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector
     time_period = create_time_period_selector("customer")
@@ -142,6 +170,13 @@ def render_customer_experience(customer_data):
         "YTD": 365,
         "Last 12 Months": 365
     }.get(time_period, 30)
+    
+    # Show AI Insights in a dialog if button was clicked
+    if st.session_state.get('show_ai_insights_customer', False):
+        with st.expander("🤖 AI Insights Analysis", expanded=True):
+            render_ai_insights_panel("customer", time_period_days)
+            if st.button("✖️ Close AI Insights", key="close_ai_insights_customer", type="secondary"):
+                st.session_state.show_ai_insights_customer = False
     
     # Render improved metric grid
     customer_metrics = get_customer_metrics(time_period_days)
@@ -201,7 +236,16 @@ def render_customer_experience(customer_data):
         st.warning("No customer trend data available for detailed analysis")
 
 def render_revenue_monetization(revenue_data):
-    st.header("💰 Revenue & Monetization")
+    # Header with AI Insights button
+    # Header with AI Insights button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("💰 Revenue & Monetization", divider=False)
+    with col2:
+        st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
+        if st.button("🤖 AI Insights", key="ai_insights_btn_revenue", type="secondary", use_container_width=True):
+            st.session_state.show_ai_insights_revenue = True
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector
     time_period = create_time_period_selector("revenue")
@@ -213,6 +257,13 @@ def render_revenue_monetization(revenue_data):
         "YTD": 365,
         "Last 12 Months": 365
     }.get(time_period, 30)
+    
+    # Show AI Insights in a dialog if button was clicked
+    if st.session_state.get('show_ai_insights_revenue', False):
+        with st.expander("🤖 AI Insights Analysis", expanded=True):
+            render_ai_insights_panel("revenue", time_period_days)
+            if st.button("✖️ Close AI Insights", key="close_ai_insights_revenue", type="secondary"):
+                st.session_state.show_ai_insights_revenue = False
     
     # Render improved metric grid
     revenue_metrics = get_revenue_metrics(time_period_days)
@@ -272,7 +323,16 @@ def render_revenue_monetization(revenue_data):
         st.warning("No revenue trend data available for detailed analysis")
 
 def render_usage_adoption(usage_data):
-    st.header("📶 Usage & Service Adoption")
+    # Header with AI Insights button
+    # Header with AI Insights button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("📶 Usage & Service Adoption", divider=False)
+    with col2:
+        st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
+        if st.button("🤖 AI Insights", key="ai_insights_btn_usage", type="secondary", use_container_width=True):
+            st.session_state.show_ai_insights_usage = True
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector
     time_period = create_time_period_selector("usage")
@@ -284,6 +344,13 @@ def render_usage_adoption(usage_data):
         "YTD": 365,
         "Last 12 Months": 365
     }.get(time_period, 30)
+    
+    # Show AI Insights in a dialog if button was clicked
+    if st.session_state.get('show_ai_insights_usage', False):
+        with st.expander("🤖 AI Insights Analysis", expanded=True):
+            render_ai_insights_panel("usage", time_period_days)
+            if st.button("✖️ Close AI Insights", key="close_ai_insights_usage", type="secondary"):
+                st.session_state.show_ai_insights_usage = False
     
     # Render improved metric grid
     usage_metrics = get_usage_metrics(time_period_days)
@@ -343,7 +410,16 @@ def render_usage_adoption(usage_data):
         st.warning("No usage trend data available for detailed analysis")
 
 def render_operational_efficiency(operations_data):
-    st.header("🛠️ Operational Efficiency")
+    # Header with AI Insights button
+    # Header with AI Insights button
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("🛠️ Operational Efficiency", divider=False)
+    with col2:
+        st.markdown('<div style="height: 3.3rem; display: flex; align-items: flex-end; justify-content: flex-end;">', unsafe_allow_html=True)
+        if st.button("🤖 AI Insights", key="ai_insights_btn_operations", type="secondary", use_container_width=True):
+            st.session_state.show_ai_insights_operations = True
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Time period selector
     time_period = create_time_period_selector("operations")
@@ -355,6 +431,13 @@ def render_operational_efficiency(operations_data):
         "YTD": 365,
         "Last 12 Months": 365
     }.get(time_period, 30)
+    
+    # Show AI Insights in a dialog if button was clicked
+    if st.session_state.get('show_ai_insights_operations', False):
+        with st.expander("🤖 AI Insights Analysis", expanded=True):
+            render_ai_insights_panel("operations", time_period_days)
+            if st.button("✖️ Close AI Insights", key="close_ai_insights_operations", type="secondary"):
+                st.session_state.show_ai_insights_operations = False
     
     # Render improved metric grid
     operations_metrics = get_operations_metrics(time_period_days)
@@ -491,12 +574,13 @@ def main():
     
     # Create tabs for each KPI pillar
     if not print_mode:
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
             "📡 Network Performance", 
             "😊 Customer Experience", 
             "💰 Revenue & Monetization", 
             "📶 Usage & Adoption", 
-            "🛠️ Operational Efficiency"
+            "🛠️ Operational Efficiency",
+            "🎯 Benchmark Management"
         ])
         
         # Tab 1: Network Performance
@@ -518,6 +602,10 @@ def main():
         # Tab 5: Operational Efficiency
         with tab5:
             render_operational_efficiency(operations_data)
+        
+        # Tab 6: Benchmark Management
+        with tab6:
+            create_benchmark_tab()
     else:
         # In print mode, render all content directly with print-specific styling
         st.markdown('<div class="print-mode">', unsafe_allow_html=True)

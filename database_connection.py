@@ -504,5 +504,113 @@ class TelecomDatabase:
             print(f"Error getting operations trend data: {e}")
             return pd.DataFrame()
 
+    def get_benchmark_targets(self, kpi_names=None):
+        """Get benchmark targets for KPIs"""
+        if kpi_names:
+            placeholders = ','.join(['?' for _ in kpi_names])
+            query = f"""
+            SELECT kpi_name, peer_avg, industry_avg, unit, direction, 
+                   threshold_low, threshold_high, last_updated
+            FROM benchmark_targets 
+            WHERE kpi_name IN ({placeholders})
+            """
+            with self.get_connection() as conn:
+                return pd.read_sql_query(query, conn, params=kpi_names)
+        else:
+            query = """
+            SELECT kpi_name, peer_avg, industry_avg, unit, direction, 
+                   threshold_low, threshold_high, last_updated
+            FROM benchmark_targets
+            ORDER BY kpi_name
+            """
+            with self.get_connection() as conn:
+                return pd.read_sql_query(query, conn)
+    
+    def update_benchmark_target(self, kpi_name, peer_avg=None, industry_avg=None, 
+                               unit=None, direction=None, threshold_low=None, 
+                               threshold_high=None, changed_by="system"):
+        """Update a benchmark target and log the change"""
+        with self.get_connection() as conn:
+            # Get current values
+            current = conn.execute("""
+                SELECT peer_avg, industry_avg FROM benchmark_targets 
+                WHERE kpi_name = ?
+            """, (kpi_name,)).fetchone()
+            
+            if current:
+                old_peer, old_industry = current
+            else:
+                old_peer, old_industry = None, None
+            
+            # Update the target
+            update_fields = []
+            params = []
+            
+            if peer_avg is not None:
+                update_fields.append("peer_avg = ?")
+                params.append(peer_avg)
+            if industry_avg is not None:
+                update_fields.append("industry_avg = ?")
+                params.append(industry_avg)
+            if unit is not None:
+                update_fields.append("unit = ?")
+                params.append(unit)
+            if direction is not None:
+                update_fields.append("direction = ?")
+                params.append(direction)
+            if threshold_low is not None:
+                update_fields.append("threshold_low = ?")
+                params.append(threshold_low)
+            if threshold_high is not None:
+                update_fields.append("threshold_high = ?")
+                params.append(threshold_high)
+            
+            update_fields.append("last_updated = ?")
+            params.append(datetime.now().strftime('%Y-%m-%d'))
+            
+            params.append(kpi_name)
+            
+            if update_fields:
+                query = f"""
+                UPDATE benchmark_targets 
+                SET {', '.join(update_fields)}
+                WHERE kpi_name = ?
+                """
+                conn.execute(query, params)
+            
+            # Log the change if values changed
+            if (old_peer != peer_avg or old_industry != industry_avg) and (old_peer is not None or old_industry is not None):
+                conn.execute("""
+                    INSERT INTO benchmark_history 
+                    (kpi_name, old_peer_avg, new_peer_avg, old_industry_avg, new_industry_avg, changed_by)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (kpi_name, old_peer, peer_avg, old_industry, industry_avg, changed_by))
+            
+            conn.commit()
+    
+    def get_benchmark_history(self, kpi_name=None, limit=50):
+        """Get benchmark change history"""
+        if kpi_name:
+            query = """
+            SELECT kpi_name, old_peer_avg, new_peer_avg, old_industry_avg, 
+                   new_industry_avg, changed_by, changed_at
+            FROM benchmark_history 
+            WHERE kpi_name = ?
+            ORDER BY changed_at DESC
+            LIMIT ?
+            """
+            with self.get_connection() as conn:
+                return pd.read_sql_query(query, conn, params=(kpi_name, limit))
+        else:
+            query = """
+            SELECT kpi_name, old_peer_avg, new_peer_avg, old_industry_avg, 
+                   new_industry_avg, changed_by, changed_at
+            FROM benchmark_history 
+            ORDER BY changed_at DESC
+            LIMIT ?
+            """
+            with self.get_connection() as conn:
+                return pd.read_sql_query(query, conn, params=(limit,))
+
 # Global database instance
 db = TelecomDatabase() 
