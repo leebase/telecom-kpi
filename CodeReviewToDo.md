@@ -187,17 +187,19 @@ conn.cursor().execute(f"ALTER SESSION SET QUERY_TAG = '{query_tag}'")
 
 ## Configuration Management
 
-### CONFIG-001: Environment Validation ❌
-- **File**: `config_manager.py`
+### CONFIG-001: Environment Validation ✅
+- **File**: `config_manager.py:25-189`, `config_validator.py`
 - **Issue**: Missing required environment variable validation
 - **Fix**: Add startup validation for critical config
-- **Status**: [ ] TODO
+- **Status**: [x] COMPLETED - 2025-08-09
+- **Notes**: Comprehensive environment validation with production readiness checks and CLI utility
 
-### CONFIG-002: Feature Flag Config ❌
-- **File**: `config.template.yaml`
+### CONFIG-002: Feature Flag Config ✅
+- **File**: `config.template.yaml:25-98`, `config_manager.py:239-308`
 - **Issue**: No feature flag configuration structure
 - **Fix**: Add feature flags section to config
-- **Status**: [ ] TODO
+- **Status**: [x] COMPLETED - 2025-08-09
+- **Notes**: Comprehensive feature flag system with 15+ flags, environment overrides, and management CLI
 
 ## Documentation
 

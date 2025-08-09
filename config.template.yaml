@@ -22,9 +22,77 @@ theme:
   available_themes: ["cognizant", "verizon"]
   auto_switch: false
 
-# Feature Flags
+# Feature Flags Configuration
+# Environment variables can override these with FEATURE_<UPPERCASE_NAME>=true/false
 features:
-  ai_insights: true
-  benchmark_management: true
-  data_export: true
-  real_time_updates: false
+  # AI and ML Features
+  ai_insights: true                    # Enable AI-powered insights generation
+  ai_insights_beta: false             # Enable beta AI features
+  pii_scrubbing: true                 # Enable PII scrubbing for GDPR compliance
+  
+  # Performance Features
+  cache_ttl: true                     # Enable TTL-based caching
+  circuit_breaker: true               # Enable circuit breaker pattern
+  connection_pooling: true            # Enable database connection pooling
+  
+  # Enterprise Features
+  structured_logging: false           # Enable JSON structured logging (production)
+  snowflake_query_tagging: true       # Enable Snowflake query tagging
+  health_checks_detailed: true        # Enable detailed health checks
+  
+  # UI and UX Features
+  theme_switching: true               # Enable dynamic theme switching
+  benchmark_management: true          # Enable benchmark management interface
+  print_mode: true                   # Enable print-optimized layouts
+  
+  # Security Features
+  security_headers: true              # Enable security headers
+  rate_limiting: true                 # Enable rate limiting
+  sql_injection_protection: true     # Enable SQL injection protection
+  
+  # Development and Testing Features
+  debug_mode: false                   # Enable debug features (development only)
+  test_mode: false                   # Enable test fixtures and mock data
+  performance_monitoring: true        # Enable performance metrics collection
+
+# Environment-Specific Configuration
+environments:
+  development:
+    features:
+      debug_mode: true
+      structured_logging: false
+      detailed_logging: true
+  
+  staging:
+    features:
+      structured_logging: true
+      debug_mode: false
+      performance_monitoring: true
+  
+  production:
+    features:
+      structured_logging: true
+      debug_mode: false
+      detailed_logging: false
+      performance_monitoring: true
+      security_headers: true
+      rate_limiting: true
+
+# Configuration Validation Rules
+validation:
+  required_production_vars:
+    - "ENVIRONMENT"
+    - "DATABASE_URL" 
+    - "LLM_API_KEY"
+    - "LOG_LEVEL"
+  
+  recommended_vars:
+    - "CACHE_TTL_SECONDS"
+    - "FEATURE_STRUCTURED_LOGGING"
+    - "FEATURE_SECURITY_HEADERS"
+  
+  environment_values:
+    - "production"
+    - "staging" 
+    - "development"
+    - "testing"

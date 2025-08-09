@@ -22,6 +22,9 @@ tests/
 │   ├── test_config_manager.py
 │   ├── test_database_connection.py
 │   └── test_exceptions.py
+├── config/           # Configuration management tests
+│   ├── test_environment_validation.py
+│   └── test_feature_flags.py
 └── fixtures/         # Test fixtures and data
     └── __init__.py
 ```
@@ -53,6 +56,7 @@ pytest tests/security/ -v     # Security tests
 pytest tests/ai/ -v          # AI safety tests
 pytest tests/performance/ -v  # Performance tests
 pytest tests/integration/ -v  # Integration tests
+pytest tests/config/ -v      # Configuration tests
 ```
 
 ## 🔒 Security Testing
@@ -169,6 +173,55 @@ pytest tests/integration/test_database_adapters.py::TestConnectionPooling -v
 - **Snowflake Adapter**: Query tagging and compliance features
 - **Performance Validation**: Response times and concurrent operations
 
+## ⚙️ Configuration Management Testing
+
+### Environment Validation Testing
+```bash
+# Run configuration tests
+pytest tests/config/test_environment_validation.py -v
+
+# Test specific validation scenarios
+pytest tests/config/test_environment_validation.py::TestEnvironmentValidator::test_production_validation -v
+```
+
+**What it tests:**
+- **Environment Variable Validation**: Required, production-required, and recommended variables
+- **Format Validation**: DATABASE_URL, LOG_LEVEL, API key format validation
+- **Production Readiness**: Comprehensive pre-deployment validation checks
+- **Environment-Specific Rules**: Different validation requirements per environment
+- **Graceful Degradation**: Development warnings vs production failures
+
+### Feature Flag Testing
+```bash
+# Test feature flag functionality
+pytest tests/config/test_feature_flags.py -v
+
+# Test environment variable overrides
+pytest tests/config/test_feature_flags.py::TestFeatureFlags::test_environment_overrides -v
+```
+
+**What it tests:**
+- **Feature Flag Loading**: Proper loading of 15+ feature flags from configuration
+- **Environment Overrides**: `FEATURE_<UPPERCASE_NAME>=true/false` functionality
+- **Environment-Specific Defaults**: Different defaults for development/staging/production
+- **Configuration Integration**: Feature flag integration with main application configuration
+- **Runtime Configuration**: Dynamic feature enabling/disabling without restarts
+
+### Configuration CLI Testing
+```bash
+# Test configuration management CLI
+python config_validator.py validate --environment testing
+python config_validator.py features
+python config_validator.py production-check
+```
+
+**CLI Test Scenarios:**
+- **Environment Validation**: Test validation across different environments
+- **Feature Flag Management**: Verify feature flag listing and setting functionality
+- **Production Readiness**: Validate comprehensive production deployment checks
+- **Configuration Export**: Test JSON and environment variable export formats
+- **Error Handling**: Verify proper error messages and exit codes
+
 ### Enterprise Features
 ```bash
 # Test Snowflake query tagging
@@ -226,6 +279,7 @@ markers =
     security: Security-related tests
     performance: Performance tests
     ai: AI safety tests
+    config: Configuration management tests
 ```
 
 ### Test Markers
@@ -235,6 +289,7 @@ pytest -m security     # Security tests only
 pytest -m performance  # Performance tests only
 pytest -m ai           # AI safety tests only
 pytest -m integration  # Integration tests only
+pytest -m config       # Configuration tests only
 ```
 
 ## 🚨 Security Test Scenarios

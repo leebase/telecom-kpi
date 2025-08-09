@@ -6,13 +6,187 @@ including database settings, UI preferences, security settings, and performance 
 """
 
 import os
+import sys
 import yaml
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional, Union, List
 from dataclasses import dataclass, field
 from pathlib import Path
 import logging
 
 logger = logging.getLogger(__name__)
+
+@dataclass
+class ConfigValidationError(Exception):
+    """Configuration validation error"""
+    message: str
+    missing_vars: List[str] = field(default_factory=list)
+    invalid_vars: List[str] = field(default_factory=list)
+
+class EnvironmentValidator:
+    """
+    Environment variable validation for production deployment
+    
+    Validates critical configuration before application startup
+    """
+    
+    # Required environment variables for production
+    REQUIRED_PRODUCTION_VARS = [
+        'ENVIRONMENT',  # production, staging, development
+    ]
+    
+    # Optional but recommended environment variables
+    RECOMMENDED_VARS = [
+        'LLM_API_KEY',           # AI functionality
+        'DATABASE_URL',          # Production database
+        'LOG_LEVEL',            # Logging configuration
+        'CACHE_TTL_SECONDS',    # Performance tuning
+        'FEATURE_STRUCTURED_LOGGING',  # Feature flags
+    ]
+    
+    # Environment-specific requirements
+    PRODUCTION_REQUIRED_VARS = [
+        'DATABASE_URL',          # Must use production database
+        'LLM_API_KEY',          # AI features required in production
+        'LOG_LEVEL',            # Must specify logging level
+    ]
+    
+    @classmethod
+    def validate_environment(cls, environment: str = None) -> Dict[str, Any]:
+        """
+        Validate environment configuration
+        
+        Args:
+            environment: Target environment (production, staging, development)
+            
+        Returns:
+            Dict with validation results
+            
+        Raises:
+            ConfigValidationError: If critical validation fails
+        """
+        if environment is None:
+            environment = os.getenv('ENVIRONMENT', 'development')
+        
+        results = {
+            'environment': environment,
+            'valid': True,
+            'errors': [],
+            'warnings': [],
+            'missing_required': [],
+            'missing_recommended': [],
+            'summary': {}
+        }
+        
+        # Check required variables
+        for var in cls.REQUIRED_PRODUCTION_VARS:
+            value = os.getenv(var)
+            if not value:
+                results['missing_required'].append(var)
+                results['errors'].append(f"Missing required environment variable: {var}")
+        
+        # Check production-specific requirements
+        if environment.lower() == 'production':
+            for var in cls.PRODUCTION_REQUIRED_VARS:
+                value = os.getenv(var)
+                if not value:
+                    results['missing_required'].append(var)
+                    results['errors'].append(f"Missing production-required variable: {var}")
+        
+        # Check recommended variables
+        for var in cls.RECOMMENDED_VARS:
+            value = os.getenv(var)
+            if not value:
+                results['missing_recommended'].append(var)
+                results['warnings'].append(f"Missing recommended variable: {var}")
+        
+        # Validate specific variables
+        cls._validate_specific_vars(results)
+        
+        # Set overall validity
+        results['valid'] = len(results['errors']) == 0
+        
+        # Generate summary
+        results['summary'] = {
+            'required_vars_set': len(cls.REQUIRED_PRODUCTION_VARS) - len([v for v in results['missing_required'] if v in cls.REQUIRED_PRODUCTION_VARS]),
+            'recommended_vars_set': len(cls.RECOMMENDED_VARS) - len(results['missing_recommended']),
+            'total_errors': len(results['errors']),
+            'total_warnings': len(results['warnings'])
+        }
+        
+        return results
+    
+    @classmethod
+    def _validate_specific_vars(cls, results: Dict[str, Any]):
+        """Validate specific environment variable formats and values"""
+        
+        # Validate ENVIRONMENT
+        environment = os.getenv('ENVIRONMENT', '').lower()
+        if environment and environment not in ['production', 'staging', 'development', 'testing']:
+            results['errors'].append(f"Invalid ENVIRONMENT value: {environment}. Must be one of: production, staging, development, testing")
+        
+        # Validate LOG_LEVEL
+        log_level = os.getenv('LOG_LEVEL', '').upper()
+        if log_level and log_level not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
+            results['errors'].append(f"Invalid LOG_LEVEL value: {log_level}. Must be one of: DEBUG, INFO, WARNING, ERROR, CRITICAL")
+        
+        # Validate CACHE_TTL_SECONDS
+        cache_ttl = os.getenv('CACHE_TTL_SECONDS')
+        if cache_ttl:
+            try:
+                ttl_value = int(cache_ttl)
+                if ttl_value < 0 or ttl_value > 3600:
+                    results['warnings'].append(f"CACHE_TTL_SECONDS value {ttl_value} outside recommended range (0-3600)")
+            except ValueError:
+                results['errors'].append(f"Invalid CACHE_TTL_SECONDS value: {cache_ttl}. Must be an integer")
+        
+        # Validate DATABASE_URL format
+        database_url = os.getenv('DATABASE_URL')
+        if database_url:
+            if not any(database_url.startswith(prefix) for prefix in ['postgresql://', 'snowflake://', 'sqlite://', 'mysql://']):
+                results['warnings'].append("DATABASE_URL format not recognized. Expected: postgresql://, snowflake://, sqlite://, or mysql://")
+        
+        # Validate LLM_API_KEY format
+        api_key = os.getenv('LLM_API_KEY')
+        if api_key:
+            if not api_key.startswith(('sk-', 'pk-')) or len(api_key) < 20:
+                results['warnings'].append("LLM_API_KEY format may be invalid. Expected format: sk-... or pk-... with 20+ characters")
+    
+    @classmethod
+    def validate_startup_config(cls) -> bool:
+        """
+        Validate configuration at startup
+        
+        Returns:
+            bool: True if validation passes, False otherwise
+            
+        Raises:
+            ConfigValidationError: If critical validation fails
+        """
+        try:
+            validation_results = cls.validate_environment()
+            
+            # Log validation results
+            if validation_results['valid']:
+                logger.info(f"✅ Environment validation passed for {validation_results['environment']} environment")
+                if validation_results['warnings']:
+                    for warning in validation_results['warnings']:
+                        logger.warning(f"⚠️ {warning}")
+            else:
+                logger.error(f"❌ Environment validation failed for {validation_results['environment']} environment")
+                for error in validation_results['errors']:
+                    logger.error(f"🚨 {error}")
+                
+                # Raise exception for critical failures
+                raise ConfigValidationError(
+                    message=f"Environment validation failed with {len(validation_results['errors'])} errors",
+                    missing_vars=validation_results['missing_required']
+                )
+            
+            return validation_results['valid']
+            
+        except Exception as e:
+            logger.error(f"Configuration validation error: {e}")
+            return False
 
 @dataclass
 class DatabaseConfig:
@@ -62,6 +236,39 @@ class AIConfig:
     enable_insights: bool = True
 
 @dataclass
+class FeatureConfig:
+    """Feature flag configuration"""
+    # AI and ML Features
+    ai_insights: bool = True
+    ai_insights_beta: bool = False
+    pii_scrubbing: bool = True
+    
+    # Performance Features
+    cache_ttl: bool = True
+    circuit_breaker: bool = True
+    connection_pooling: bool = True
+    
+    # Enterprise Features
+    structured_logging: bool = False
+    snowflake_query_tagging: bool = True
+    health_checks_detailed: bool = True
+    
+    # UI and UX Features
+    theme_switching: bool = True
+    benchmark_management: bool = True
+    print_mode: bool = True
+    
+    # Security Features
+    security_headers: bool = True
+    rate_limiting: bool = True
+    sql_injection_protection: bool = True
+    
+    # Development Features
+    debug_mode: bool = False
+    test_mode: bool = False
+    performance_monitoring: bool = True
+
+@dataclass
 class AppConfig:
     """Main application configuration"""
     database: DatabaseConfig = field(default_factory=DatabaseConfig)
@@ -69,6 +276,7 @@ class AppConfig:
     security: SecurityConfig = field(default_factory=SecurityConfig)
     performance: PerformanceConfig = field(default_factory=PerformanceConfig)
     ai: AIConfig = field(default_factory=AIConfig)
+    features: FeatureConfig = field(default_factory=FeatureConfig)
     
     def __post_init__(self):
         """Validate configuration after initialization"""
