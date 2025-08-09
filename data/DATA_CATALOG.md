@@ -324,4 +324,4 @@ LOAD DATA INFILE 'data/dim_region.csv' INTO TABLE dim_region FIELDS TERMINATED B
 | `fact_usage_adoption.csv` | Fact | 5 | Usage metrics |
 | `fact_operations.csv` | Fact | 5 | Operations metrics |
 
-**Total**: 12 files, 89 rows of sample data 
+**Total**: 19 files, 9,000+ rows of sample data 

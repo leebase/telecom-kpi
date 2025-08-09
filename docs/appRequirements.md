@@ -18,7 +18,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 ### ✅ **Comprehensive Data Warehouse Architecture**
 
 - **Complete Star Schema** - 7 dimension tables and 5 fact tables
-- **CSV Data Foundation** - 12 CSV files with 89 rows of sample data
+- **CSV Data Foundation** - 19 CSV files with 9,000+ rows of sample data
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 - **Professional KPI Display** - Trend indicators with color-coded performance
@@ -140,7 +140,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **SQLite Database**: `data/telecom_db.sqlite`
 - **Complete Star Schema**: 7 dimension tables and 5 fact tables
 - **Business Views**: 5 daily aggregation views for KPI calculations
-- **CSV Data Foundation**: 12 files with 89 rows of sample data
+- **CSV Data Foundation**: 19 files with 9,000+ rows of sample data
 - **Portable Format**: Easy migration to PostgreSQL, Snowflake, MySQL *(roadmap feature)*
 
 ### **Theming System Integration**

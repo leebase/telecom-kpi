@@ -6,7 +6,7 @@ A **production-ready KPI dashboard** for telecom operators with **comprehensive 
 
 ### ✅ **Comprehensive Data Warehouse Architecture**
 - **Complete Star Schema** - 7 dimension tables and 5 fact tables
-- **CSV Data Foundation** - 12 CSV files with 89 rows of sample data
+- **CSV Data Foundation** - 19 CSV files with 9,000+ rows of sample data
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 

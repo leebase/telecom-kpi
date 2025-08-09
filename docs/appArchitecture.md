@@ -15,7 +15,7 @@ This **comprehensive data warehouse-driven** telecom KPI dashboard provides real
 ### **Database & Data Layer**
 - **SQLite** - Local database for development and testing
 - **Enterprise Database Adapters** - 🚧 *Future Feature: PostgreSQL and Snowflake support with connection pooling*
-- **CSV Data Foundation** - 12 files with 89 rows of sample data
+- **CSV Data Foundation** - 19 files with 9,000+ rows of sample data
 - **Business Views** - 5 daily aggregation views for KPI calculations
 - **Connection Pool Management** - Thread-safe connection handling with validation and cleanup
 - **PyYAML** - Schema definition and configuration management
@@ -108,7 +108,7 @@ telecomdashboard/
 5. **`vw_operations_daily`** - Daily operational efficiency metrics
 
 ### **CSV Data Foundation**
-- **12 CSV files** with **89 rows** of realistic sample data
+- **19 CSV files** with **9,000+ rows** of realistic sample data
 - **Portable format** for easy migration to any database system
 - **Complete documentation** in `data/DATA_CATALOG.md`
 - **Automated loading** with `load_csv_data.py`

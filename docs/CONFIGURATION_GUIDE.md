@@ -10,7 +10,7 @@ This document provides comprehensive guidance for configuring and managing the T
 ```
 Configuration Management:
 ├── config_manager.py           # Core configuration management and validation
-├── config_validator.py         # CLI utility for operations and validation  
+├── config_validator.py         # Standalone CLI utility for operations and validation  
 ├── config.template.yaml        # Configuration templates with documentation
 ├── config.secrets.yaml         # Runtime configuration (git-ignored)
 ├── config/pii_config.yaml      # PII scrubbing configuration
@@ -26,6 +26,18 @@ source venv/bin/activate
 
 # Verify configuration system
 python -c "from config_manager import get_config; print('✅ Configuration system ready')"
+```
+
+### 🔧 Configuration CLI Tool
+
+**Important Note**: `config_validator.py` is a **standalone command-line utility** designed for operations teams and deployment environments. It is **not integrated** into the main Streamlit application and should be run separately for configuration management tasks.
+
+**Usage**:
+```bash
+# Standalone operation - not part of main app
+python config_validator.py validate
+python config_validator.py production-check
+python config_validator.py features
 ```
 
 ### Basic Configuration Setup

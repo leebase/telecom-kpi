@@ -199,7 +199,7 @@ conn.cursor().execute(f"ALTER SESSION SET QUERY_TAG = '{query_tag}'")
 - **Issue**: No feature flag configuration structure
 - **Fix**: Add feature flags section to config
 - **Status**: [x] COMPLETED - 2025-08-09
-- **Notes**: Comprehensive feature flag system with 15+ flags, environment overrides, and management CLI
+- **Notes**: Comprehensive feature flag system with 15 flags, environment overrides, and management CLI
 
 ## Documentation
 
