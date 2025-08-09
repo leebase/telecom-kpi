@@ -14,8 +14,10 @@ This **comprehensive data warehouse-driven** telecom KPI dashboard provides real
 
 ### **Database & Data Layer**
 - **SQLite** - Local database for development and testing
+- **Enterprise Database Adapters** - PostgreSQL and Snowflake support with connection pooling
 - **CSV Data Foundation** - 12 files with 89 rows of sample data
 - **Business Views** - 5 daily aggregation views for KPI calculations
+- **Connection Pool Management** - Thread-safe connection handling with validation and cleanup
 - **PyYAML** - Schema definition and configuration management
 
 ### **Theming System**
@@ -23,6 +25,13 @@ This **comprehensive data warehouse-driven** telecom KPI dashboard provides real
 - **Dynamic Theme Switching** - Real-time theme changes
 - **Logo Integration** - Base64-encoded logos for branding
 - **Theme-Aware Components** - All UI elements adapt to theme
+
+### **Performance & Reliability Layer**
+- **Smart Caching System** - TTL-based caching with automatic cleanup and debug logging
+- **Circuit Breaker Pattern** - AI service protection with state management (CLOSED/OPEN/HALF_OPEN)
+- **Exponential Backoff Retry** - Intelligent retry logic with jitter for external API calls
+- **Connection Pooling** - Enterprise database connection management with min/max limits
+- **Graceful Degradation** - Fallback responses and error recovery mechanisms
 
 ### **Development Tools**
 - **Python 3.8+** - Core programming language
@@ -205,6 +214,47 @@ self.themes["theme_name"] = {
 4. **Card Rendering** - HTML cards with theme-specific styling
 
 ## 🧩 Component Architecture
+
+### **Performance & Reliability Components**
+
+#### **Caching System (`database_connection.py`)**
+```python
+@cache_with_ttl(ttl_seconds=300)  # 5-minute cache
+def get_network_metrics(self, days: int = 30):
+    # Automatic cache expiration and cleanup
+```
+
+- **TTL Management**: Automatic cache expiration prevents stale data
+- **Memory Control**: LRU-style cleanup limits cache size to 100 items
+- **Debug Logging**: Cache hits/misses tracked for performance monitoring
+- **Thread Safety**: Concurrent access handling with proper locking
+
+#### **Circuit Breaker Pattern (`llm_service.py`)**
+```python
+class CircuitBreaker:
+    - CLOSED: Normal operation
+    - OPEN: Rejecting requests (5 failures → 60s timeout)
+    - HALF_OPEN: Testing service recovery
+```
+
+- **Failure Threshold**: 5 consecutive failures trigger circuit opening
+- **Recovery Timeout**: 60-second wait before testing service recovery
+- **Graceful Fallback**: Structured error responses during outages
+- **State Persistence**: Circuit state maintained across requests
+
+#### **Connection Pooling (`enterprise_database_adapter.py`)**
+```python
+ConnectionPool(
+    min_connections=2,
+    max_connections=10,
+    connection_validation=True
+)
+```
+
+- **Pool Management**: Min/max connection limits prevent exhaustion
+- **Connection Health**: Automatic validation and cleanup of stale connections
+- **Thread Safety**: Concurrent pool access with proper synchronization
+- **Enterprise Ready**: PostgreSQL and Snowflake adapter support
 
 ### **Core Components**
 

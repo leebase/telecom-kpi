@@ -22,6 +22,8 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Dynamic Time Period Filtering** - User-selectable periods (30 days, QTD, YTD, 12 months)
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 - **Professional KPI Display** - Trend indicators with color-coded performance
+- **Smart Caching System** - TTL-based caching with automatic cleanup (5-minute expiration)
+- **Enterprise Database Support** - PostgreSQL and Snowflake adapters with connection pooling
 
 ### ✅ **Modular Theming System**
 
@@ -171,6 +173,35 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 | Tooltip | HTML `title` attribute | Hover definitions |
 | Theme Switching | `theme_switcher()` | Real-time theme changes |
 | Theme CSS | `get_current_theme_css()` | Dynamic stylesheet loading |
+
+---
+
+## ⚡ Performance & Reliability Features
+
+### **Enterprise-Grade Caching**
+- **TTL-Based Cache** - 5-minute expiration prevents stale data
+- **Memory Management** - LRU cleanup limits cache to 100 items
+- **Debug Logging** - Cache hits/misses tracked for performance monitoring
+- **Thread Safety** - Concurrent access handling with proper locking
+
+### **Circuit Breaker Protection**
+- **Service Resilience** - Protects against cascade failures during AI API outages
+- **State Management** - CLOSED (normal) → OPEN (failing) → HALF_OPEN (testing) states
+- **Failure Threshold** - 5 consecutive failures trigger circuit opening
+- **Recovery Timeout** - 60-second wait before testing service recovery
+- **Exponential Backoff** - Intelligent retry logic with jitter
+
+### **Database Connection Pooling**
+- **Enterprise Scalability** - PostgreSQL and Snowflake adapter support
+- **Pool Management** - Configurable min (2) and max (10) connection limits
+- **Connection Health** - Automatic validation and cleanup of stale connections
+- **Thread Safety** - Concurrent pool access with proper synchronization
+- **Connection Recycling** - Efficient reuse prevents connection exhaustion
+
+### **Graceful Degradation**
+- **Fallback Responses** - Structured error messages during service outages
+- **User Experience** - Clear feedback and recovery instructions
+- **Service Continuity** - Dashboard remains functional during AI service issues
 
 ---
 
