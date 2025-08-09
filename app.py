@@ -11,6 +11,7 @@ from theme_switcher import create_theme_switcher
 from ai_insights_data_bundler import create_ai_insights_button, preview_llm_prompt
 from ai_insights_ui import render_ai_insights_panel
 from benchmark_manager import create_benchmark_tab
+from security_manager import security_manager, get_security_headers, sanitize_streamlit_output
 
 # Page configuration
 st.set_page_config(
@@ -19,6 +20,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+# Apply security headers (if running in a web context)
+try:
+    # This will work in production deployments with web server integration
+    headers = get_security_headers()
+    for header, value in headers.items():
+        st.session_state[f"security_header_{header}"] = value
+except Exception:
+    # Gracefully handle when not in web server context
+    pass
 
 # Apply current theme
 st.markdown(get_current_theme_css(), unsafe_allow_html=True)

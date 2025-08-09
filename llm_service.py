@@ -5,6 +5,7 @@ import json
 import requests
 from typing import Dict, Any, Optional
 from config_loader import get_llm_config
+from security_manager import security_manager, security_logger, sanitize_streamlit_output
 
 class LLMService:
     def __init__(self):
@@ -21,6 +22,15 @@ class LLMService:
             Dict containing structured insights or None if the call fails
         """
         try:
+            # Validate and sanitize input
+            if not security_manager.validate_input(prompt):
+                security_logger.warning("Invalid prompt detected")
+                return None
+            
+            # Rate limiting check
+            if not security_manager.rate_limit_check("llm_api"):
+                security_logger.warning("Rate limit exceeded for LLM API")
+                return None
             headers = {
                 "Authorization": f"Bearer {self.config['api_key']}",
                 "Content-Type": "application/json",

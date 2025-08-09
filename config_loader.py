@@ -3,29 +3,82 @@ Configuration loader for API keys and other sensitive data.
 """
 import os
 import yaml
+import re
 from typing import Dict, Any, Optional
+from security_manager import security_logger
 
 def load_config() -> Dict[str, Any]:
     """
-    Load configuration from config.secrets.yaml.
+    Load configuration from config.secrets.yaml with environment variable substitution.
     Falls back to environment variables if file not found.
     
     Returns:
         Dict containing configuration values
     """
-    # Try to load from config file
-    config_path = os.path.join(os.path.dirname(__file__), 'config.secrets.yaml')
+    try:
+        # Try to load from config file
+        config_path = os.path.join(os.path.dirname(__file__), 'config.secrets.yaml')
+        
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                content = f.read()
+                
+            # Substitute environment variables
+            content = substitute_env_vars(content)
+            config = yaml.safe_load(content)
+            
+            # Validate loaded config
+            if validate_config_security(config):
+                return config
+            else:
+                security_logger.error("Configuration security validation failed")
+                return get_fallback_config()
+        
+        # Fall back to environment variables
+        return get_fallback_config()
+        
+    except Exception as e:
+        security_logger.error(f"Configuration loading error: {e}")
+        return get_fallback_config()
+
+def substitute_env_vars(content: str) -> str:
+    """Substitute environment variables in configuration content"""
+    def replace_env_var(match):
+        var_name = match.group(1)
+        env_value = os.getenv(var_name)
+        if env_value is None:
+            security_logger.warning(f"Environment variable {var_name} not found")
+            return ""
+        return env_value
     
-    if os.path.exists(config_path):
-        with open(config_path, 'r') as f:
-            return yaml.safe_load(f)
-    
-    # Fall back to environment variables
+    # Replace ${VAR_NAME} patterns
+    return re.sub(r'\$\{([^}]+)\}', replace_env_var, content)
+
+def validate_config_security(config: Dict[str, Any]) -> bool:
+    """Validate configuration for security issues"""
+    try:
+        # Check for hardcoded API keys (should not contain actual keys)
+        llm_config = config.get('llm', {})
+        api_key = llm_config.get('api_key', '')
+        
+        # API key should either be empty or be an environment variable reference
+        if api_key and not api_key.startswith('${') and len(api_key) > 10:
+            security_logger.error("Hardcoded API key detected in configuration")
+            return False
+        
+        return True
+        
+    except Exception as e:
+        security_logger.error(f"Configuration validation error: {e}")
+        return False
+
+def get_fallback_config() -> Dict[str, Any]:
+    """Get fallback configuration from environment variables"""
     return {
         'llm': {
             'provider': os.getenv('LLM_PROVIDER', 'openrouter'),
             'api_key': os.getenv('LLM_API_KEY'),
-            'model': os.getenv('LLM_MODEL', 'mistral-7b-instruct'),
+            'model': os.getenv('LLM_MODEL', 'openai/gpt-4-1106-preview'),
             'temperature': float(os.getenv('LLM_TEMPERATURE', '0.7')),
             'max_tokens': int(os.getenv('LLM_MAX_TOKENS', '1000')),
             'api_base': os.getenv('LLM_API_BASE', 'https://openrouter.ai/api/v1')

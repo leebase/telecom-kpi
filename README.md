@@ -95,13 +95,19 @@ The dashboard supports easy theme addition through the modular system:
 
 ## 🚀 Quick Start
 
+### **Platform-Specific Guides**
+- 🍎 **macOS Users**: See [MAC_SETUP.md](MAC_SETUP.md) for detailed Mac instructions
+- 🪟 **Windows Users**: See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for detailed Windows instructions
+- 🐧 **Linux Users**: Follow the Mac/Linux instructions below
+
 ### **Prerequisites**
-```bash
-python 3.8+
-pip install -r requirements.txt
-```
+- Python 3.8+ 
+- Git
+- OpenRouter API key (get from [https://openrouter.ai/](https://openrouter.ai/))
 
 ### **Installation**
+
+#### **1. Clone and Setup**
 ```bash
 # Clone the repository
 git clone <repository-url>
@@ -109,36 +115,288 @@ cd telecomdashboard
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies
+# Activate virtual environment
+# On Mac/Linux:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+# Install core dependencies
 pip install -r requirements.txt
+
+# Install security dependencies (recommended)
+pip install -r requirements-security.txt
 ```
 
-### **Database Setup**
+#### **2. Database Setup**
 ```bash
 # Load comprehensive data warehouse
 python load_csv_data.py
 
 # Verify database creation
+# On Mac/Linux:
 ls data/telecom_db.sqlite
+# On Windows:
+dir data\telecom_db.sqlite
 ```
 
-### **AI Insights Configuration**
-```bash
-# Copy configuration template
-cp config.template.yaml config.secrets.yaml
+#### **3. Security Configuration (Recommended)**
 
-# Edit config.secrets.yaml with your OpenRouter API key
-# Get API key from https://openrouter.ai/
+**Option A: Automated Setup (Recommended)**
+```bash
+# Run secure environment setup
+python setup_secure_environment.py
 ```
 
-### **Run the Application**
+**Option B: Manual Setup**
+
+**Mac/Linux:**
 ```bash
+# Set environment variable
+export LLM_API_KEY="your-openrouter-api-key"
+
+# Set secure file permissions
+chmod 600 config.secrets.yaml
+chmod 600 data/telecom_db.sqlite
+
+# Create logs directory
+mkdir logs
+chmod 700 logs
+```
+
+**Windows (PowerShell):**
+```powershell
+# Set environment variable
+$env:LLM_API_KEY = "your-openrouter-api-key"
+
+# Create logs directory
+New-Item -ItemType Directory -Path logs
+
+# Note: Windows file permissions are managed through Properties > Security
+```
+
+**Windows (Command Prompt):**
+```cmd
+# Set environment variable
+set LLM_API_KEY=your-openrouter-api-key
+
+# Create logs directory
+mkdir logs
+```
+
+#### **4. Run the Application**
+
+**With Environment Variable (Secure):**
+```bash
+# Mac/Linux:
+export LLM_API_KEY="your-api-key"
+streamlit run app.py
+
+# Windows PowerShell:
+$env:LLM_API_KEY = "your-api-key"
+streamlit run app.py
+
+# Windows Command Prompt:
+set LLM_API_KEY=your-api-key
+streamlit run app.py
+```
+
+**Alternative: Using .env file (if created by setup script):**
+```bash
+# Works on all platforms
 streamlit run app.py
 ```
 
 Access the dashboard at `http://localhost:8501`
+
+## 🔒 Security & Production Setup
+
+### **Security Features**
+- ✅ **Environment Variable API Key Management** - No hardcoded secrets
+- ✅ **SQL Injection Prevention** - Parameterized queries only
+- ✅ **XSS Protection** - Input validation and output sanitization
+- ✅ **Rate Limiting** - DoS attack prevention
+- ✅ **Security Headers** - HTTPS enforcement and CSP
+- ✅ **Secure File Permissions** - Restricted access to sensitive files
+- ✅ **Comprehensive Logging** - Security event monitoring
+
+### **Security Validation**
+
+**Run Security Checks:**
+```bash
+# Activate virtual environment first
+# Mac/Linux:
+source venv/bin/activate
+# Windows:
+venv\Scripts\activate
+
+# Install security tools
+pip install -r requirements-security.txt
+
+# Run security linter
+bandit -r . -x ./venv
+
+# Check for vulnerabilities
+safety check  # or safety scan (newer)
+
+# Verify no hardcoded keys
+# Mac/Linux:
+grep -r "sk-or-v1" . --exclude-dir=venv
+# Windows:
+findstr /s /i "sk-or-v1" *.py *.yaml *.md
+```
+
+### **Production Deployment**
+
+#### **Environment Variables Setup**
+
+**Mac/Linux (.bashrc or .zshrc):**
+```bash
+export LLM_API_KEY="your-production-api-key"
+export SECURE_MODE=true
+export DEBUG=false
+export LOG_LEVEL=INFO
+```
+
+**Windows (System Environment Variables):**
+```powershell
+# PowerShell (run as administrator)
+[Environment]::SetEnvironmentVariable("LLM_API_KEY", "your-production-api-key", "Machine")
+[Environment]::SetEnvironmentVariable("SECURE_MODE", "true", "Machine")
+[Environment]::SetEnvironmentVariable("DEBUG", "false", "Machine")
+```
+
+#### **File Permissions (Production)**
+
+**Mac/Linux:**
+```bash
+# Set restrictive permissions
+chmod 600 .env config.secrets.yaml
+chmod 600 data/telecom_db.sqlite
+chmod 600 logs/security.log
+chmod 700 logs/
+
+# Verify permissions
+ls -la .env config.secrets.yaml data/telecom_db.sqlite
+```
+
+**Windows:**
+```powershell
+# Right-click files → Properties → Security → Advanced
+# Remove inheritance and grant access only to:
+# - SYSTEM (Full control)
+# - Administrators (Full control)  
+# - Current user (Full control)
+```
+
+#### **Secure Production Run**
+
+**Mac/Linux:**
+```bash
+# Production startup script
+export LLM_API_KEY="your-production-key"
+export SECURE_MODE=true
+export DEBUG=false
+
+streamlit run app.py \
+  --server.enableCORS false \
+  --server.enableXsrfProtection true \
+  --server.maxUploadSize 10 \
+  --server.maxMessageSize 50
+```
+
+**Windows (PowerShell):**
+```powershell
+# Production startup script
+$env:LLM_API_KEY = "your-production-key"
+$env:SECURE_MODE = "true"  
+$env:DEBUG = "false"
+
+streamlit run app.py --server.enableCORS false --server.enableXsrfProtection true --server.maxUploadSize 10 --server.maxMessageSize 50
+```
+
+### **Docker Deployment (Cross-Platform)**
+
+**Dockerfile:**
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY requirements.txt requirements-security.txt ./
+RUN pip install -r requirements.txt -r requirements-security.txt
+
+COPY . .
+RUN chmod 600 data/telecom_db.sqlite
+
+# Create non-root user
+RUN useradd -r -s /bin/false telecom-dashboard
+USER telecom-dashboard
+
+EXPOSE 8501
+CMD ["streamlit", "run", "app.py", "--server.enableCORS", "false"]
+```
+
+**Docker Compose:**
+```yaml
+version: '3.8'
+services:
+  telecom-dashboard:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      - LLM_API_KEY=${LLM_API_KEY}
+      - SECURE_MODE=true
+      - DEBUG=false
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+```
+
+**Run with Docker:**
+```bash
+# Build and run
+export LLM_API_KEY="your-api-key"
+docker-compose up -d
+```
+
+## 🛠️ Troubleshooting
+
+### **Common Issues**
+
+| Issue | Solution |
+|-------|----------|
+| **API Key Not Working** | Verify environment variable: `echo $LLM_API_KEY` (Mac/Linux) or `echo %LLM_API_KEY%` (Windows) |
+| **Permission Denied** | Run `chmod 600 config.secrets.yaml .env` (Mac/Linux) or check file permissions in Windows |
+| **Port Already in Use** | Kill process using port 8501 or use `--server.port 8502` |
+| **Python Not Found** | Ensure Python 3.8+ is installed and in PATH |
+| **Module Import Errors** | Activate virtual environment: `source venv/bin/activate` |
+| **Database Not Found** | Run `python load_csv_data.py` to create database |
+| **AI Insights Not Working** | Check API key and internet connection |
+
+### **Security Issues**
+
+| Issue | Solution |
+|-------|----------|
+| **Hardcoded API Keys Found** | Move to environment variables or .env file |
+| **File Permissions Too Open** | Set restrictive permissions (600 for files, 700 for directories) |
+| **Security Scan Failures** | Review bandit output and fix SQL injection patterns |
+| **Logs Not Created** | Ensure logs/ directory exists with proper permissions |
+
+### **Platform-Specific Help**
+
+- **macOS**: See [MAC_SETUP.md](MAC_SETUP.md) for detailed troubleshooting
+- **Windows**: See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for detailed troubleshooting
+- **Docker**: Check container logs with `docker-compose logs -f`
+
+### **Getting Help**
+
+1. Check the platform-specific setup guides
+2. Review security documentation in [SECURITY.md](SECURITY.md)
+3. Verify environment variables and file permissions
+4. Run security validation commands
+5. Check application logs in `logs/security.log`
 
 ## 📁 Project Structure
 
@@ -146,11 +404,21 @@ Access the dashboard at `http://localhost:8501`
 telecomdashboard/
 ├── app.py                          # Main Streamlit application
 ├── requirements.txt                # Python dependencies
+├── requirements-security.txt       # Security-focused dependencies
 ├── README.md                      # This file
 ├── CHANGELOG.md                   # Version history
+├── SECURITY.md                    # Security documentation
+├── SECURITY_CHECKLIST.md          # Deployment security checklist
 ├── client_onboarding_guide.md     # Client deployment guide
+├── .env                           # Environment variables (not in git)
+├── .gitignore                     # Git ignore patterns
+├── config.template.yaml           # Configuration template
+├── config.secrets.yaml            # API keys and secrets (not in git)
+├── security_manager.py            # Security management module
+├── secure_config_manager.py       # Advanced configuration management
+├── setup_secure_environment.py    # Automated security setup
 ├── data/                          # Data warehouse files
-│   ├── telecom_db.sqlite         # SQLite database
+│   ├── telecom_db.sqlite         # SQLite database (secured)
 │   ├── dim_*.csv                 # Dimension tables (7 files)
 │   ├── fact_*.csv                # Fact tables (5 files)
 │   ├── benchmark_targets.csv     # Peer/industry benchmarks
@@ -166,6 +434,8 @@ telecomdashboard/
 │   │   ├── insightsRequirements.md
 │   │   └── ai-insights-mermaid.md
 │   └── ux-design1.html          # Design reference
+├── logs/                          # Security and application logs
+│   └── security.log              # Security events (secured)
 ├── styles/                        # Theming system
 │   ├── cognizant/                # Cognizant theme
 │   │   ├── cognizant.css         # Theme stylesheet
@@ -173,23 +443,20 @@ telecomdashboard/
 │   └── verizon/                  # Verizon theme
 │       ├── verizon.css           # Theme stylesheet
 │       └── logojpg.jpg          # Theme logo
-├── components/                    # Modular components
-│   ├── kpi_components.py         # Chart rendering functions
-│   ├── improved_metric_cards.py  # KPI card components
-│   ├── database_connection.py    # Database interface
-│   ├── theme_manager.py          # Theme management system
-│   ├── theme_switcher.py        # Theme switching UI
-│   ├── cognizant_theme.py       # Cognizant theme module
-│   └── verizon_theme.py         # Verizon theme module
 ├── ai_insights_data_bundler.py   # AI Insights data processing
 ├── ai_insights_ui.py             # AI Insights UI components
-├── llm_service.py                # LLM integration service
-├── config_loader.py              # Configuration management
+├── llm_service.py                # LLM integration service (secured)
+├── config_loader.py              # Configuration management (secured)
 ├── ai_insights_prompts.yaml      # AI prompt configuration
-├── config.template.yaml          # Configuration template
-└── scripts/                      # Data generation
-    ├── generate_comprehensive_data.py
-    └── fix_network_metrics_schema.py
+├── database_connection.py        # Database interface (secured)
+├── kpi_components.py             # Chart rendering functions
+├── improved_metric_cards.py      # KPI card components
+├── theme_manager.py              # Theme management system
+├── theme_switcher.py            # Theme switching UI
+├── cognizant_theme.py           # Cognizant theme module
+├── verizon_theme.py             # Verizon theme module
+├── benchmark_manager.py          # Benchmark management
+└── generate_*.py                 # Data generation scripts
 ```
 
 ## 🎨 Theming System Architecture

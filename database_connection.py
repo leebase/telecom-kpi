@@ -1,15 +1,31 @@
 import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
+from security_manager import secure_query_executor, security_manager, security_logger
 
 class TelecomDatabase:
     def __init__(self, db_path="data/telecom_db.sqlite"):
         self.db_path = db_path
     
     def get_connection(self):
-        """Get database connection"""
-        return sqlite3.connect(self.db_path)
+        """Get secure database connection"""
+        try:
+            # Validate database path for security
+            if not self.db_path.startswith('data/') or '..' in self.db_path:
+                security_logger.error(f"Unauthorized database path: {self.db_path}")
+                raise ValueError("Invalid database path")
+            
+            conn = sqlite3.connect(self.db_path)
+            # Enable foreign key constraints for data integrity
+            conn.execute("PRAGMA foreign_keys = ON")
+            # Set secure query timeout
+            conn.execute("PRAGMA busy_timeout = 30000")
+            return conn
+        except Exception as e:
+            security_logger.error(f"Database connection error: {e}")
+            raise
     
+    @secure_query_executor
     def get_network_metrics(self, days=30):
         """Get network performance metrics for the last N days"""
         # Since we only have one day of data, we'll simulate different time periods
@@ -87,6 +103,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
+    @secure_query_executor
     def get_customer_metrics(self, days=30):
         """Get customer experience metrics for the last N days"""
         # Use actual customer experience data from the fact table
