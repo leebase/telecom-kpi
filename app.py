@@ -48,6 +48,9 @@ from logging_config import configure_app_logging, get_logger
 configure_app_logging()
 logger = get_logger('application')
 
+# Application version constant
+APP_VERSION = "2.2.0"
+
 # Load configuration
 ui_config = get_ui_config()
 logger.info("Application starting with configuration loaded")
@@ -646,7 +649,7 @@ def main():
         st.markdown('</div>', unsafe_allow_html=True)
 
 def handle_health_check():
-    """Handle health check requests from URL parameters"""
+    """Handle health check requests from URL parameters with proper API responses"""
     try:
         query_params = st.query_params
         
@@ -656,29 +659,65 @@ def handle_health_check():
             if health_type == 'simple':
                 # Simple health check for load balancers
                 health_data = health_checker.get_simple_health()
+                
+                # Set HTTP status code based on health status
+                if health_data.get('status') == 'unhealthy':
+                    st.error("Service Unavailable")
+                
+                # Return properly formatted JSON response
                 st.json(health_data)
                 st.stop()
+                
             elif health_type == 'detailed':
                 # Comprehensive health check
                 health_data = health_checker.get_comprehensive_health()
+                
+                # Set HTTP status code based on health status
+                if health_data.get('status') in ['unhealthy', 'degraded']:
+                    st.error("Service Unavailable" if health_data.get('status') == 'unhealthy' else "Service Degraded")
+                
+                # Return properly formatted JSON response
                 st.json(health_data)
                 st.stop()
+                
             elif health_type == 'features':
                 # Feature flags status
                 flags = feature_flags.get_all_flags()
-                st.json({
+                feature_response = {
+                    "status": "healthy",
                     "feature_flags": flags,
-                    "timestamp": pd.Timestamp.now().isoformat(),
-                    "version": "2.2.0"
-                })
+                    "total_flags": len(flags),
+                    "enabled_flags": sum(1 for flag in flags.values() if flag),
+                    "timestamp": datetime.now().isoformat(),
+                    "version": APP_VERSION
+                }
+                
+                st.json(feature_response)
                 st.stop()
+                
+            else:
+                # Invalid health check type
+                error_response = {
+                    "status": "error",
+                    "error": f"Invalid health check type: {health_type}",
+                    "valid_types": ["simple", "detailed", "features"],
+                    "timestamp": datetime.now().isoformat(),
+                    "version": APP_VERSION
+                }
+                st.error("Bad Request")
+                st.json(error_response)
+                st.stop()
+                
     except Exception as e:
         logger.error(f"Health check error: {e}")
-        st.json({
+        error_response = {
             "status": "unhealthy",
             "error": str(e),
-            "timestamp": pd.Timestamp.now().isoformat()
-        })
+            "timestamp": datetime.now().isoformat(),
+            "version": APP_VERSION
+        }
+        st.error("Internal Server Error")
+        st.json(error_response)
         st.stop()
 
 if __name__ == "__main__":

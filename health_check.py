@@ -19,6 +19,9 @@ from logging_config import get_logger
 
 logger = get_logger('health_check')
 
+# Application version constant (should match app.py)
+APP_VERSION = "2.2.0"
+
 @dataclass
 class HealthCheckResult:
     """Result of a health check operation"""
@@ -342,7 +345,7 @@ class HealthChecker:
                 "timestamp": check.timestamp
             } for check in checks},
             "feature_flags": self.feature_flags.get_all_flags(),
-            "version": "2.2.0",
+            "version": APP_VERSION,
             "environment": __import__('os').getenv("ENVIRONMENT", "development")
         }
     
@@ -359,14 +362,14 @@ class HealthChecker:
             return {
                 "status": "healthy",
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "version": "2.2.0"
+                "version": APP_VERSION
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "error": str(e),
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "version": "2.2.0"
+                "version": APP_VERSION
             }
 
 # Global instances
