@@ -448,34 +448,54 @@ class TelecomDatabase:
     
     def get_trend_data(self, metric_name, days=30):
         """Get trend data for a specific metric"""
-        query = """
+        # Security: Whitelist allowed metric names to prevent SQL injection
+        allowed_metrics = [
+            'availability_percent', 'avg_latency_ms', 'avg_packet_loss_percent',
+            'avg_bandwidth_utilization_percent', 'avg_mttr_hours', 'avg_dropped_call_rate'
+        ]
+        
+        if metric_name not in allowed_metrics:
+            raise ValueError(f"Invalid metric name: {metric_name}. Allowed: {allowed_metrics}")
+        
+        # Use parameterized query for days parameter
+        query = f"""
         SELECT 
             date_id,
-            AVG({}) as value
+            AVG({metric_name}) as value
         FROM vw_network_metrics_daily 
-        WHERE date_id >= date('now', '-{} days')
+        WHERE date_id >= date('now', '-? days')
         GROUP BY date_id
         ORDER BY date_id
-        """.format(metric_name, days)
+        """
         
         with self.get_connection() as conn:
-            return pd.read_sql_query(query, conn)
+            return pd.read_sql_query(query, conn, params=(days,))
     
     def get_region_data(self, metric_name, days=30):
         """Get regional breakdown for a specific metric"""
-        query = """
+        # Security: Whitelist allowed metric names to prevent SQL injection
+        allowed_metrics = [
+            'availability_percent', 'avg_latency_ms', 'avg_packet_loss_percent',
+            'avg_bandwidth_utilization_percent', 'avg_mttr_hours', 'avg_dropped_call_rate'
+        ]
+        
+        if metric_name not in allowed_metrics:
+            raise ValueError(f"Invalid metric name: {metric_name}. Allowed: {allowed_metrics}")
+        
+        # Use parameterized query for days parameter
+        query = f"""
         SELECT 
             r.region_name,
-            AVG({}) as value
+            AVG({metric_name}) as value
         FROM vw_network_metrics_daily v
         JOIN dim_region r ON v.region_id = r.region_id
-        WHERE v.date_id >= date('now', '-{} days')
+        WHERE v.date_id >= date('now', '-? days')
         GROUP BY r.region_name
         ORDER BY value DESC
-        """.format(metric_name, days)
+        """
         
         with self.get_connection() as conn:
-            return pd.read_sql_query(query, conn)
+            return pd.read_sql_query(query, conn, params=(days,))
 
     @timing_decorator("get_customer_trend_data")
     @lru_cache(maxsize=16)
