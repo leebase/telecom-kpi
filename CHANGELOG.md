@@ -12,11 +12,25 @@ All notable changes to this project will be documented in this file.
 - **Thread-Safe Operations** - Concurrent request handling with proper synchronization
 - **Graceful Degradation** - Fallback responses during service outages
 
+### 🔍 **Observability & Operations**
+- **Structured Logging** - JSON format with correlation IDs for production observability
+- **Health Check System** - Load balancer compatible endpoints with comprehensive monitoring
+- **Feature Flag Framework** - Environment-configurable toggles for 15+ features
+- **System Resource Monitoring** - Real-time CPU, memory, disk utilization tracking
+- **Production Monitoring** - ELK/Splunk compatible logging and health endpoints
+
+### 🩺 **Health Check Endpoints**
+- **Simple Health Check** - `?health=simple` endpoint for load balancers
+- **Detailed Health Check** - `?health=detailed` for comprehensive system monitoring
+- **Feature Flag Status** - `?health=features` for configuration visibility
+- **Multi-Service Monitoring** - Database, system, AI service, file permission checks
+
 ### 🔧 **Technical Improvements**
 - **AI Insights Fix** - Resolved data structure preservation issue in LLM response handling
 - **Type Safety** - Enhanced validation for insights format before display
 - **Error Recovery** - Improved error handling with meaningful user feedback
 - **Enterprise Architecture** - Production-ready reliability patterns implemented
+- **Streamlit API Update** - Updated deprecated `st.experimental_get_query_params` to `st.query_params`
 
 ## [2.1.1] - 2025-08-09
 

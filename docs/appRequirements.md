@@ -230,4 +230,52 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 
 ---
 
-**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence with professional theming and comprehensive data analytics.**
+## 🔍 Observability & Operations Features
+
+**New in Version 2.2.0** - Enterprise observability and operational controls:
+
+### **Structured Logging System**
+- **JSON Format** - Production-ready structured logs with correlation IDs for request tracking
+- **Thread-Local Correlation** - Distributed system request tracing across components
+- **UTC Timestamps** - Consistent timezone handling for global operations
+- **Exception Tracking** - Structured error information with stack traces and context
+- **Log Aggregation** - ELK/Splunk compatible format for enterprise log management
+
+### **Health Check System**
+- **Load Balancer Ready** - Simple health endpoints for production deployment monitoring
+- **Multi-Service Monitoring** - Database, system resources, AI service, file permission checks
+- **Real-Time Metrics** - Response time tracking and performance monitoring
+- **Configurable Thresholds** - CPU, memory, disk utilization alerting with custom limits
+- **Production Integration** - Compatible with monitoring tools and alerting systems
+
+### **Feature Flag Framework**
+- **Safe Rollouts** - Environment-configurable toggles for 15+ features enabling gradual deployment
+- **Instant Rollbacks** - Quick feature disabling without application restarts
+- **Environment Overrides** - Production configuration via environment variables
+- **Beta Testing** - Controlled access to experimental features for select users
+- **Zero-Downtime Deployment** - Feature activation without service interruption
+
+### **System Resource Monitoring**
+- **Real-Time Tracking** - CPU, memory, disk utilization monitoring with threshold alerting
+- **Performance Metrics** - Response time tracking and performance baseline establishment
+- **Health Aggregation** - Overall system status determination from multiple health checks
+- **Operational Visibility** - Comprehensive system status for operations teams
+
+### **Health Check Endpoints**
+```bash
+# Simple health check (load balancers)
+GET /?health=simple
+{"status": "healthy", "timestamp": "...", "version": "2.2.0"}
+
+# Comprehensive monitoring
+GET /?health=detailed
+{"status": "healthy", "checks": {...}, "feature_flags": {...}}
+
+# Feature configuration
+GET /?health=features
+{"feature_flags": {...}, "timestamp": "..."}
+```
+
+---
+
+**This dashboard provides telecom operators with real-time insights into network performance and business metrics, enabling data-driven decision-making and operational excellence with professional theming, comprehensive data analytics, AI-powered intelligent insights, enterprise-grade performance and reliability features, and production-ready observability and operations capabilities.**

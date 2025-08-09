@@ -41,6 +41,7 @@ from benchmark_manager import create_benchmark_tab
 from security_manager import security_manager, get_security_headers, sanitize_streamlit_output
 from database_connection import TelecomDatabase
 from config_manager import get_config, get_ui_config, get_database_config
+from health_check import health_checker, feature_flags
 from logging_config import configure_app_logging, get_logger
 
 # Configure logging
@@ -644,5 +645,43 @@ def main():
         
         st.markdown('</div>', unsafe_allow_html=True)
 
+def handle_health_check():
+    """Handle health check requests from URL parameters"""
+    try:
+        query_params = st.query_params
+        
+        if 'health' in query_params:
+            health_type = query_params.get('health', 'simple')
+            
+            if health_type == 'simple':
+                # Simple health check for load balancers
+                health_data = health_checker.get_simple_health()
+                st.json(health_data)
+                st.stop()
+            elif health_type == 'detailed':
+                # Comprehensive health check
+                health_data = health_checker.get_comprehensive_health()
+                st.json(health_data)
+                st.stop()
+            elif health_type == 'features':
+                # Feature flags status
+                flags = feature_flags.get_all_flags()
+                st.json({
+                    "feature_flags": flags,
+                    "timestamp": pd.Timestamp.now().isoformat(),
+                    "version": "2.2.0"
+                })
+                st.stop()
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        st.json({
+            "status": "unhealthy",
+            "error": str(e),
+            "timestamp": pd.Timestamp.now().isoformat()
+        })
+        st.stop()
+
 if __name__ == "__main__":
+    # Handle health check requests first
+    handle_health_check()
     main() 

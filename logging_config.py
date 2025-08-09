@@ -8,9 +8,74 @@ with different log levels, formatters, and handlers for different components.
 import logging
 import logging.handlers
 import sys
+import json
+import uuid
+import threading
 from pathlib import Path
-from typing import Dict, Optional, Union
-from datetime import datetime
+from typing import Dict, Optional, Union, Any
+from datetime import datetime, timezone
+
+# Thread-local storage for correlation IDs
+_local = threading.local()
+
+def get_correlation_id() -> str:
+    """Get or create a correlation ID for request tracking"""
+    if not hasattr(_local, 'correlation_id'):
+        _local.correlation_id = str(uuid.uuid4())
+    return _local.correlation_id
+
+def set_correlation_id(correlation_id: str):
+    """Set a correlation ID for request tracking"""
+    _local.correlation_id = correlation_id
+
+def clear_correlation_id():
+    """Clear the correlation ID"""
+    if hasattr(_local, 'correlation_id'):
+        delattr(_local, 'correlation_id')
+
+class StructuredFormatter(logging.Formatter):
+    """
+    Structured JSON formatter for production observability
+    
+    Formats log records as JSON with correlation IDs, structured fields,
+    and consistent schema for log aggregation and analysis.
+    """
+    
+    def format(self, record) -> str:
+        """Format log record as structured JSON"""
+        
+        # Base structured log entry
+        log_entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+            "correlation_id": get_correlation_id(),
+            "thread_id": record.thread,
+            "thread_name": record.threadName,
+            "module": record.module,
+            "function": record.funcName,
+            "line_number": record.lineno,
+            "process_id": record.process
+        }
+        
+        # Add exception information if present
+        if record.exc_info:
+            log_entry["exception"] = {
+                "type": record.exc_info[0].__name__ if record.exc_info[0] else None,
+                "message": str(record.exc_info[1]) if record.exc_info[1] else None,
+                "traceback": self.formatException(record.exc_info) if record.exc_info else None
+            }
+        
+        # Add custom fields from extra
+        for key, value in record.__dict__.items():
+            if key not in ['name', 'msg', 'args', 'levelname', 'levelno', 'pathname', 
+                          'filename', 'module', 'lineno', 'funcName', 'created', 
+                          'msecs', 'relativeCreated', 'thread', 'threadName', 
+                          'processName', 'process', 'stack_info', 'exc_info', 'exc_text']:
+                log_entry[key] = value
+        
+        return json.dumps(log_entry, default=str, ensure_ascii=False)
 
 class ColoredFormatter(logging.Formatter):
     """Custom formatter with color coding for different log levels"""
@@ -51,7 +116,8 @@ class LoggingConfig:
                  log_dir: str = "logs",
                  console_level: str = "INFO",
                  file_level: str = "DEBUG",
-                 enable_colors: bool = True):
+                 enable_colors: bool = True,
+                 structured_logging: bool = False):
         """
         Initialize logging configuration
         
@@ -60,12 +126,14 @@ class LoggingConfig:
             console_level: Log level for console output
             file_level: Log level for file output
             enable_colors: Whether to use colored console output
+            structured_logging: Use JSON structured logging for production
         """
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(exist_ok=True)
         self.console_level = getattr(logging, console_level.upper())
         self.file_level = getattr(logging, file_level.upper())
         self.enable_colors = enable_colors
+        self.structured_logging = structured_logging
         self._configured_loggers = set()
         
         # Configure root logger
@@ -84,14 +152,18 @@ class LoggingConfig:
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(self.console_level)
         
-        if self.enable_colors and sys.stdout.isatty():
-            console_formatter = ColoredFormatter(
-                '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
-            )
+        # Create formatters based on mode
+        if self.structured_logging:
+            console_formatter = StructuredFormatter()
         else:
-            console_formatter = logging.Formatter(
-                '%(asctime)s | %(levelname)-8s | %(name)s | %(message)s'
-            )
+            if self.enable_colors and sys.stdout.isatty():
+                console_formatter = ColoredFormatter(
+                    '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
+                )
+            else:
+                console_formatter = logging.Formatter(
+                    '%(asctime)s | %(levelname)-8s | %(name)s | %(message)s'
+                )
         
         console_handler.setFormatter(console_formatter)
         root_logger.addHandler(console_handler)
@@ -112,9 +184,13 @@ class LoggingConfig:
         )
         file_handler.setLevel(self.file_level)
         
-        file_formatter = logging.Formatter(
-            '%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s:%(lineno)d | %(message)s'
-        )
+        # Use structured formatter for file logs if enabled
+        if self.structured_logging:
+            file_formatter = StructuredFormatter()
+        else:
+            file_formatter = logging.Formatter(
+                '%(asctime)s | %(levelname)-8s | %(name)s | %(funcName)s:%(lineno)d | %(message)s'
+            )
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
     
