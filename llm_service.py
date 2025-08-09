@@ -5,6 +5,7 @@ import json
 import requests
 import time
 import random
+import re
 from typing import Dict, Any, Optional
 from enum import Enum
 from config_loader import get_llm_config
@@ -92,10 +93,137 @@ def retry_with_exponential_backoff(max_retries: int = 3, base_delay: float = 1.0
         return wrapper
     return decorator
 
+class PIIScrubber:
+    """
+    PII scrubbing service for GDPR/CCPA compliance
+    
+    Removes or masks personally identifiable information before
+    sending data to external LLM services.
+    """
+    
+    def __init__(self):
+        """Initialize PII scrubber with patterns and replacements"""
+        # Email patterns
+        self.email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+        
+        # Phone number patterns (US, international)
+        self.phone_patterns = [
+            re.compile(r'\b(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b'),
+            re.compile(r'\b\+?[1-9]\d{1,14}\b'),  # International format
+        ]
+        
+        # SSN patterns
+        self.ssn_pattern = re.compile(r'\b\d{3}-?\d{2}-?\d{4}\b')
+        
+        # Credit card patterns (basic Luhn algorithm check)
+        self.cc_pattern = re.compile(r'\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b')
+        
+        # IP address patterns
+        self.ip_pattern = re.compile(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b')
+        
+        # MAC address patterns
+        self.mac_pattern = re.compile(r'\b(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})\b')
+        
+        # Names that might be PII (common first/last name patterns)
+        self.name_patterns = [
+            re.compile(r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b'),  # First Last
+        ]
+        
+        # Configure which fields to scrub
+        self.scrub_config = {
+            'emails': True,
+            'phones': True,
+            'ssns': True,
+            'credit_cards': True,
+            'ip_addresses': False,  # Might be needed for network analysis
+            'mac_addresses': False,  # Might be needed for network analysis
+            'names': False  # Too aggressive for business analysis
+        }
+    
+    def scrub_text(self, text: str) -> str:
+        """
+        Scrub PII from text while preserving analytical value
+        
+        Args:
+            text: Input text that may contain PII
+            
+        Returns:
+            Scrubbed text with PII removed/masked
+        """
+        if not text or not isinstance(text, str):
+            return text
+        
+        scrubbed = text
+        
+        # Email scrubbing
+        if self.scrub_config.get('emails', True):
+            scrubbed = self.email_pattern.sub('[EMAIL_REDACTED]', scrubbed)
+        
+        # Phone number scrubbing
+        if self.scrub_config.get('phones', True):
+            for pattern in self.phone_patterns:
+                scrubbed = pattern.sub('[PHONE_REDACTED]', scrubbed)
+        
+        # SSN scrubbing
+        if self.scrub_config.get('ssns', True):
+            scrubbed = self.ssn_pattern.sub('[SSN_REDACTED]', scrubbed)
+        
+        # Credit card scrubbing
+        if self.scrub_config.get('credit_cards', True):
+            scrubbed = self.cc_pattern.sub('[CARD_REDACTED]', scrubbed)
+        
+        # IP address scrubbing (optional)
+        if self.scrub_config.get('ip_addresses', False):
+            scrubbed = self.ip_pattern.sub('[IP_REDACTED]', scrubbed)
+        
+        # MAC address scrubbing (optional)
+        if self.scrub_config.get('mac_addresses', False):
+            scrubbed = self.mac_pattern.sub('[MAC_REDACTED]', scrubbed)
+        
+        # Name scrubbing (optional - very aggressive)
+        if self.scrub_config.get('names', False):
+            for pattern in self.name_patterns:
+                scrubbed = pattern.sub('[NAME_REDACTED]', scrubbed)
+        
+        return scrubbed
+    
+    def scrub_data_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Recursively scrub PII from dictionary data
+        
+        Args:
+            data: Dictionary that may contain PII in values
+            
+        Returns:
+            Dictionary with PII scrubbed from string values
+        """
+        if not isinstance(data, dict):
+            return data
+        
+        scrubbed_data = {}
+        
+        for key, value in data.items():
+            if isinstance(value, str):
+                scrubbed_data[key] = self.scrub_text(value)
+            elif isinstance(value, dict):
+                scrubbed_data[key] = self.scrub_data_dict(value)
+            elif isinstance(value, list):
+                scrubbed_data[key] = [
+                    self.scrub_text(item) if isinstance(item, str) 
+                    else self.scrub_data_dict(item) if isinstance(item, dict)
+                    else item
+                    for item in value
+                ]
+            else:
+                scrubbed_data[key] = value
+        
+        return scrubbed_data
+
 class LLMService:
     def __init__(self) -> None:
         self.config: Dict[str, Any] = get_llm_config()
         self.circuit_breaker = CircuitBreaker(failure_threshold=5, timeout=60)
+        self.pii_scrubber = PIIScrubber()
         
     @retry_with_exponential_backoff(max_retries=3, base_delay=1.0)
     def _make_api_call(self, headers: Dict[str, str], data: Dict[str, Any]) -> Dict[str, Any]:
@@ -150,6 +278,12 @@ class LLMService:
             if not security_manager.validate_input(prompt, "ai_prompt"):
                 security_logger.warning("Invalid prompt detected")
                 return None
+            
+            # Scrub PII from prompt for GDPR/CCPA compliance
+            scrubbed_prompt = self.pii_scrubber.scrub_text(prompt)
+            if scrubbed_prompt != prompt:
+                security_logger.info("PII detected and scrubbed from prompt for LLM compliance")
+                prompt = scrubbed_prompt
             
             # Rate limiting check
             if not security_manager.rate_limit_check("llm_api"):

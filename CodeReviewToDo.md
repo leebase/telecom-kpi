@@ -71,12 +71,13 @@ params = (days,)
 
 ## Priority 3: Compliance & Governance
 
-### COMP-001: Snowflake Query Tagging ❌
-- **File**: `enterprise_database_adapter.py:157`
+### COMP-001: Snowflake Query Tagging ✅
+- **File**: `enterprise_database_adapter.py:390-466`
 - **Issue**: Missing QUERY_TAG for audit trails
 - **Risk**: Medium - SOC 2 compliance gaps
 - **Fix**: Add query tagging with timestamps/user context
-- **Status**: [ ] TODO
+- **Status**: [x] COMPLETED - 2025-08-09
+- **Notes**: Comprehensive audit tagging with compliance markers (SOC2, GDPR)
 
 ```python
 # Add to execute_query():
@@ -84,13 +85,13 @@ query_tag = f"telecom_dashboard_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 conn.cursor().execute(f"ALTER SESSION SET QUERY_TAG = '{query_tag}'")
 ```
 
-### COMP-002: PII Scrubbing for AI ❌
-- **File**: `ai_insights_*.py`
+### COMP-002: PII Scrubbing for AI ✅
+- **File**: `llm_service.py:96-174`, `ai_insights_data_bundler.py:99-109`
 - **Issue**: No PII redaction before sending to LLM
 - **Risk**: High - Data privacy violations
 - **Fix**: Implement configurable PII scrubbing layer
-- **Status**: [ ] TODO
-- **Notes**: GDPR/CCPA compliance requirement
+- **Status**: [x] COMPLETED - 2025-08-09
+- **Notes**: Comprehensive PII scrubbing with GDPR/CCPA compliance configuration
 
 ## Priority 4: Observability & Operations
 

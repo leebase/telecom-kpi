@@ -96,7 +96,17 @@ def bundle_kpi_data_for_insights(tab_name, days=30):
         
         bundled_data.append(kpi_entry)
     
-    return bundled_data
+    # Apply PII scrubbing for GDPR/CCPA compliance before sending to LLM
+    from llm_service import PIIScrubber
+    pii_scrubber = PIIScrubber()
+    
+    # Scrub each KPI entry for potential PII
+    scrubbed_data = []
+    for kpi_entry in bundled_data:
+        scrubbed_entry = pii_scrubber.scrub_data_dict(kpi_entry)
+        scrubbed_data.append(scrubbed_entry)
+    
+    return scrubbed_data
 
 def display_bundled_kpi_data(tab_name, days=30):
     """

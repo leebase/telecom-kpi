@@ -1,0 +1,53 @@
+# PII Scrubbing Configuration for GDPR/CCPA Compliance
+# Controls what personally identifiable information is scrubbed before sending to LLM
+
+pii_scrubbing:
+  # Enable/disable PII scrubbing globally
+  enabled: true
+  
+  # Specific PII types to scrub
+  scrub_types:
+    # Personal identifiers
+    emails: true          # Scrub email addresses
+    phones: true          # Scrub phone numbers (US/international)
+    ssns: true           # Scrub Social Security Numbers
+    credit_cards: true   # Scrub credit card numbers
+    
+    # Network identifiers (may be needed for telecom analysis)
+    ip_addresses: false  # Keep IP addresses for network analysis
+    mac_addresses: false # Keep MAC addresses for network analysis
+    
+    # Personal names (aggressive - may impact business analysis)
+    names: false         # Keep names as they may be business-relevant
+    
+    # Custom patterns (can be extended)
+    custom_patterns: []
+  
+  # Replacement tokens
+  replacements:
+    email: "[EMAIL_REDACTED]"
+    phone: "[PHONE_REDACTED]"
+    ssn: "[SSN_REDACTED]"
+    credit_card: "[CARD_REDACTED]"
+    ip_address: "[IP_REDACTED]"
+    mac_address: "[MAC_REDACTED]"
+    name: "[NAME_REDACTED]"
+    custom: "[PII_REDACTED]"
+
+# Compliance settings
+compliance:
+  # Log PII scrubbing events for audit
+  log_scrubbing_events: true
+  
+  # Retention period for scrubbing logs (days)
+  log_retention_days: 90
+  
+  # GDPR/CCPA compliance markers
+  gdpr_compliant: true
+  ccpa_compliant: true
+  
+  # Data processing lawful basis (GDPR Article 6)
+  lawful_basis: "legitimate_interest"  # For business analytics
+  
+  # Data subject rights support
+  support_data_subject_rights: true

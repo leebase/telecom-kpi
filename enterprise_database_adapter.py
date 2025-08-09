@@ -11,6 +11,7 @@ import pandas as pd
 import sqlite3
 import threading
 import time
+from datetime import datetime
 from typing import Optional, Dict, Any, Union, Tuple, List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -386,19 +387,42 @@ class SnowflakeAdapter(DatabaseAdapter):
         if self.use_pooling:
             self._pool.return_connection(conn)
     
-    def execute_query(self, query: str, params: Optional[tuple] = None) -> pd.DataFrame:
-        """Execute Snowflake query and return DataFrame"""
+    def execute_query(self, query: str, params: Optional[tuple] = None, user_context: Optional[str] = None) -> pd.DataFrame:
+        """
+        Execute Snowflake query with audit tagging and return DataFrame
+        
+        Args:
+            query: SQL query to execute
+            params: Query parameters
+            user_context: Optional user context for audit trails
+            
+        Returns:
+            DataFrame with query results
+        """
         try:
             import snowflake.connector.pandas_tools as pd_tools
             conn = self.get_connection()
             try:
+                # Set query tag for SOC 2 compliance and audit trails
+                query_tag = self._generate_query_tag(user_context)
+                cursor = conn.cursor()
+                
+                # Apply query tag for audit tracking
+                cursor.execute(f"ALTER SESSION SET QUERY_TAG = '{query_tag}'")
+                logger.info(f"Snowflake query tagged: {query_tag}")
+                
+                # Execute the actual query
                 if params:
                     # Snowflake uses different parameter syntax
-                    cursor = conn.cursor()
                     cursor.execute(query, params)
-                    return cursor.fetch_pandas_all()
+                    result = cursor.fetch_pandas_all()
                 else:
-                    return pd.read_sql(query, conn)
+                    result = pd.read_sql(query, conn)
+                
+                # Log query execution for audit
+                logger.info(f"Snowflake query executed successfully, returned {len(result)} rows")
+                
+                return result
             finally:
                 if self.use_pooling:
                     self.return_connection(conn)
@@ -406,6 +430,40 @@ class SnowflakeAdapter(DatabaseAdapter):
                     conn.close()
         except ImportError:
             raise ImportError("snowflake-connector-python not installed. Run: pip install snowflake-connector-python")
+    
+    def _generate_query_tag(self, user_context: Optional[str] = None) -> str:
+        """
+        Generate comprehensive query tag for audit compliance
+        
+        Args:
+            user_context: Optional user context information
+            
+        Returns:
+            Formatted query tag string
+        """
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        # Build comprehensive tag with compliance information
+        tag_components = [
+            "telecom_dashboard",
+            timestamp,
+            f"app_v2.2.0",  # Version for tracking
+            "prod_env" if os.getenv('ENVIRONMENT') == 'production' else "dev_env"
+        ]
+        
+        # Add user context if provided
+        if user_context:
+            # Sanitize user context for tag
+            safe_context = user_context.replace("'", "").replace('"', "").replace(";", "")[:50]
+            tag_components.append(f"user_{safe_context}")
+        
+        # Add compliance markers
+        tag_components.extend([
+            "soc2_audit",
+            "gdpr_compliant"
+        ])
+        
+        return "_".join(tag_components)
     
     def test_connection(self) -> Tuple[bool, str]:
         """Test Snowflake connection"""
