@@ -2,7 +2,12 @@ import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
+from functools import lru_cache
 from security_manager import secure_query_executor, security_manager, security_logger
+from performance_utils import timing_decorator, optimize_dataframe
+from logging_config import get_logger
+
+db_logger = get_logger('database')
 
 class TelecomDatabase:
     def __init__(self, db_path: str = "data/telecom_db.sqlite") -> None:
@@ -63,6 +68,8 @@ class TelecomDatabase:
             security_logger.error(f"Unexpected database error: {e}")
             raise RuntimeError(f"Unexpected database connection error: {e}")
     
+    @timing_decorator("get_network_metrics")
+    @lru_cache(maxsize=32)
     @secure_query_executor
     def get_network_metrics(self, days: int = 30) -> Optional[Dict[str, Any]]:
         """
@@ -158,6 +165,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
+    @lru_cache(maxsize=32)
     @secure_query_executor
     def get_customer_metrics(self, days=30):
         """Get customer experience metrics for the last N days"""
@@ -227,6 +235,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
+    @lru_cache(maxsize=32)
     def get_revenue_metrics(self, days=30):
         """Get revenue metrics for the last N days"""
         # Use actual revenue data from the fact table
@@ -295,6 +304,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
+    @lru_cache(maxsize=32)
     def get_usage_metrics(self, days=30):
         """Get usage and adoption metrics for the last N days"""
         # Use actual usage data from the fact table
@@ -363,6 +373,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
+    @lru_cache(maxsize=32)
     def get_operations_metrics(self, days=30):
         """Get operational efficiency metrics for the last N days"""
         # Use actual operations data from the fact table
@@ -466,6 +477,8 @@ class TelecomDatabase:
         with self.get_connection() as conn:
             return pd.read_sql_query(query, conn)
 
+    @timing_decorator("get_customer_trend_data")
+    @lru_cache(maxsize=16)
     def get_customer_trend_data(self, days=30):
         """Get customer experience trend data for charts"""
         try:
@@ -493,6 +506,7 @@ class TelecomDatabase:
             print(f"Error getting customer trend data: {e}")
             return pd.DataFrame()
 
+    @lru_cache(maxsize=16)
     def get_revenue_trend_data(self, days=30):
         """Get revenue trend data for charts"""
         try:
@@ -521,6 +535,7 @@ class TelecomDatabase:
             print(f"Error getting revenue trend data: {e}")
             return pd.DataFrame()
 
+    @lru_cache(maxsize=16)
     def get_usage_trend_data(self, days=30):
         """Get usage and adoption trend data for charts"""
         try:
@@ -548,6 +563,7 @@ class TelecomDatabase:
             print(f"Error getting usage trend data: {e}")
             return pd.DataFrame()
 
+    @lru_cache(maxsize=16)
     def get_operations_trend_data(self, days=30):
         """Get operations trend data for charts"""
         try:

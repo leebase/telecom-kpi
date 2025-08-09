@@ -39,13 +39,24 @@ from ai_insights_data_bundler import create_ai_insights_button, preview_llm_prom
 from ai_insights_ui import render_ai_insights_panel
 from benchmark_manager import create_benchmark_tab
 from security_manager import security_manager, get_security_headers, sanitize_streamlit_output
+from database_connection import TelecomDatabase
+from config_manager import get_config, get_ui_config, get_database_config
+from logging_config import configure_app_logging, get_logger
+
+# Configure logging
+configure_app_logging()
+logger = get_logger('application')
+
+# Load configuration
+ui_config = get_ui_config()
+logger.info("Application starting with configuration loaded")
 
 # Page configuration
 st.set_page_config(
-    page_title="Telecom KPI Dashboard",
-    page_icon="📡",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    page_title=ui_config.page_title,
+    page_icon=ui_config.page_icon,
+    layout=ui_config.layout,
+    initial_sidebar_state=ui_config.sidebar_state
 )
 
 # Apply security headers (if running in a web context)
@@ -188,7 +199,7 @@ def render_network_performance(network_data):
                        "Percentage of calls terminated unexpectedly", 
                        lambda: render_line_chart(network_data['dcr_trend'], "Dropped Call Rate", "%"))
 
-def render_customer_experience(customer_data):
+def render_customer_experience(customer_data, db):
     # Header with AI Insights button
     # Header with AI Insights button
     col1, col2 = st.columns([5, 1])
@@ -275,7 +286,7 @@ def render_customer_experience(customer_data):
     else:
         st.warning("No customer trend data available for detailed analysis")
 
-def render_revenue_monetization(revenue_data):
+def render_revenue_monetization(revenue_data, db):
     # Header with AI Insights button
     # Header with AI Insights button
     col1, col2 = st.columns([5, 1])
@@ -362,7 +373,7 @@ def render_revenue_monetization(revenue_data):
     else:
         st.warning("No revenue trend data available for detailed analysis")
 
-def render_usage_adoption(usage_data):
+def render_usage_adoption(usage_data, db):
     # Header with AI Insights button
     # Header with AI Insights button
     col1, col2 = st.columns([5, 1])
@@ -449,7 +460,7 @@ def render_usage_adoption(usage_data):
     else:
         st.warning("No usage trend data available for detailed analysis")
 
-def render_operational_efficiency(operations_data):
+def render_operational_efficiency(operations_data, db):
     # Header with AI Insights button
     # Header with AI Insights button
     col1, col2 = st.columns([5, 1])
@@ -537,6 +548,12 @@ def render_operational_efficiency(operations_data):
         st.warning("No operations trend data available for detailed analysis")
 
 def main():
+    # Load configuration
+    config = get_config()
+    
+    # Initialize database connection with config
+    db = TelecomDatabase(config.database.path)
+    
     # Print mode disabled for now
     print_mode = False
     
@@ -585,19 +602,19 @@ def main():
         
         # Tab 2: Customer Experience
         with tab2:
-            render_customer_experience(customer_data)
+            render_customer_experience(customer_data, db)
         
         # Tab 3: Revenue & Monetization
         with tab3:
-            render_revenue_monetization(revenue_data)
+            render_revenue_monetization(revenue_data, db)
         
         # Tab 4: Usage & Adoption
         with tab4:
-            render_usage_adoption(usage_data)
+            render_usage_adoption(usage_data, db)
         
         # Tab 5: Operational Efficiency
         with tab5:
-            render_operational_efficiency(operations_data)
+            render_operational_efficiency(operations_data, db)
         
         # Tab 6: Benchmark Management
         with tab6:
@@ -611,19 +628,19 @@ def main():
         st.markdown("---")
         
         st.markdown("## 😊 Customer Experience")
-        render_customer_experience(customer_data)
+        render_customer_experience(customer_data, db)
         st.markdown("---")
         
         st.markdown("## 💰 Revenue & Monetization")
-        render_revenue_monetization(revenue_data)
+        render_revenue_monetization(revenue_data, db)
         st.markdown("---")
         
         st.markdown("## 📶 Usage & Adoption")
-        render_usage_adoption(usage_data)
+        render_usage_adoption(usage_data, db)
         st.markdown("---")
         
         st.markdown("## 🛠️ Operational Efficiency")
-        render_operational_efficiency(operations_data)
+        render_operational_efficiency(operations_data, db)
         
         st.markdown('</div>', unsafe_allow_html=True)
 
