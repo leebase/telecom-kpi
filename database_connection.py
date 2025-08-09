@@ -1,14 +1,37 @@
 import sqlite3
 import pandas as pd
 from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List
 from security_manager import secure_query_executor, security_manager, security_logger
 
 class TelecomDatabase:
-    def __init__(self, db_path="data/telecom_db.sqlite"):
+    def __init__(self, db_path: str = "data/telecom_db.sqlite") -> None:
         self.db_path = db_path
     
-    def get_connection(self):
-        """Get secure database connection"""
+    def get_connection(self) -> sqlite3.Connection:
+        """
+        Get secure database connection with validation and security features.
+        
+        Establishes a secure SQLite connection with proper validation,
+        foreign key constraints, and timeout configuration.
+        
+        Returns:
+            sqlite3.Connection: Configured database connection
+            
+        Raises:
+            ValueError: If database path is invalid or contains security risks
+            sqlite3.Error: If SQLite-specific errors occur during connection
+            PermissionError: If file permissions prevent database access
+            FileNotFoundError: If database file does not exist
+            OSError: If system-level errors occur
+            RuntimeError: For unexpected connection errors
+            
+        Example:
+            >>> db = TelecomDatabase()
+            >>> conn = db.get_connection()
+            >>> cursor = conn.cursor()
+            >>> cursor.execute("SELECT * FROM network_metrics")
+        """
         try:
             # Validate database path for security
             if not self.db_path.startswith('data/') or '..' in self.db_path:
@@ -21,13 +44,45 @@ class TelecomDatabase:
             # Set secure query timeout
             conn.execute("PRAGMA busy_timeout = 30000")
             return conn
-        except Exception as e:
-            security_logger.error(f"Database connection error: {e}")
+        except ValueError:
+            # Re-raise validation errors
             raise
+        except sqlite3.Error as e:
+            security_logger.error(f"SQLite database error: {e}")
+            raise sqlite3.Error(f"Database connection failed: {e}")
+        except PermissionError as e:
+            security_logger.error(f"Database permission error: {e}")
+            raise PermissionError(f"Cannot access database file: {e}")
+        except FileNotFoundError as e:
+            security_logger.error(f"Database file not found: {e}")
+            raise FileNotFoundError(f"Database file does not exist: {e}")
+        except OSError as e:
+            security_logger.error(f"Database OS error: {e}")
+            raise OSError(f"System error accessing database: {e}")
+        except Exception as e:
+            security_logger.error(f"Unexpected database error: {e}")
+            raise RuntimeError(f"Unexpected database connection error: {e}")
     
     @secure_query_executor
-    def get_network_metrics(self, days=30):
-        """Get network performance metrics for the last N days"""
+    def get_network_metrics(self, days: int = 30) -> Optional[Dict[str, Any]]:
+        """
+        Get network performance metrics for the last N days.
+        
+        Retrieves aggregated network performance data including availability, 
+        latency, packet loss, bandwidth utilization, MTTR, and dropped call rates.
+        
+        Args:
+            days: Number of days to look back (30=month, 90=quarter, 365=year, 730=2years)
+                 Defaults to 30 days for monthly view
+                 
+        Returns:
+            Optional[Dict[str, Any]]: Dictionary containing network metrics or None if error
+            
+        Example:
+            >>> db = TelecomDatabase()
+            >>> metrics = db.get_network_metrics(90)  # Quarterly data
+            >>> print(f"Availability: {metrics['avg_availability']}%")
+        """
         # Since we only have one day of data, we'll simulate different time periods
         # by adjusting the aggregation based on the days parameter
         if days == 30:

@@ -8,8 +8,8 @@ from config_loader import get_llm_config
 from security_manager import security_manager, security_logger, sanitize_streamlit_output
 
 class LLMService:
-    def __init__(self):
-        self.config = get_llm_config()
+    def __init__(self) -> None:
+        self.config: Dict[str, Any] = get_llm_config()
         
     def generate_insights(self, prompt: str) -> Optional[Dict[str, Any]]:
         """
@@ -107,9 +107,24 @@ class LLMService:
             insights = json.loads(content)
             return insights
             
+        except requests.exceptions.ConnectionError as e:
+            security_logger.error(f"LLM API connection error: {e}")
+            return {"error": "Connection failed", "summary": "Unable to connect to AI service"}
+        except requests.exceptions.Timeout as e:
+            security_logger.error(f"LLM API timeout: {e}")
+            return {"error": "Request timeout", "summary": "AI service request timed out"}
+        except requests.exceptions.RequestException as e:
+            security_logger.error(f"LLM API request error: {e}")
+            return {"error": "Request failed", "summary": "AI service request failed"}
+        except json.JSONDecodeError as e:
+            security_logger.error(f"LLM response JSON parsing error: {e}")
+            return {"error": "Invalid response", "summary": "AI service returned invalid data"}
+        except KeyError as e:
+            security_logger.error(f"LLM response missing expected key: {e}")
+            return {"error": "Malformed response", "summary": "AI service response incomplete"}
         except Exception as e:
-            print(f"Error generating insights: {str(e)}")
-            return None
+            security_logger.error(f"Unexpected LLM service error: {e}")
+            return {"error": "Service error", "summary": "Unexpected AI service error"}
 
     def format_insights_for_display(self, insights: Dict[str, Any]) -> Dict[str, Any]:
         """

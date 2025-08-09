@@ -3,9 +3,36 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import altair as alt
-from kpi_components import *
-from generate_test_data import *
-from improved_metric_cards import *
+# Explicit imports for better maintainability and IDE support
+from kpi_components import (
+    render_metric_card,
+    render_line_chart,
+    render_bar_chart, 
+    render_area_chart,
+    render_distribution,
+    render_kpi_expander,
+    get_kpi_tooltip_content,
+    get_kpi_formula,
+    get_kpi_business_impact
+)
+from generate_test_data import (
+    generate_network_data,
+    generate_customer_data,
+    generate_revenue_data,
+    generate_usage_data,
+    generate_operations_data,
+    generate_all_data
+)
+from improved_metric_cards import (
+    create_metric_card,
+    render_metric_grid,
+    create_time_period_selector,
+    get_network_metrics,
+    get_customer_metrics,
+    get_revenue_metrics,
+    get_usage_metrics,
+    get_operations_metrics
+)
 from theme_manager import get_current_theme_css, get_current_theme_header, get_current_theme_page_header
 from theme_switcher import create_theme_switcher
 from ai_insights_data_bundler import create_ai_insights_button, preview_llm_prompt

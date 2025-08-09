@@ -3,10 +3,38 @@ import pandas as pd
 import numpy as np
 import altair as alt
 from datetime import datetime, timedelta
+from typing import Union, Optional
 
-def render_metric_card(label, value, delta, metric_type="default"):
+def render_metric_card(
+    label: str, 
+    value: Union[str, int, float], 
+    delta: str, 
+    metric_type: str = "default"
+) -> None:
     """
-    Render a metric card with value, delta, and optional tooltip
+    Render a metric card with value, delta, and optional tooltip.
+    
+    Creates a visually appealing metric card that displays a KPI value with
+    trend indicator and optional tooltip for additional context.
+    
+    Args:
+        label: The display label for the metric (e.g., "Network Uptime")
+        value: The metric value - can be string, int, or float (e.g., "99.9%", 42.5)
+        delta: Change indicator with sign (e.g., "+5.2%", "-1.1%", "0.0%")
+        metric_type: Card styling type - "default", "warning", "success", "error"
+        
+    Returns:
+        None: Renders directly to Streamlit interface
+        
+    Example:
+        >>> render_metric_card("Network Uptime", "99.9%", "+0.1%", "success")
+        >>> render_metric_card("Response Time", "45ms", "-2ms", "default")
+        
+    Note:
+        Delta colors are automatically determined:
+        - Green (▲) for positive changes starting with '+'
+        - Red (▼) for negative changes starting with '-'
+        - Blue (●) for neutral or unchanged values
     """
     # Determine delta color and icon
     if delta.startswith('+'):
@@ -51,9 +79,39 @@ def render_info_icon(kpi_name, detailed_help):
     """
     st.markdown(f'<div title="{detailed_help}" style="cursor: help; font-size: 1.2rem;">ℹ️ {kpi_name}</div>', unsafe_allow_html=True)
 
-def render_line_chart(df, title, y_label="Value"):
+def render_line_chart(
+    df: Optional[pd.DataFrame], 
+    title: str, 
+    y_label: str = "Value"
+) -> None:
     """
-    Render a theme-appropriate line chart using Altair
+    Render a theme-appropriate line chart using Altair.
+    
+    Creates an interactive line chart that automatically adapts to the current theme
+    and displays time-series data with proper formatting and styling.
+    
+    Args:
+        df: DataFrame containing the data to plot. Must have 'date' and 'value' columns.
+            Can be None or empty, in which case a warning is displayed.
+        title: Chart title displayed above the visualization
+        y_label: Y-axis label describing the metric units (default: "Value")
+        
+    Returns:
+        None: Renders chart directly to Streamlit interface
+        
+    Example:
+        >>> data = pd.DataFrame({
+        ...     'date': pd.date_range('2023-01-01', periods=30),
+        ...     'value': np.random.normal(100, 10, 30)
+        ... })
+        >>> render_line_chart(data, "Daily Metrics", "Count")
+        
+    Note:
+        Chart automatically includes:
+        - Interactive tooltips
+        - Theme-appropriate colors
+        - Responsive sizing
+        - Proper date formatting
     """
     if df is None or df.empty:
         st.warning(f"No data available for {title}")
@@ -342,7 +400,7 @@ def render_kpi_expander(name, definition, chart_fn):
         # Render the chart
         chart_fn()
 
-def get_kpi_tooltip_content(kpi_name):
+def get_kpi_tooltip_content(kpi_name: str) -> str:
     """
     Get tooltip content for KPIs
     """
