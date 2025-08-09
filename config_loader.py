@@ -23,16 +23,16 @@ def load_config() -> Dict[str, Any]:
             with open(config_path, 'r') as f:
                 content = f.read()
                 
-            # Substitute environment variables
-            content = substitute_env_vars(content)
-            config = yaml.safe_load(content)
-            
-            # Validate loaded config
-            if validate_config_security(config):
-                return config
-            else:
+            # Validate raw config before substitution
+            raw_config = yaml.safe_load(content)
+            if not validate_config_security(raw_config):
                 security_logger.error("Configuration security validation failed")
                 return get_fallback_config()
+            
+            # Substitute environment variables after validation
+            content = substitute_env_vars(content)
+            config = yaml.safe_load(content)
+            return config
         
         # Fall back to environment variables
         return get_fallback_config()

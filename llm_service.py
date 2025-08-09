@@ -22,8 +22,8 @@ class LLMService:
             Dict containing structured insights or None if the call fails
         """
         try:
-            # Validate and sanitize input
-            if not security_manager.validate_input(prompt):
+            # Validate and sanitize input (use ai_prompt type for relaxed validation)
+            if not security_manager.validate_input(prompt, "ai_prompt"):
                 security_logger.warning("Invalid prompt detected")
                 return None
             
@@ -74,7 +74,29 @@ class LLMService:
             )
             
             if response.status_code != 200:
-                print(f"Error from LLM API: {response.status_code} - {response.text}")
+                error_msg = f"Error from LLM API: {response.status_code} - {response.text}"
+                print(error_msg)
+                
+                # Return helpful error message for common issues
+                if response.status_code == 401:
+                    return {
+                        "error": "API Authentication Failed",
+                        "summary": "⚠️ OpenRouter API key is invalid or expired. Please get a new API key from https://openrouter.ai/",
+                        "key_insights": [
+                            "The API key provided is not recognized by OpenRouter",
+                            "This could be due to an expired key or incorrect key format",
+                            "OpenRouter requires a valid account with sufficient credits"
+                        ],
+                        "trends": [
+                            "Authentication errors prevent AI analysis from functioning"
+                        ],
+                        "recommended_actions": [
+                            "Visit https://openrouter.ai/ to get a new API key",
+                            "Check your OpenRouter account status and billing",
+                            "Verify the API key is correctly set in environment variables",
+                            "Ensure your account has sufficient credits for API calls"
+                        ]
+                    }
                 return None
                 
             result = response.json()

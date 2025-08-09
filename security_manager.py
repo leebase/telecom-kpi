@@ -50,12 +50,16 @@ class SecurityManager:
             if input_data is None:
                 return False
                 
-            # Basic SQL injection patterns
+            # Skip strict validation for AI prompts
+            if input_type == "ai_prompt":
+                return self._validate_ai_prompt(input_data)
+                
+            # Basic SQL injection patterns (for database queries)
             sql_patterns = [
                 r"union\s+select", r"drop\s+table", r"delete\s+from", 
                 r"insert\s+into", r"update\s+set", r"create\s+table",
                 r"alter\s+table", r"exec\s*\(", r"execute\s*\(",
-                r"sp_", r"xp_", r"--", r";", r"/*", r"*/"
+                r"sp_", r"xp_", r"--\s*$", r";\s*drop", r"/\*.*\*/.*union"
             ]
             
             # XSS patterns
@@ -94,6 +98,41 @@ class SecurityManager:
             
         except Exception as e:
             security_logger.error(f"Input validation error: {e}")
+            return False
+    
+    def _validate_ai_prompt(self, prompt: str) -> bool:
+        """
+        Validate AI prompts with relaxed security rules
+        
+        Args:
+            prompt: The AI prompt to validate
+            
+        Returns:
+            Boolean indicating if prompt is valid
+        """
+        try:
+            # Basic checks for AI prompts
+            if len(str(prompt)) > 10000:  # Reasonable length limit
+                security_logger.warning("AI prompt too long")
+                return False
+                
+            # Only check for dangerous SQL patterns (not common text patterns)
+            dangerous_patterns = [
+                r"union\s+select.*from", r"drop\s+table", r"delete\s+from.*where", 
+                r"insert\s+into.*values", r"update.*set.*where", r"create\s+table",
+                r"alter\s+table", r"exec\s*\(", r"execute\s*\("
+            ]
+            
+            prompt_str = str(prompt).lower()
+            for pattern in dangerous_patterns:
+                if re.search(pattern, prompt_str, re.IGNORECASE):
+                    security_logger.warning(f"Potentially dangerous pattern in AI prompt: {pattern}")
+                    return False
+                    
+            return True
+            
+        except Exception as e:
+            security_logger.error(f"AI prompt validation error: {e}")
             return False
     
     def sanitize_output(self, data: str) -> str:
