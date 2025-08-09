@@ -1,13 +1,75 @@
 import sqlite3
 import pandas as pd
+import time
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
-from functools import lru_cache
+from functools import lru_cache, wraps
 from security_manager import secure_query_executor, security_manager, security_logger
 from performance_utils import timing_decorator, optimize_dataframe
 from logging_config import get_logger
 
 db_logger = get_logger('database')
+
+def cache_with_ttl(ttl_seconds: int = 300):
+    """
+    Cache decorator with TTL (Time To Live) support.
+    
+    Args:
+        ttl_seconds: Cache expiration time in seconds (default: 5 minutes)
+    
+    Returns:
+        Decorator function that caches results with TTL
+    """
+    def decorator(func):
+        cache = {}
+        cache_timestamps = {}
+        
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Create cache key from function name and arguments
+            cache_key = f"{func.__name__}:{str(args)}:{str(sorted(kwargs.items()))}"
+            
+            current_time = time.time()
+            
+            # Check if we have cached data and if it's still valid
+            if cache_key in cache:
+                if cache_key in cache_timestamps:
+                    time_diff = current_time - cache_timestamps[cache_key]
+                    if time_diff < ttl_seconds:
+                        db_logger.debug(f"Cache hit for {func.__name__} (age: {time_diff:.1f}s)")
+                        return cache[cache_key]
+                    else:
+                        db_logger.debug(f"Cache expired for {func.__name__} (age: {time_diff:.1f}s)")
+                        # Clean up expired entry
+                        del cache[cache_key]
+                        del cache_timestamps[cache_key]
+            
+            # Cache miss or expired - execute function
+            db_logger.debug(f"Cache miss for {func.__name__} - executing query")
+            result = func(*args, **kwargs)
+            
+            # Store result and timestamp
+            cache[cache_key] = result
+            cache_timestamps[cache_key] = current_time
+            
+            # Cleanup old cache entries (basic LRU-style cleanup)
+            if len(cache) > 100:  # Max 100 cached items
+                oldest_key = min(cache_timestamps.keys(), key=lambda k: cache_timestamps[k])
+                del cache[oldest_key]
+                del cache_timestamps[oldest_key]
+                db_logger.debug(f"Cache cleanup: removed oldest entry")
+            
+            return result
+            
+        # Add cache management methods
+        wrapper.cache_clear = lambda: cache.clear() or cache_timestamps.clear()
+        wrapper.cache_info = lambda: {
+            'cache_size': len(cache),
+            'cache_keys': list(cache.keys())
+        }
+        
+        return wrapper
+    return decorator
 
 class TelecomDatabase:
     def __init__(self, db_path: str = "data/telecom_db.sqlite") -> None:
@@ -69,7 +131,7 @@ class TelecomDatabase:
             raise RuntimeError(f"Unexpected database connection error: {e}")
     
     @timing_decorator("get_network_metrics")
-    @lru_cache(maxsize=32)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     @secure_query_executor
     def get_network_metrics(self, days: int = 30) -> Optional[Dict[str, Any]]:
         """
@@ -165,7 +227,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
-    @lru_cache(maxsize=32)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     @secure_query_executor
     def get_customer_metrics(self, days=30):
         """Get customer experience metrics for the last N days"""
@@ -235,7 +297,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
-    @lru_cache(maxsize=32)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_revenue_metrics(self, days=30):
         """Get revenue metrics for the last N days"""
         # Use actual revenue data from the fact table
@@ -304,7 +366,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
-    @lru_cache(maxsize=32)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_usage_metrics(self, days=30):
         """Get usage and adoption metrics for the last N days"""
         # Use actual usage data from the fact table
@@ -373,7 +435,7 @@ class TelecomDatabase:
             df = pd.read_sql_query(query, conn)
             return df.iloc[0] if not df.empty else pd.Series()
     
-    @lru_cache(maxsize=32)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_operations_metrics(self, days=30):
         """Get operational efficiency metrics for the last N days"""
         # Use actual operations data from the fact table
@@ -498,7 +560,7 @@ class TelecomDatabase:
             return pd.read_sql_query(query, conn, params=(days,))
 
     @timing_decorator("get_customer_trend_data")
-    @lru_cache(maxsize=16)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_customer_trend_data(self, days=30):
         """Get customer experience trend data for charts"""
         try:
@@ -526,7 +588,7 @@ class TelecomDatabase:
             print(f"Error getting customer trend data: {e}")
             return pd.DataFrame()
 
-    @lru_cache(maxsize=16)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_revenue_trend_data(self, days=30):
         """Get revenue trend data for charts"""
         try:
@@ -555,7 +617,7 @@ class TelecomDatabase:
             print(f"Error getting revenue trend data: {e}")
             return pd.DataFrame()
 
-    @lru_cache(maxsize=16)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_usage_trend_data(self, days=30):
         """Get usage and adoption trend data for charts"""
         try:
@@ -583,7 +645,7 @@ class TelecomDatabase:
             print(f"Error getting usage trend data: {e}")
             return pd.DataFrame()
 
-    @lru_cache(maxsize=16)
+    @cache_with_ttl(ttl_seconds=300)  # 5-minute cache
     def get_operations_trend_data(self, days=30):
         """Get operations trend data for charts"""
         try:

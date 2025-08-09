@@ -9,17 +9,159 @@ while maintaining compatibility with the existing SQLite-based development setup
 import os
 import pandas as pd
 import sqlite3
-from typing import Optional, Dict, Any, Union, Tuple
+import threading
+import time
+from typing import Optional, Dict, Any, Union, Tuple, List
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 import logging
 from functools import lru_cache
 from urllib.parse import urlparse
+from queue import Queue, Empty
 
 from config_manager import get_config, DatabaseConfig
 from logging_config import get_logger
 
 logger = get_logger('enterprise_db')
+
+class ConnectionPool:
+    """
+    Thread-safe connection pool for database connections.
+    
+    Manages a pool of database connections to prevent connection exhaustion
+    and improve performance by reusing connections.
+    """
+    
+    def __init__(self, create_connection_func, min_connections: int = 2, max_connections: int = 10):
+        """
+        Initialize connection pool.
+        
+        Args:
+            create_connection_func: Function that creates a new database connection
+            min_connections: Minimum number of connections to maintain
+            max_connections: Maximum number of connections allowed
+        """
+        self.create_connection = create_connection_func
+        self.min_connections = min_connections
+        self.max_connections = max_connections
+        
+        self._pool = Queue(maxsize=max_connections)
+        self._active_connections = 0
+        self._lock = threading.Lock()
+        
+        # Pre-populate with minimum connections
+        for _ in range(min_connections):
+            try:
+                conn = self.create_connection()
+                self._pool.put(conn)
+                self._active_connections += 1
+            except Exception as e:
+                logger.warning(f"Failed to create initial connection: {e}")
+    
+    def get_connection(self, timeout: float = 30.0):
+        """
+        Get a connection from the pool.
+        
+        Args:
+            timeout: Maximum time to wait for a connection
+            
+        Returns:
+            Database connection
+            
+        Raises:
+            Exception: If no connection is available within timeout
+        """
+        try:
+            # Try to get existing connection from pool
+            conn = self._pool.get(timeout=timeout)
+            
+            # Test connection validity (simple ping)
+            if self._is_connection_valid(conn):
+                return conn
+            else:
+                logger.debug("Connection invalid, creating new one")
+                self._active_connections -= 1
+                # Create new connection if old one is invalid
+                return self._create_new_connection()
+                
+        except Empty:
+            # No connection available in pool, try to create new one
+            with self._lock:
+                if self._active_connections < self.max_connections:
+                    return self._create_new_connection()
+                else:
+                    raise Exception(f"Connection pool exhausted (max: {self.max_connections})")
+    
+    def return_connection(self, conn):
+        """
+        Return a connection to the pool.
+        
+        Args:
+            conn: Database connection to return
+        """
+        if self._is_connection_valid(conn):
+            try:
+                self._pool.put_nowait(conn)
+            except:
+                # Pool is full, close the connection
+                self._close_connection(conn)
+                with self._lock:
+                    self._active_connections -= 1
+        else:
+            # Invalid connection, close it
+            self._close_connection(conn)
+            with self._lock:
+                self._active_connections -= 1
+    
+    def _create_new_connection(self):
+        """Create a new database connection."""
+        try:
+            conn = self.create_connection()
+            with self._lock:
+                self._active_connections += 1
+            return conn
+        except Exception as e:
+            logger.error(f"Failed to create new connection: {e}")
+            raise
+    
+    def _is_connection_valid(self, conn) -> bool:
+        """
+        Test if a connection is still valid.
+        
+        Args:
+            conn: Database connection to test
+            
+        Returns:
+            True if connection is valid, False otherwise
+        """
+        try:
+            # Simple test query - works for most databases
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            cursor.fetchone()
+            cursor.close()
+            return True
+        except:
+            return False
+    
+    def _close_connection(self, conn):
+        """Close a database connection safely."""
+        try:
+            conn.close()
+        except Exception as e:
+            logger.debug(f"Error closing connection: {e}")
+    
+    def close_all(self):
+        """Close all connections in the pool."""
+        while not self._pool.empty():
+            try:
+                conn = self._pool.get_nowait()
+                self._close_connection(conn)
+            except Empty:
+                break
+        
+        with self._lock:
+            self._active_connections = 0
 
 @dataclass
 class DatabaseCredentials:
@@ -107,9 +249,17 @@ class SQLiteAdapter(DatabaseAdapter):
 class PostgreSQLAdapter(DatabaseAdapter):
     """PostgreSQL database adapter for medium enterprise deployment"""
     
-    def __init__(self, credentials: DatabaseCredentials):
+    def __init__(self, credentials: DatabaseCredentials, use_pooling: bool = True):
         self.credentials = credentials
         self._connection_string = self._build_connection_string()
+        self.use_pooling = use_pooling
+        
+        if use_pooling:
+            self._pool = ConnectionPool(
+                create_connection_func=self._create_raw_connection,
+                min_connections=2,
+                max_connections=10
+            )
     
     def _build_connection_string(self) -> str:
         """Build PostgreSQL connection string"""
@@ -117,8 +267,8 @@ class PostgreSQLAdapter(DatabaseAdapter):
                 f"{self.credentials.host}:{self.credentials.port or 5432}/"
                 f"{self.credentials.database}")
     
-    def get_connection(self):
-        """Get PostgreSQL connection"""
+    def _create_raw_connection(self):
+        """Create a raw PostgreSQL connection"""
         try:
             import psycopg2
             return psycopg2.connect(
@@ -131,14 +281,35 @@ class PostgreSQLAdapter(DatabaseAdapter):
         except ImportError:
             raise ImportError("psycopg2 not installed. Run: pip install psycopg2-binary")
     
+    def get_connection(self):
+        """Get PostgreSQL connection (pooled or direct)"""
+        if self.use_pooling:
+            return self._pool.get_connection()
+        else:
+            return self._create_raw_connection()
+    
+    def return_connection(self, conn):
+        """Return connection to pool if pooling is enabled"""
+        if self.use_pooling:
+            self._pool.return_connection(conn)
+    
     def execute_query(self, query: str, params: Optional[tuple] = None) -> pd.DataFrame:
         """Execute PostgreSQL query and return DataFrame"""
-        try:
-            import sqlalchemy
-            engine = sqlalchemy.create_engine(self._connection_string)
-            return pd.read_sql_query(query, engine, params=params)
-        except ImportError:
-            raise ImportError("sqlalchemy not installed. Run: pip install sqlalchemy")
+        if self.use_pooling:
+            conn = self.get_connection()
+            try:
+                result = pd.read_sql_query(query, conn, params=params)
+                return result
+            finally:
+                self.return_connection(conn)
+        else:
+            # Fall back to SQLAlchemy engine for non-pooled connections
+            try:
+                import sqlalchemy
+                engine = sqlalchemy.create_engine(self._connection_string)
+                return pd.read_sql_query(query, engine, params=params)
+            except ImportError:
+                raise ImportError("sqlalchemy not installed. Run: pip install sqlalchemy")
     
     def test_connection(self) -> Tuple[bool, str]:
         """Test PostgreSQL connection"""
@@ -177,11 +348,19 @@ class PostgreSQLAdapter(DatabaseAdapter):
 class SnowflakeAdapter(DatabaseAdapter):
     """Snowflake database adapter for large enterprise deployment"""
     
-    def __init__(self, credentials: DatabaseCredentials):
+    def __init__(self, credentials: DatabaseCredentials, use_pooling: bool = True):
         self.credentials = credentials
+        self.use_pooling = use_pooling
+        
+        if use_pooling:
+            self._pool = ConnectionPool(
+                create_connection_func=self._create_raw_connection,
+                min_connections=2,
+                max_connections=10
+            )
     
-    def get_connection(self):
-        """Get Snowflake connection"""
+    def _create_raw_connection(self):
+        """Create a raw Snowflake connection"""
         try:
             import snowflake.connector
             return snowflake.connector.connect(
@@ -195,11 +374,24 @@ class SnowflakeAdapter(DatabaseAdapter):
         except ImportError:
             raise ImportError("snowflake-connector-python not installed. Run: pip install snowflake-connector-python")
     
+    def get_connection(self):
+        """Get Snowflake connection (pooled or direct)"""
+        if self.use_pooling:
+            return self._pool.get_connection()
+        else:
+            return self._create_raw_connection()
+    
+    def return_connection(self, conn):
+        """Return connection to pool if pooling is enabled"""
+        if self.use_pooling:
+            self._pool.return_connection(conn)
+    
     def execute_query(self, query: str, params: Optional[tuple] = None) -> pd.DataFrame:
         """Execute Snowflake query and return DataFrame"""
         try:
             import snowflake.connector.pandas_tools as pd_tools
-            with self.get_connection() as conn:
+            conn = self.get_connection()
+            try:
                 if params:
                     # Snowflake uses different parameter syntax
                     cursor = conn.cursor()
@@ -207,6 +399,11 @@ class SnowflakeAdapter(DatabaseAdapter):
                     return cursor.fetch_pandas_all()
                 else:
                     return pd.read_sql(query, conn)
+            finally:
+                if self.use_pooling:
+                    self.return_connection(conn)
+                else:
+                    conn.close()
         except ImportError:
             raise ImportError("snowflake-connector-python not installed. Run: pip install snowflake-connector-python")
     

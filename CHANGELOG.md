@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.1] - 2025-08-09
+
+### 🔒 **Critical Security Fixes**
+- **SQL Injection Prevention** - Fixed SQL injection vulnerabilities in `get_trend_data()` and `get_region_data()`
+- **Input Validation** - Added metric name whitelisting with comprehensive validation
+- **Parameterized Queries** - Implemented secure parameterization for all user inputs
+- **Security Test Suite** - Added comprehensive security tests to prevent regressions
+
+### 🛡️ **Security Improvements**
+- **OWASP Top 10 Compliance** - Addressed A03:2021 (Injection) vulnerabilities
+- **Enterprise Readiness** - Enhanced security posture for production deployment
+- **Zero Downtime Fixes** - Security improvements applied without service interruption
+
 ## [2.1.0] - 2024-08-07
 
 ### 🤖 **Major Feature: AI-Powered Insights**

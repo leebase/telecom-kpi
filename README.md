@@ -214,12 +214,15 @@ Access the dashboard at `http://localhost:8501`
 
 ### **Security Features**
 - ✅ **Environment Variable API Key Management** - No hardcoded secrets
-- ✅ **SQL Injection Prevention** - Parameterized queries only
+- ✅ **SQL Injection Prevention** - Parameterized queries with metric name whitelisting
 - ✅ **XSS Protection** - Input validation and output sanitization
+- ✅ **Security Test Suite** - Comprehensive tests for vulnerability prevention (2025-08-09)
 - ✅ **Rate Limiting** - DoS attack prevention
 - ✅ **Security Headers** - HTTPS enforcement and CSP
 - ✅ **Secure File Permissions** - Restricted access to sensitive files
 - ✅ **Comprehensive Logging** - Security event monitoring
+
+> **🔒 Security Update (2025-08-09):** Fixed critical SQL injection vulnerabilities and added comprehensive security test suite for enterprise-grade protection.
 
 ### **Security Validation**
 

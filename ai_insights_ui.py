@@ -29,8 +29,14 @@ def render_ai_insights_panel(tab_name, days=30):
                 try:
                     insights = llm.generate_insights(prompt)
                     if insights:
-                        st.session_state[f'insights_{tab_name}'] = llm.format_insights_for_display(insights)
-                        st.session_state[f'raw_insights_{tab_name}'] = insights
+                        # Validate insights structure before formatting
+                        if isinstance(insights, dict) and all(key in insights for key in ['summary', 'key_insights', 'trends', 'recommended_actions']):
+                            st.session_state[f'insights_{tab_name}'] = llm.format_insights_for_display(insights)
+                            st.session_state[f'raw_insights_{tab_name}'] = insights
+                        else:
+                            st.error("⚠️ Invalid insights format received. Please try again.")
+                            st.session_state[f'insights_{tab_name}'] = None
+                            st.session_state[f'raw_insights_{tab_name}'] = None
                     else:
                         st.error("⚠️ Failed to generate insights. Please try again.")
                 except Exception as e:
@@ -42,26 +48,42 @@ def render_ai_insights_panel(tab_name, days=30):
         
         # Display insights if available
         insights = st.session_state.get(f'insights_{tab_name}')
-        if insights:
+        if insights and isinstance(insights, dict):
             # Summary
-            st.markdown(f"#### {insights['summary']}")
+            summary = insights.get('summary', 'No summary available')
+            st.markdown(f"#### {summary}")
             
             # Two-column layout for insights
             col1, col2 = st.columns(2)
             
             with col1:
                 st.markdown("##### 💡 Key Insights")
-                for insight in insights['key_insights']:
-                    st.markdown(f"- {insight}")
+                key_insights = insights.get('key_insights', [])
+                if key_insights:
+                    for insight in key_insights:
+                        if isinstance(insight, str):
+                            st.markdown(f"- {insight}")
+                else:
+                    st.markdown("- No key insights available")
                 
                 st.markdown("##### 📈 Trends")
-                for trend in insights['trends']:
-                    st.markdown(f"- {trend}")
+                trends = insights.get('trends', [])
+                if trends:
+                    for trend in trends:
+                        if isinstance(trend, str):
+                            st.markdown(f"- {trend}")
+                else:
+                    st.markdown("- No trends available")
             
             with col2:
                 st.markdown("##### ✅ Recommended Actions")
-                for action in insights['recommended_actions']:
-                    st.markdown(f"- {action}")
+                actions = insights.get('recommended_actions', [])
+                if actions:
+                    for action in actions:
+                        if isinstance(action, str):
+                            st.markdown(f"- {action}")
+                else:
+                    st.markdown("- No recommendations available")
             
             # Refresh and Close buttons
             col1, col2, col3 = st.columns([6, 2, 2])
