@@ -49,7 +49,7 @@ class SecureConfigManager:
             'llm': {
                 'provider': os.getenv('LLM_PROVIDER', 'openrouter'),
                 'api_key': api_key,
-                'model': os.getenv('LLM_MODEL', 'openai/gpt-4-1106-preview'),
+                'model': os.getenv('LLM_MODEL', 'google/gemini-2.5-flash'),
                 'temperature': float(os.getenv('LLM_TEMPERATURE', '0.7')),
                 'max_tokens': int(os.getenv('LLM_MAX_TOKENS', '1000')),
                 'api_base': os.getenv('LLM_API_BASE', 'https://openrouter.ai/api/v1')
@@ -182,7 +182,7 @@ class SecureConfigManager:
             'llm': {
                 'provider': 'openrouter',
                 'api_key': None,  # Will disable AI features
-                'model': 'openai/gpt-4-1106-preview',
+                'model': 'google/gemini-2.5-flash',
                 'temperature': 0.7,
                 'max_tokens': 1000,
                 'api_base': 'https://openrouter.ai/api/v1'

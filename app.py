@@ -48,8 +48,8 @@ from logging_config import configure_app_logging, get_logger
 configure_app_logging()
 logger = get_logger('application')
 
-# Application version constant
-APP_VERSION = "2.2.0"
+# Import version information
+from __version__ import APP_VERSION
 
 # Load configuration
 ui_config = get_ui_config()

@@ -188,13 +188,13 @@ class TestAPIErrors:
         """Test LLMServiceError"""
         error = LLMServiceError(
             "LLM request failed",
-            model="gpt-4"
+            model="google/gemini-2.5-flash"
         )
         
         assert error.message == "LLM request failed"
         assert error.error_code == "LLM_ERROR"
         assert error.details["api_name"] == "llm_service"
-        assert error.details["model"] == "gpt-4"
+        assert error.details["model"] == "google/gemini-2.5-flash"
 
 class TestOtherErrors:
     """Test other specialized error classes"""

@@ -19,8 +19,8 @@ from logging_config import get_logger
 
 logger = get_logger('health_check')
 
-# Application version constant (should match app.py)
-APP_VERSION = "2.2.0"
+# Import version information
+from __version__ import APP_VERSION
 
 @dataclass
 class HealthCheckResult:

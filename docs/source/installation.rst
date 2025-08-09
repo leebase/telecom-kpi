@@ -353,7 +353,7 @@ Create ``config/config.yaml`` for custom settings:
      max_requests_per_minute: 120
      
    ai:
-     model: "openai/gpt-4-1106-preview"
+     model: "openai/gpt-5-nano"
      temperature: 0.1
      max_tokens: 2000
 

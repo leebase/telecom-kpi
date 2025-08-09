@@ -95,7 +95,7 @@ class SecurityConfig(BaseModel):
 
 class AIConfig(BaseModel):
     """AI/LLM configuration model"""
-    model: str = Field("openai/gpt-4-1106-preview", description="LLM model name")
+    model: str = Field("google/gemini-2.5-flash", description="LLM model name")
     temperature: float = Field(0.1, ge=0.0, le=2.0, description="LLM temperature")
     max_tokens: int = Field(2000, ge=100, le=10000, description="Maximum tokens")
     api_timeout: int = Field(30, ge=5, le=120, description="API timeout in seconds")

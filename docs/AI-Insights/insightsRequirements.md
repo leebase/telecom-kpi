@@ -1,7 +1,7 @@
 # AI Insights Requirements
 
 ## Overview
-The AI Insights feature provides intelligent analysis of telecommunications KPI data using GPT-4.1 Turbo, delivering actionable insights and recommendations for performance optimization.
+The AI Insights feature provides intelligent analysis of telecommunications KPI data using GPT-5 Nano, delivering actionable insights and recommendations for performance optimization.
 
 ## Goals
 - **Automated Analysis**: Provide intelligent insights on KPI performance without manual analysis
@@ -47,7 +47,7 @@ The AI Insights feature provides intelligent analysis of telecommunications KPI 
 ## Technical Requirements
 
 ### LLM Integration
-- **Model**: GPT-4.1 Turbo via OpenRouter
+- **Model**: GPT-5 Nano via OpenRouter
 - **Response Format**: Structured JSON with predefined schema
 - **Error Handling**: Graceful fallback for API failures
 - **Rate Limiting**: Token and cost management
@@ -83,7 +83,7 @@ The AI Insights feature provides intelligent analysis of telecommunications KPI 
 - **Operations**: Efficiency, cost management, process optimization
 
 ### Technical Implementation
-- **LLM Service**: OpenRouter integration with GPT-4.1 Turbo
+- **LLM Service**: OpenRouter integration with GPT-5 Nano
 - **Data Bundler**: KPI data transformation and context building
 - **UI Components**: Streamlit-based interface with custom styling
 - **Configuration**: Secure API key management and prompt customization
@@ -122,7 +122,7 @@ The AI Insights feature provides intelligent analysis of telecommunications KPI 
 ## Configuration Requirements
 
 ### API Setup
-- **OpenRouter Account**: Required for GPT-4.1 Turbo access
+- **OpenRouter Account**: Required for GPT-5 Nano access
 - **API Key**: Secure storage in `config.secrets.yaml`
 - **Rate Limits**: Monitor usage to stay within quotas
 

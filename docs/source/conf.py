@@ -21,9 +21,9 @@ project = 'Telecom KPI Dashboard'
 copyright = '2025, Telecom Dashboard Team'
 author = 'Telecom Dashboard Team'
 
-# The full version, including alpha/beta/rc tags
-release = '1.0.0'
-version = '1.0'
+# The full version, including alpha/beta/rc tags  
+release = '2.2.0'
+version = '2.2'
 
 # -- General configuration ---------------------------------------------------
 

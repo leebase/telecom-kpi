@@ -14,7 +14,7 @@ This **comprehensive data warehouse-driven** telecom KPI dashboard provides real
 
 ### **Database & Data Layer**
 - **SQLite** - Local database for development and testing
-- **Enterprise Database Adapters** - PostgreSQL and Snowflake support with connection pooling
+- **Enterprise Database Adapters** - 🚧 *Future Feature: PostgreSQL and Snowflake support with connection pooling*
 - **CSV Data Foundation** - 12 files with 89 rows of sample data
 - **Business Views** - 5 daily aggregation views for KPI calculations
 - **Connection Pool Management** - Thread-safe connection handling with validation and cleanup

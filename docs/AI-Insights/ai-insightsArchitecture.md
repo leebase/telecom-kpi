@@ -1,7 +1,7 @@
 # AI Insights Architecture
 
 ## Overview
-The AI Insights feature provides intelligent analysis of KPI data using GPT-4.1 Turbo via OpenRouter, delivering actionable insights and recommendations for telecommunications performance optimization.
+The AI Insights feature provides intelligent analysis of KPI data using GPT-5 Nano via OpenRouter, delivering actionable insights and recommendations for telecommunications performance optimization.
 
 ## Core Principles
 
@@ -39,7 +39,7 @@ graph TB
     C --> H[Prompt Generator]
     H --> I[LLM Service]
     I --> J[OpenRouter API]
-    J --> K[GPT-4.1 Turbo]
+    J --> K[GPT-5 Nano]
     K --> L[JSON Response]
     L --> M[Response Parser]
     M --> N[Formatted Insights]
@@ -117,7 +117,7 @@ graph TB
 2. **Data Retrieval**: Fetch current KPI values and benchmarks
 3. **Context Building**: Bundle data with peer/industry comparisons
 4. **Prompt Generation**: Create subject-specific analysis prompt
-5. **LLM Call**: Send to GPT-4.1 Turbo via OpenRouter
+5. **LLM Call**: Send to GPT-5 Nano via OpenRouter
 6. **Response Processing**: Parse JSON and validate structure
 7. **UI Rendering**: Display formatted insights with actions
 
@@ -128,7 +128,7 @@ graph TB
 llm:
   provider: "openrouter"
   api_key: "your-key"
-  model: "openai/gpt-4-1106-preview"
+  model: "openai/gpt-5-nano"
   temperature: 0.7
   max_tokens: 1000
 ```

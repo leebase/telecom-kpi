@@ -23,7 +23,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Live Metric Calculations** - Real-time aggregations and delta calculations
 - **Professional KPI Display** - Trend indicators with color-coded performance
 - **Smart Caching System** - TTL-based caching with automatic cleanup (5-minute expiration)
-- **Enterprise Database Support** - PostgreSQL and Snowflake adapters with connection pooling
+- **Enterprise Database Support** - 🚧 *Future Feature: PostgreSQL and Snowflake adapters with connection pooling*
 
 ### ✅ **Modular Theming System**
 
@@ -141,7 +141,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Complete Star Schema**: 7 dimension tables and 5 fact tables
 - **Business Views**: 5 daily aggregation views for KPI calculations
 - **CSV Data Foundation**: 12 files with 89 rows of sample data
-- **Portable Format**: Easy migration to PostgreSQL, Snowflake, MySQL
+- **Portable Format**: Easy migration to PostgreSQL, Snowflake, MySQL *(roadmap feature)*
 
 ### **Theming System Integration**
 - **Theme Manager**: Central registry for all available themes
@@ -192,7 +192,7 @@ This **production-ready KPI dashboard** provides telecom operators with real-tim
 - **Exponential Backoff** - Intelligent retry logic with jitter
 
 ### **Database Connection Pooling**
-- **Enterprise Scalability** - PostgreSQL and Snowflake adapter support
+- **Enterprise Scalability** - 🚧 *Future: PostgreSQL and Snowflake adapter support*
 - **Pool Management** - Configurable min (2) and max (10) connection limits
 - **Connection Health** - Automatic validation and cleanup of stale connections
 - **Thread Safety** - Concurrent pool access with proper synchronization

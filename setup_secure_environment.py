@@ -38,7 +38,7 @@ def setup_environment_file():
 # LLM Configuration
 LLM_PROVIDER=openrouter
 LLM_API_KEY={api_key}
-LLM_MODEL=openai/gpt-4-1106-preview
+LLM_MODEL=google/gemini-2.5-flash
 LLM_TEMPERATURE=0.7
 LLM_MAX_TOKENS=1000
 LLM_API_BASE=https://openrouter.ai/api/v1
@@ -53,7 +53,7 @@ DB_TIMEOUT=30000
 
 # Application Configuration
 APP_NAME=Telecom KPI Dashboard
-APP_VERSION=1.0.0
+APP_VERSION=2.2.0
 DEBUG=false
 """
     

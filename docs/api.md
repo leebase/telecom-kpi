@@ -25,7 +25,7 @@ API Architecture:
 ├─────────────────────────────────────────────────────────┤
 │ External Service Integration                            │
 │ ├── LLM Service API (OpenRouter)                      │
-│ ├── Database Adapters (PostgreSQL/Snowflake)          │
+│ ├── Database Adapters (🚧 Future: PostgreSQL/Snowflake) │
 │ └── Monitoring & Logging                              │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -626,10 +626,10 @@ cleaned_data = scrubber.scrub_data_dict(data)
 - `execute_query(query, params)`: Execute parameterized query
 - `test_connection()`: Test connection validity
 
-### PostgreSQL Adapter
+### PostgreSQL Adapter 🚧 *Future Feature*
 **Class**: `PostgreSQLAdapter`
 
-**Description**: Production PostgreSQL database adapter with connection pooling.
+**Description**: Production PostgreSQL database adapter with connection pooling *(planned for future release)*.
 
 **Initialization**:
 ```python
@@ -665,10 +665,10 @@ params = ('2025-08-01',)
 results = adapter.execute_query(query, params)
 ```
 
-### Snowflake Adapter
+### Snowflake Adapter 🚧 *Future Feature*
 **Class**: `SnowflakeAdapter`
 
-**Description**: Enterprise Snowflake adapter with query tagging for compliance.
+**Description**: Enterprise Snowflake adapter with query tagging for compliance *(planned for future release)*.
 
 **Query Tagging**:
 ```python

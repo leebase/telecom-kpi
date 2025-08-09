@@ -300,18 +300,17 @@ class LLMService:
                 "messages": [
                     {
                         "role": "system",
-                        "content": """You are an expert telecommunications analyst AI. Analyze the KPI data and provide clear, actionable insights.
-                        Focus on identifying patterns, anomalies, and suggesting specific corrective actions.
-                        
-                        Format your response as a JSON object with this structure:
-                        {
-                            "summary": "One paragraph overview of key findings",
-                            "key_insights": ["3-5 important observations"],
-                            "trends": ["2-3 significant trends"],
-                            "recommended_actions": ["3-5 specific, actionable recommendations"]
-                        }
-                        
-                        Make your insights specific, data-driven, and actionable. Focus on business impact and clear next steps."""
+                        "content": """You are an expert telecommunications analyst AI. You MUST respond with valid JSON only. No explanatory text before or after the JSON.
+
+Analyze the KPI data and provide clear, actionable insights. Format your response as a JSON object with this exact structure:
+{
+  "summary": "One paragraph overview of key findings",
+  "key_insights": ["3-5 important observations"],
+  "trends": ["2-3 significant trends"],
+  "recommended_actions": ["3-5 specific, actionable recommendations"]
+}
+
+Focus on identifying patterns, anomalies, and suggesting specific corrective actions. Make your insights specific, data-driven, and actionable. Response must be valid JSON only."""
                     },
                     {
                         "role": "user",
@@ -320,7 +319,7 @@ class LLMService:
                 ],
                 "temperature": self.config.get("temperature", 0.7),
                 "max_tokens": self.config.get("max_tokens", 1000),
-                "response_format": { "type": "json_object" }
+                "response_format": { "type": "json_object" }  # Gemini supports JSON responses well
             }
             
             print(f"Making API call to {self.config['api_base']}/chat/completions")  # Debug log
@@ -332,6 +331,14 @@ class LLMService:
             
             # Parse the JSON string from the LLM response
             content = response_data["choices"][0]["message"]["content"]
+            
+            # Log the content for debugging
+            security_logger.debug(f"LLM response content: {content[:200]}...")
+            
+            if not content or content.strip() == "":
+                security_logger.error("Empty response from LLM")
+                self.circuit_breaker.record_failure()
+                return None
             
             try:
                 insights = json.loads(content)
@@ -349,8 +356,16 @@ class LLMService:
                 
             except json.JSONDecodeError as e:
                 security_logger.error(f"Failed to parse LLM response as JSON: {e}")
+                security_logger.error(f"Raw LLM response content: {content}")
                 self.circuit_breaker.record_failure()
-                return None
+                
+                # Try to provide a fallback response
+                return {
+                    "summary": "Unable to process AI insights due to response format issue. Please check model configuration.",
+                    "key_insights": ["LLM response parsing failed", f"Model: {self.config.get('model', 'unknown')}", "Consider switching to a supported model"],
+                    "trends": ["Technical issue detected with current LLM configuration"],
+                    "recommended_actions": ["Check OpenRouter model availability", "Verify model name is correct", "Consider using openai/gpt-4-turbo as alternative"]
+                }
             
         except requests.exceptions.ConnectionError as e:
             security_logger.error(f"LLM API connection error: {e}")

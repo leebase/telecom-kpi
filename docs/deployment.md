@@ -487,7 +487,7 @@ export FEATURE_SNOWFLAKE_QUERY_TAGGING=true
 llm:
   provider: "openrouter"
   api_key: "${LLM_API_KEY}"  # From environment or secrets manager
-  model: "openai/gpt-4-1106-preview"
+  model: "openai/gpt-5-nano"
   temperature: 0.3  # Lower temperature for consistent production responses
   max_tokens: 1000
   api_base: "https://openrouter.ai/api/v1"

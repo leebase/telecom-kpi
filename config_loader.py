@@ -78,7 +78,7 @@ def get_fallback_config() -> Dict[str, Any]:
         'llm': {
             'provider': os.getenv('LLM_PROVIDER', 'openrouter'),
             'api_key': os.getenv('LLM_API_KEY'),
-            'model': os.getenv('LLM_MODEL', 'openai/gpt-4-1106-preview'),
+            'model': os.getenv('LLM_MODEL', 'google/gemini-2.5-flash'),
             'temperature': float(os.getenv('LLM_TEMPERATURE', '0.7')),
             'max_tokens': int(os.getenv('LLM_MAX_TOKENS', '1000')),
             'api_base': os.getenv('LLM_API_BASE', 'https://openrouter.ai/api/v1')

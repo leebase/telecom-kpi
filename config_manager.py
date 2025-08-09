@@ -229,7 +229,7 @@ class PerformanceConfig:
 @dataclass
 class AIConfig:
     """AI/LLM configuration settings"""
-    model: str = "openai/gpt-4-1106-preview"
+    model: str = "google/gemini-2.5-flash"
     temperature: float = 0.1
     max_tokens: int = 2000
     api_timeout: int = 30

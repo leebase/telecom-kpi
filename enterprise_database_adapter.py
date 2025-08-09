@@ -18,6 +18,7 @@ from dataclasses import dataclass
 import logging
 from functools import lru_cache
 from urllib.parse import urlparse
+from __version__ import APP_VERSION
 from queue import Queue, Empty
 
 from config_manager import get_config, DatabaseConfig
@@ -447,7 +448,7 @@ class SnowflakeAdapter(DatabaseAdapter):
         tag_components = [
             "telecom_dashboard",
             timestamp,
-            f"app_v2.2.0",  # Version for tracking
+            f"app_v{APP_VERSION}",  # Version for tracking
             "prod_env" if os.getenv('ENVIRONMENT') == 'production' else "dev_env"
         ]
         

@@ -336,7 +336,7 @@ python config_validator.py export [--format json|env]
 llm:
   provider: "openrouter"
   api_key: "your-api-key"
-  model: "openai/gpt-4-1106-preview"
+  model: "openai/gpt-5-nano"
 
 database:
   path: "data/telecom_db.sqlite"

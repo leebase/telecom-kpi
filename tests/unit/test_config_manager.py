@@ -117,7 +117,7 @@ class TestAIConfig:
     def test_default_values(self):
         """Test default AI configuration"""
         config = AIConfig()
-        assert config.model == "openai/gpt-4-1106-preview"
+        assert config.model == "google/gemini-2.5-flash"
         assert config.temperature == 0.1
         assert config.max_tokens == 2000
         assert config.api_timeout == 30

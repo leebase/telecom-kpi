@@ -71,7 +71,7 @@ All notable changes to this project will be documented in this file.
 ## [2.1.0] - 2024-08-07
 
 ### 🤖 **Major Feature: AI-Powered Insights**
-- **GPT-4.1 Turbo Integration** - Advanced LLM analysis via OpenRouter
+- **GPT-5 Nano Integration** - Advanced LLM analysis via OpenRouter
 - **One-Click Analysis** - Single button to generate comprehensive insights
 - **Multi-Subject Analysis** - Network, Customer, Revenue, Usage, and Operations insights
 - **Structured Output** - Executive summary, key insights, trends, and recommended actions
@@ -80,7 +80,7 @@ All notable changes to this project will be documented in this file.
 - **Configurable Prompts** - YAML-based prompt customization for different use cases
 
 ### 🏗️ **AI Architecture**
-- **LLM Service** (`llm_service.py`) - OpenRouter API integration with GPT-4.1 Turbo
+- **LLM Service** (`llm_service.py`) - OpenRouter API integration with GPT-5 Nano
 - **Data Bundler** (`ai_insights_data_bundler.py`) - KPI data transformation and context building
 - **UI Components** (`ai_insights_ui.py`) - Streamlit-based interface with custom styling
 - **Configuration Management** (`config_loader.py`) - Secure API key and setting management

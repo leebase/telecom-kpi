@@ -12,7 +12,7 @@ A **production-ready KPI dashboard** for telecom operators with **comprehensive 
 
 ### ✅ **AI-Powered Insights** 🤖
 - **One-Click Analysis** - Single button to generate comprehensive insights
-- **GPT-4.1 Turbo Integration** - Advanced LLM analysis via OpenRouter
+- **GPT-5 Nano Integration** - Advanced LLM analysis via OpenRouter
 - **Multi-Subject Analysis** - Network, Customer, Revenue, Usage, and Operations insights
 - **Structured Output** - Executive summary, key insights, trends, and recommended actions
 - **Benchmark Comparison** - Peer and industry performance analysis
@@ -45,7 +45,7 @@ A **production-ready KPI dashboard** for telecom operators with **comprehensive 
 ## 🤖 AI Insights Feature
 
 ### **Intelligent Analysis**
-The dashboard includes an advanced AI Insights feature that provides intelligent analysis of KPI data using GPT-4.1 Turbo:
+The dashboard includes an advanced AI Insights feature that provides intelligent analysis of KPI data using GPT-5 Nano:
 
 - **Executive Summary** - High-level overview of key findings and business impact
 - **Key Insights** - 3-5 important observations with specific business implications
@@ -60,7 +60,7 @@ The dashboard includes an advanced AI Insights feature that provides intelligent
 - **Operations** - Efficiency, cost management, process optimization, and automation opportunities
 
 ### **Technical Implementation**
-- **LLM Integration** - OpenRouter API with GPT-4.1 Turbo for advanced analysis
+- **LLM Integration** - OpenRouter API with GPT-5 Nano for advanced analysis
 - **Data Bundling** - Real-time KPI data with peer and industry benchmarks
 - **Prompt Engineering** - YAML-based configuration for customized analysis
 - **Error Handling** - Graceful fallback and user-friendly error messages
@@ -225,7 +225,7 @@ Access the dashboard at `http://localhost:8501`
 ### **Performance & Reliability Features**
 - ✅ **Smart Caching with TTL** - 5-minute cache expiration prevents stale data and memory leaks
 - ✅ **Circuit Breaker Pattern** - AI service protection with exponential backoff retry logic
-- ✅ **Database Connection Pooling** - Enterprise-grade connection management for Snowflake/PostgreSQL
+- ✅ **Database Connection Pooling** - Enterprise-grade connection management *(future: Snowflake/PostgreSQL)*
 - ✅ **Cache Performance Monitoring** - Debug logging and cache hit/miss tracking
 - ✅ **Graceful Degradation** - Fallback responses during service outages
 - ✅ **Thread-Safe Operations** - Concurrent request handling with connection validation
@@ -566,7 +566,7 @@ telecomdashboard/
 - **Theme Persistence**: Maintains selection across sessions
 
 ### **AI Insights Configuration**
-- **LLM Provider**: OpenRouter with GPT-4.1 Turbo
+- **LLM Provider**: OpenRouter with GPT-5 Nano
 - **API Key**: Secure storage in `config.secrets.yaml`
 - **Prompt Templates**: YAML-based configuration in `ai_insights_prompts.yaml`
 - **Benchmark Data**: CSV-based peer and industry targets
@@ -647,7 +647,7 @@ streamlit run app.py
 ```
 
 ### **Production Deployment**
-1. **Database Migration**: Load CSV data to PostgreSQL/MySQL/Snowflake
+1. **Database Migration**: Load CSV data to PostgreSQL/MySQL/Snowflake *(roadmap feature)*
 2. **Environment Setup**: Configure production database connection
 3. **Theme Deployment**: Ensure all theme assets are accessible
 4. **AI Configuration**: Set up OpenRouter API key and LLM settings
@@ -753,8 +753,8 @@ CMD ["streamlit", "run", "app.py", "--server.port=8501"]
 ## 🔗 Integration Opportunities
 
 ### **Data Warehouse Integration**
-- **Snowflake**: Migrate CSV data to Snowflake data warehouse
-- **PostgreSQL/MySQL**: Enterprise database deployment
+- **Snowflake**: Migrate CSV data to Snowflake data warehouse *(roadmap)*
+- **PostgreSQL/MySQL**: Enterprise database deployment *(roadmap)*
 - **Real-time APIs**: Live network performance data feeds
 
 ### **AI/ML Integration**

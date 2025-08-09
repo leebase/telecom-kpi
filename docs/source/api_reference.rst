@@ -89,7 +89,7 @@ Integration with Large Language Models for AI-powered insights and analysis.
 **Features:**
 
 * OpenRouter API integration
-* Multiple model support (GPT-4, Claude, etc.)
+* Multiple model support (Gemini 2.5 Flash, Claude, etc.)
 * Rate limiting and error handling
 * Security validation of prompts
 * Structured response parsing
