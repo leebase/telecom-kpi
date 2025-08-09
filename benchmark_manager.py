@@ -139,5 +139,4 @@ def save_benchmark_changes(edited_df):
 
 def create_benchmark_tab():
     """Create a tab for benchmark management"""
-    if st.button("🎯 Manage Benchmarks", type="secondary"):
-        render_benchmark_manager()
+    render_benchmark_manager()

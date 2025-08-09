@@ -499,67 +499,23 @@ def render_operational_efficiency(operations_data):
         st.warning("No operations trend data available for detailed analysis")
 
 def main():
-    # Check if we're in print mode (must be first!)
-    print_mode = st.query_params.get("print", None) == "true"
+    # Print mode disabled for now
+    print_mode = False
     
     # Theme switcher in sidebar
     create_theme_switcher()
     
-    # Print button in sidebar
+    # Print button in sidebar - Coming soon
     if st.sidebar.button("🖨️ Print All Tabs"):
-        # Get the current URL and add print parameter
-        import urllib.parse
-        current_url = st.query_params.to_dict()
-        current_url["print"] = "true"
-        query_string = urllib.parse.urlencode(current_url, doseq=True)
-        print_url = f"http://localhost:8501/?{query_string}"
-        
-        # Open in new tab for printing
-        st.markdown(f"""
-        <script>
-        window.open('{print_url}', '_blank');
-        </script>
-        """, unsafe_allow_html=True)
+        st.sidebar.info("🚧 Print functionality coming soon!")
     
     # Direct link to print mode for testing
     st.sidebar.markdown("---")
     st.sidebar.markdown("**Quick Print Links:**")
     if st.sidebar.button("📄 Open Print Mode"):
-        st.markdown(f"""
-        <script>
-        window.open('http://localhost:8501/?print=true', '_blank');
-        </script>
-        """, unsafe_allow_html=True)
+        st.sidebar.info("🚧 Print functionality coming soon!")
     
-    # Add JavaScript to force all content visibility when printing
-    if print_mode:
-        st.markdown("""
-        <script>
-        // Force all content to be visible when printing
-        window.addEventListener('load', function() {
-            // Wait a bit for content to load
-            setTimeout(function() {
-                // Force all elements to be visible
-                var allElements = document.querySelectorAll('*');
-                for (var i = 0; i < allElements.length; i++) {
-                    allElements[i].style.display = 'block';
-                    allElements[i].style.visibility = 'visible';
-                }
-                
-                // Ensure charts are visible
-                var charts = document.querySelectorAll('.vega-embed');
-                for (var i = 0; i < charts.length; i++) {
-                    charts[i].style.display = 'block';
-                    charts[i].style.visibility = 'visible';
-                }
-            }, 2000);
-        });
-        </script>
-        """, unsafe_allow_html=True)
-    
-    # Debug: Show print mode status
-    if print_mode:
-        st.sidebar.info("🖨️ Print Mode Active - All tabs will be visible")
+
     
     # Page header with current theme styling
     st.markdown(get_current_theme_page_header(

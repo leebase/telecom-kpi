@@ -65,9 +65,7 @@ def create_verizon_header():
                 </div>
             </div>
             <nav class="verizon-topbar-actions" aria-label="Global actions">
-                <button class="btn" type="button">Export</button>
-                <button class="btn" type="button">Share</button>
-                <button class="btn primary" type="button">Create Alert</button>
+                <!-- Actions buttons removed -->
             </nav>
         </div>
     </div>

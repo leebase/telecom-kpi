@@ -1,25 +1,23 @@
-kpi_name,unit,direction,peer_avg,industry_avg,threshold_green,threshold_yellow,threshold_red
-network_availability,%,higher,99.2,98.8,99.5,99.0,98.0
-network_latency,ms,lower,45.0,52.0,30.0,50.0,70.0
-dropped_call_rate,%,lower,2.1,3.5,1.0,2.5,4.0
-packet_loss_rate,%,lower,0.8,1.2,0.3,1.0,2.0
-bandwidth_utilization,%,optimal,75.0,68.0,60.0,80.0,90.0
-mttr,hours,lower,4.5,6.8,2.0,5.0,8.0
-customer_satisfaction,score,higher,7.8,7.2,8.5,7.5,6.5
-net_promoter_score,score,higher,45.0,38.0,60.0,40.0,20.0
-customer_churn_rate,%,lower,2.8,4.2,1.5,3.0,5.0
-first_contact_resolution,%,higher,78.0,72.0,85.0,75.0,65.0
-average_handling_time,minutes,lower,6.5,8.2,4.0,7.0,10.0
-customer_lifetime_value,USD,higher,1850.0,1420.0,2500.0,1500.0,800.0
-revenue_growth,%,higher,8.5,6.2,12.0,7.0,3.0
-arpu,USD,higher,65.0,58.0,80.0,60.0,40.0
-ebitda_margin,%,higher,28.0,24.0,35.0,25.0,15.0
-profit_margin,%,higher,18.0,15.0,25.0,17.0,10.0
-service_adoption_rate,%,higher,72.0,65.0,80.0,70.0,55.0
-feature_utilization,%,higher,68.0,58.0,75.0,65.0,50.0
-data_usage_gb,GB,higher,15.5,12.8,20.0,15.0,8.0
-service_penetration,%,higher,85.0,78.0,90.0,80.0,65.0
-operational_efficiency,%,higher,82.0,75.0,88.0,80.0,70.0
-cost_per_customer,USD,lower,45.0,52.0,35.0,50.0,65.0
-employee_productivity,score,higher,7.5,6.8,8.5,7.0,5.5
-automation_rate,%,higher,65.0,58.0,75.0,65.0,50.0
+kpi_name,peer_avg,industry_avg,unit,direction,threshold_low,threshold_high,last_updated
+Network Availability,99.70,99.65,%,higher_is_better,99.60,100.0,2024-01-15
+Latency,45.0,52.0,ms,lower_is_better,0.0,40.0,2024-01-15
+Bandwidth Utilization,75.0,70.0,%,higher_is_better,60.0,85.0,2024-01-15
+Dropped Call Rate,1.5,2.0,%,lower_is_better,0.0,2.0,2024-01-15
+Packet Loss Rate,0.1,0.15,%,lower_is_better,0.0,0.2,2024-01-15
+MTTR,2.5,3.0,hours,lower_is_better,0.0,4.0,2024-01-15
+Customer Satisfaction,4.1,4.0,score,higher_is_better,3.5,5.0,2024-01-15
+Net Promoter Score,40,35,score,higher_is_better,0,100,2024-01-15
+Customer Churn Rate,2.2,2.5,%,lower_is_better,0.0,5.0,2024-01-15
+Average Handling Time,4.5,5.0,minutes,lower_is_better,0.0,8.0,2024-01-15
+First Contact Resolution,75,70,%,higher_is_better,60.0,100.0,2024-01-15
+Customer Lifetime Value,1200,1100,$,higher_is_better,500,2000,2024-01-15
+ARPU,42,38,$,higher_is_better,20,100,2024-01-15
+EBITDA Margin,25,22,%,higher_is_better,10,50,2024-01-15
+Subscriber Growth Rate,3.5,2.8,%,higher_is_better,0.0,10.0,2024-01-15
+Data Usage per Subscriber,8.5,7.2,GB,higher_is_better,1.0,20.0,2024-01-15
+Average Data Throughput,85,75,Mbps,higher_is_better,10,200,2024-01-15
+Feature Adoption Rate,65,55,%,higher_is_better,20,100,2024-01-15
+5G Adoption Rate,45,35,%,higher_is_better,10,100,2024-01-15
+Service Response Time,2.5,3.0,hours,lower_is_better,0.0,6.0,2024-01-15
+Regulatory Compliance Rate,98,95,%,higher_is_better,90,100,2024-01-15
+Capex to Revenue Ratio,18,20,%,lower_is_better,10,30,2024-01-15
