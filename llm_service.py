@@ -6,6 +6,8 @@ import requests
 import time
 import random
 import re
+import yaml
+import os
 from typing import Dict, Any, Optional
 from enum import Enum
 from config_loader import get_llm_config
@@ -102,7 +104,67 @@ class PIIScrubber:
     """
     
     def __init__(self):
-        """Initialize PII scrubber with patterns and replacements"""
+        """Initialize PII scrubber with patterns and replacements from config file"""
+        self._load_config()
+        self._compile_patterns()
+        
+    def _load_config(self):
+        """Load PII scrubbing configuration from config/pii_config.yaml"""
+        config_path = os.path.join(os.path.dirname(__file__), 'config', 'pii_config.yaml')
+        
+        # Default configuration fallback
+        default_config = {
+            'pii_scrubbing': {
+                'enabled': True,
+                'scrub_types': {
+                    'emails': True,
+                    'phones': True,
+                    'ssns': True,
+                    'credit_cards': True,
+                    'ip_addresses': False,
+                    'mac_addresses': False,
+                    'names': False,
+                    'custom_patterns': []
+                },
+                'replacements': {
+                    'email': '[EMAIL_REDACTED]',
+                    'phone': '[PHONE_REDACTED]',
+                    'ssn': '[SSN_REDACTED]',
+                    'credit_card': '[CARD_REDACTED]',
+                    'ip_address': '[IP_REDACTED]',
+                    'mac_address': '[MAC_REDACTED]',
+                    'name': '[NAME_REDACTED]',
+                    'custom': '[PII_REDACTED]'
+                }
+            },
+            'compliance': {
+                'log_scrubbing_events': True,
+                'gdpr_compliant': True,
+                'ccpa_compliant': True
+            }
+        }
+        
+        try:
+            if os.path.exists(config_path):
+                with open(config_path, 'r') as f:
+                    loaded_config = yaml.safe_load(f)
+                    self.config = {**default_config, **loaded_config}
+                    security_logger.info(f"Loaded PII scrubbing configuration from {config_path}")
+            else:
+                self.config = default_config
+                security_logger.warning(f"PII config file not found at {config_path}, using defaults")
+        except Exception as e:
+            security_logger.error(f"Error loading PII config: {e}, using defaults")
+            self.config = default_config
+        
+        # Extract scrubbing configuration for easy access
+        self.scrub_config = self.config['pii_scrubbing']['scrub_types']
+        self.replacements = self.config['pii_scrubbing']['replacements']
+        self.enabled = self.config['pii_scrubbing']['enabled']
+        self.log_events = self.config['compliance']['log_scrubbing_events']
+        
+    def _compile_patterns(self):
+        """Compile regex patterns for PII detection"""
         # Email patterns
         self.email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
         
@@ -128,17 +190,6 @@ class PIIScrubber:
         self.name_patterns = [
             re.compile(r'\b[A-Z][a-z]+\s+[A-Z][a-z]+\b'),  # First Last
         ]
-        
-        # Configure which fields to scrub
-        self.scrub_config = {
-            'emails': True,
-            'phones': True,
-            'ssns': True,
-            'credit_cards': True,
-            'ip_addresses': False,  # Might be needed for network analysis
-            'mac_addresses': False,  # Might be needed for network analysis
-            'names': False  # Too aggressive for business analysis
-        }
     
     def scrub_text(self, text: str) -> str:
         """
@@ -153,39 +204,90 @@ class PIIScrubber:
         if not text or not isinstance(text, str):
             return text
         
+        # Check if PII scrubbing is globally enabled
+        if not self.enabled:
+            return text
+        
         scrubbed = text
+        scrubbed_items = []
         
         # Email scrubbing
         if self.scrub_config.get('emails', True):
-            scrubbed = self.email_pattern.sub('[EMAIL_REDACTED]', scrubbed)
+            matches = self.email_pattern.findall(scrubbed)
+            if matches:
+                scrubbed_items.extend(['email'] * len(matches))
+                scrubbed = self.email_pattern.sub(self.replacements['email'], scrubbed)
         
         # Phone number scrubbing
         if self.scrub_config.get('phones', True):
             for pattern in self.phone_patterns:
-                scrubbed = pattern.sub('[PHONE_REDACTED]', scrubbed)
+                matches = pattern.findall(scrubbed)
+                if matches:
+                    scrubbed_items.extend(['phone'] * len(matches))
+                    scrubbed = pattern.sub(self.replacements['phone'], scrubbed)
         
         # SSN scrubbing
         if self.scrub_config.get('ssns', True):
-            scrubbed = self.ssn_pattern.sub('[SSN_REDACTED]', scrubbed)
+            matches = self.ssn_pattern.findall(scrubbed)
+            if matches:
+                scrubbed_items.extend(['ssn'] * len(matches))
+                scrubbed = self.ssn_pattern.sub(self.replacements['ssn'], scrubbed)
         
         # Credit card scrubbing
         if self.scrub_config.get('credit_cards', True):
-            scrubbed = self.cc_pattern.sub('[CARD_REDACTED]', scrubbed)
+            matches = self.cc_pattern.findall(scrubbed)
+            if matches:
+                scrubbed_items.extend(['credit_card'] * len(matches))
+                scrubbed = self.cc_pattern.sub(self.replacements['credit_card'], scrubbed)
         
         # IP address scrubbing (optional)
         if self.scrub_config.get('ip_addresses', False):
-            scrubbed = self.ip_pattern.sub('[IP_REDACTED]', scrubbed)
+            matches = self.ip_pattern.findall(scrubbed)
+            if matches:
+                scrubbed_items.extend(['ip_address'] * len(matches))
+                scrubbed = self.ip_pattern.sub(self.replacements['ip_address'], scrubbed)
         
         # MAC address scrubbing (optional)
         if self.scrub_config.get('mac_addresses', False):
-            scrubbed = self.mac_pattern.sub('[MAC_REDACTED]', scrubbed)
+            matches = self.mac_pattern.findall(scrubbed)
+            if matches:
+                scrubbed_items.extend(['mac_address'] * len(matches))
+                scrubbed = self.mac_pattern.sub(self.replacements['mac_address'], scrubbed)
         
         # Name scrubbing (optional - very aggressive)
         if self.scrub_config.get('names', False):
             for pattern in self.name_patterns:
-                scrubbed = pattern.sub('[NAME_REDACTED]', scrubbed)
+                matches = pattern.findall(scrubbed)
+                if matches:
+                    scrubbed_items.extend(['name'] * len(matches))
+                    scrubbed = pattern.sub(self.replacements['name'], scrubbed)
+        
+        # Log scrubbing events for compliance audit trail
+        if scrubbed_items and self.log_events:
+            pii_types = ', '.join(set(scrubbed_items))
+            pii_count = len(scrubbed_items)
+            security_logger.info(f"PII scrubbed from text: {pii_count} items ({pii_types}) - GDPR/CCPA compliance")
         
         return scrubbed
+    
+    def get_config_status(self) -> Dict[str, Any]:
+        """
+        Get current PII scrubbing configuration status
+        
+        Returns:
+            Dictionary with configuration details for monitoring/documentation
+        """
+        return {
+            'enabled': self.enabled,
+            'config_source': 'config/pii_config.yaml' if hasattr(self, 'config') else 'defaults',
+            'scrub_types': self.scrub_config.copy(),
+            'replacements': self.replacements.copy(),
+            'compliance': {
+                'gdpr_compliant': self.config.get('compliance', {}).get('gdpr_compliant', True),
+                'ccpa_compliant': self.config.get('compliance', {}).get('ccpa_compliant', True),
+                'log_scrubbing_events': self.log_events
+            }
+        }
     
     def scrub_data_dict(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """

@@ -564,16 +564,25 @@ circuit_breaker = CircuitBreaker(
 #### PIIScrubber Class
 **Class**: `PIIScrubber`
 
-**Description**: Removes personally identifiable information from text and data structures.
+**Description**: Removes personally identifiable information from text and data structures. Loads configuration from `config/pii_config.yaml` for GDPR/CCPA compliance.
+
+**Configuration Source**: `config/pii_config.yaml`
 
 **Supported PII Types**:
-- Email addresses
-- Phone numbers (US and international)
-- Social Security Numbers
-- Credit card numbers
-- IP addresses
-- MAC addresses
-- Names (when enabled)
+- Email addresses (configurable)
+- Phone numbers (US and international, configurable)
+- Social Security Numbers (configurable)
+- Credit card numbers (configurable)
+- IP addresses (configurable, disabled by default for telecom analysis)
+- MAC addresses (configurable, disabled by default for telecom analysis)
+- Names (configurable, disabled by default)
+- Custom patterns (configurable)
+
+**Compliance Features**:
+- GDPR compliant PII handling
+- CCPA compliant data processing
+- Audit logging for compliance trails
+- Configurable replacement tokens
 
 **Methods**:
 
@@ -601,6 +610,39 @@ print(cleaned_text)  # "Contact [EMAIL_REDACTED] at [PHONE_REDACTED]"
 - `data` (Dict[str, Any]): Dictionary containing potential PII
 
 **Return Type**: `Dict[str, Any]`
+
+#### Get Configuration Status
+**Method**: `scrubber.get_config_status()`
+
+**Parameters**: None
+
+**Return Type**: `Dict[str, Any]`
+
+**Description**: Returns current PII scrubbing configuration status for monitoring and documentation purposes.
+
+**Response Format**:
+```python
+{
+    "enabled": True,
+    "config_source": "config/pii_config.yaml",
+    "scrub_types": {
+        "emails": True,
+        "phones": True,
+        "ip_addresses": False,
+        # ... other types
+    },
+    "replacements": {
+        "email": "[EMAIL_REDACTED]",
+        "phone": "[PHONE_REDACTED]",
+        # ... other replacements
+    },
+    "compliance": {
+        "gdpr_compliant": True,
+        "ccpa_compliant": True,
+        "log_scrubbing_events": True
+    }
+}
+```
 
 **Usage Example**:
 ```python
