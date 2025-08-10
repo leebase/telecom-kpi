@@ -434,7 +434,7 @@ class AgentOrchestrator:
             return {
                 "status": self.status.value,
                 "workflow_phase": self.workflow_status.current_phase.value,
-                "workflow_progress": self.workflow_status.progress,
+                "workflow_progress": self.workflow_status.total_progress,
                 "metrics": {
                     "total_agents": self.metrics.total_agents,
                     "successful_agents": self.metrics.successful_agents,

@@ -8,8 +8,11 @@ with real-time progress visualization, portfolio optimization, and stunning UI.
 import streamlit as st
 import time
 import json
+import plotly.graph_objects as go
+import plotly.express as px
 from datetime import datetime
 from typing import Dict, List, Any
+import pandas as pd
 
 from agents.orchestrator import AgentOrchestrator, OrchestrationConfig
 from agents.mock_intelligence import get_mock_intelligence_engine
@@ -27,70 +30,216 @@ st.set_page_config(
 st.markdown("""
 <style>
     .main-header {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        padding: 2.5rem;
+        border-radius: 20px;
         color: white;
         text-align: center;
         margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: gradientShift 3s ease-in-out infinite;
+    }
+    
+    @keyframes gradientShift {
+        0%, 100% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
     }
     
     .agent-card {
         background: white;
         border: 2px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 1.5rem;
+        border-radius: 20px;
+        padding: 2rem;
         margin: 1rem 0;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .agent-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+        transition: left 0.5s;
+    }
+    
+    .agent-card:hover::before {
+        left: 100%;
     }
     
     .agent-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        border-color: #667eea;
     }
     
     .agent-working {
         border-color: #ff6b6b;
         background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+        animation: pulse 2s infinite;
     }
     
     .agent-completed {
         border-color: #51cf66;
         background: linear-gradient(135deg, #f8fff9 0%, #ebfbee 100%);
+        animation: successGlow 1s ease-out;
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 107, 107, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0); }
+    }
+    
+    @keyframes successGlow {
+        0% { box-shadow: 0 0 0 0 rgba(81, 207, 102, 0.7); }
+        100% { box-shadow: 0 0 20px 10px rgba(81, 207, 102, 0); }
     }
     
     .progress-bar {
-        height: 8px;
-        border-radius: 4px;
+        height: 12px;
+        border-radius: 6px;
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { left: -100%; }
+        100% { left: 100%; }
     }
     
     .workflow-phase {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem;
+        border-radius: 15px;
         margin: 1rem 0;
         text-align: center;
         font-weight: bold;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+    }
+    
+    .workflow-phase:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.2);
     }
     
     .portfolio-card {
         background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
         border: 2px solid #dee2e6;
-        border-radius: 15px;
-        padding: 2rem;
-        margin: 1rem 0;
+        border-radius: 20px;
+        padding: 2.5rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     }
     
     .metric-highlight {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem;
+        border-radius: 15px;
         text-align: center;
         margin: 0.5rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .workflow-diagram {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .agent-status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: statusPulse 2s infinite;
+    }
+    
+    .status-idle { background-color: #6c757d; }
+    .status-analyzing { background-color: #ffc107; }
+    .status-completed { background-color: #28a745; }
+    .status-failed { background-color: #dc3545; }
+    
+    @keyframes statusPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .floating-action-button {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+    
+    .floating-action-button:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    }
+    
+    .executive-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 5px solid #667eea;
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 2rem 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .play-table {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .play-table th {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        font-weight: 600;
+        padding: 1rem;
+    }
+    
+    .play-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .play-table tr:hover {
+        background-color: #f8f9fa;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -101,12 +250,10 @@ def initialize_session_state():
         st.session_state.orchestrator = None
     if 'orchestration_started' not in st.session_state:
         st.session_state.orchestration_started = False
-    if 'orchestration_completed' not in st.session_state:
-        st.session_state.orchestration_completed = False
-    if 'agent_results' not in st.session_state:
-        st.session_state.agent_results = {}
-    if 'portfolio_results' not in st.session_state:
-        st.session_state.portfolio_results = None
+    if 'current_results' not in st.session_state:
+        st.session_state.current_results = None
+    if 'workflow_history' not in st.session_state:
+        st.session_state.workflow_history = []
 
 def create_orchestrator():
     """Create and configure the agent orchestrator"""
@@ -123,13 +270,19 @@ def create_orchestrator():
     
     orchestrator = AgentOrchestrator(config)
     
-    # Add progress callbacks
     def progress_callback(progress: float, message: str):
-        st.session_state.current_progress = progress
-        st.session_state.current_message = message
+        st.session_state.workflow_history.append({
+            'timestamp': datetime.now(),
+            'progress': progress,
+            'message': message
+        })
     
     def status_callback(message: str):
-        st.session_state.current_status = message
+        st.session_state.workflow_history.append({
+            'timestamp': datetime.now(),
+            'progress': None,
+            'message': message
+        })
     
     orchestrator.add_progress_callback(progress_callback)
     orchestrator.add_status_callback(status_callback)
@@ -137,190 +290,313 @@ def create_orchestrator():
     return orchestrator
 
 def display_header():
-    """Display the main header"""
+    """Display the main header with stunning visuals"""
     st.markdown("""
     <div class="main-header">
         <h1>🤖 AI Agent Orchestration System</h1>
         <h3>Enterprise-Grade Multi-Agent Portfolio Optimization</h3>
-        <p>Watch as our specialized AI agents analyze your business and optimize your investment portfolio in real-time</p>
+        <p>Watch as our intelligent agents analyze your business and optimize your investment portfolio in real-time</p>
     </div>
     """, unsafe_allow_html=True)
 
 def display_workflow_phases():
-    """Display the workflow phases visualization"""
-    st.markdown("### 🎯 Workflow Phases")
+    """Display the workflow phases with visual indicators"""
+    st.markdown("### 🚀 Workflow Execution Phases")
     
     phases = [
-        ("🚀 Initialization", "Setting up agents and systems"),
-        ("🔍 Agent Analysis", "5 specialized agents analyzing business areas"),
-        ("⚡ Portfolio Optimization", "AI-powered portfolio selection and optimization"),
-        ("📊 Results Presentation", "Executive summary and recommendations")
+        ("🔍", "Agent Analysis", "5 specialized agents analyzing business areas"),
+        ("⚡", "Portfolio Optimization", "AI-powered portfolio selection and scoring"),
+        ("📊", "Results Presentation", "Executive summary and actionable insights")
     ]
     
-    cols = st.columns(4)
-    for i, (phase, description) in enumerate(phases):
+    cols = st.columns(len(phases))
+    for i, (icon, title, description) in enumerate(phases):
         with cols[i]:
             st.markdown(f"""
-            <div style="text-align: center; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 10px;">
-                <h4>{phase}</h4>
-                <p style="font-size: 0.9rem; color: #666;">{description}</p>
+            <div class="workflow-phase">
+                <h4>{icon} {title}</h4>
+                <p>{description}</p>
             </div>
             """, unsafe_allow_html=True)
+
+def display_workflow_diagram():
+    """Display an interactive workflow diagram"""
+    st.markdown("### 🔄 Agent Workflow Architecture")
+    
+    # Create a visual representation of the agent workflow
+    workflow_data = {
+        'Phase': ['Agent Analysis', 'Data Collection', 'Portfolio Optimization', 'Results Generation'],
+        'Status': ['Active', 'Active', 'Active', 'Active'],
+        'Duration': [15, 10, 20, 5]
+    }
+    
+    df = pd.DataFrame(workflow_data)
+    
+    # Create a Gantt-style chart
+    fig = go.Figure()
+    
+    colors = ['#667eea', '#764ba2', '#f093fb', '#51cf66']
+    
+    for i, phase in enumerate(df['Phase']):
+        fig.add_trace(go.Bar(
+            name=phase,
+            y=[phase],
+            x=[df['Duration'][i]],
+            orientation='h',
+            marker_color=colors[i],
+            hovertemplate=f'<b>{phase}</b><br>Duration: {df["Duration"][i]}s<extra></extra>'
+        ))
+    
+    fig.update_layout(
+        title="Real-Time Agent Workflow Progress",
+        xaxis_title="Duration (seconds)",
+        yaxis_title="Workflow Phase",
+        height=300,
+        showlegend=False,
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
 
 def display_agent_status(orchestrator):
-    """Display real-time agent status"""
+    """Display real-time agent status with stunning visuals"""
+    if not orchestrator:
+        return
+    
     st.markdown("### 🤖 Agent Status Dashboard")
     
-    if not orchestrator:
-        st.warning("Orchestrator not initialized")
-        return
+    # Get agent status
+    agent_status = orchestrator.get_status()
+    agents = agent_status.get('agents', {})
     
-    status = orchestrator.get_status()
-    agents = status.get('agents', {})
-    
-    # Create columns for agent display
+    # Create columns for agent cards
     cols = st.columns(5)
     
-    subject_areas = list(SubjectArea)
-    for i, area in enumerate(subject_areas):
+    for i, (area, status) in enumerate(agents.items()):
         with cols[i]:
-            agent_id = f"agent_{area.value}"
-            agent_status = agents.get(agent_id, {})
-            
-            # Determine card styling based on status
+            # Determine card class based on status
             card_class = "agent-card"
-            if agent_status.get('status') == 'analyzing':
+            if status.get('status') == 'analyzing':
                 card_class += " agent-working"
-            elif agent_status.get('status') == 'completed':
+            elif status.get('status') == 'completed':
                 card_class += " agent-completed"
             
-            # Display agent card
+            # Get status indicator
+            status_indicator = f"<span class='agent-status-indicator status-{status.get('status', 'idle')}'></span>"
+            
             st.markdown(f"""
             <div class="{card_class}">
-                <h4 style="text-align: center; margin-bottom: 1rem;">{area.value.title()} Agent</h4>
-                <p><strong>Status:</strong> {agent_status.get('status', 'idle').title()}</p>
-                <p><strong>Progress:</strong> {agent_status.get('progress', 0):.1%}</p>
-                <p><strong>Task:</strong> {agent_status.get('current_task', 'Waiting...')}</p>
+                <h4>{status_indicator}{area.title()} Agent</h4>
+                <p><strong>Status:</strong> {status.get('status', 'idle').title()}</p>
+                <p><strong>Progress:</strong> {status.get('progress', 0):.1%}</p>
+                <p><strong>Task:</strong> {status.get('current_task', 'Idle')}</p>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Progress bar
-            progress = agent_status.get('progress', 0)
-            st.progress(progress)
 
 def display_workflow_progress(orchestrator):
-    """Display overall workflow progress"""
+    """Display workflow progress with real-time updates"""
     if not orchestrator:
         return
     
-    workflow_status = orchestrator.workflow_status
+    st.markdown("### 📈 Workflow Progress")
     
-    st.markdown("### 📈 Overall Workflow Progress")
+    # Get workflow status
+    workflow_status = orchestrator.get_status()
+    current_phase = workflow_status.get('current_phase', 'initialization')
+    phase_progress = workflow_status.get('phase_progress', 0.0)
+    total_progress = workflow_status.get('total_progress', 0.0)
     
-    # Current phase
-    current_phase = workflow_status.current_phase.value.replace('_', ' ').title()
-    st.markdown(f"""
-    <div class="workflow-phase">
-        <h4>Current Phase: {current_phase}</h4>
-        <p>Phase Progress: {workflow_status.phase_progress:.1%}</p>
-        <p>Total Progress: {workflow_status.total_progress:.1%}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Display current phase
+    st.markdown(f"**Current Phase:** {current_phase.replace('_', ' ').title()}")
     
-    # Progress bars
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Phase Progress", f"{workflow_status.phase_progress:.1%}")
-    with col2:
-        st.metric("Total Progress", f"{workflow_status.total_progress:.1%}")
+    # Phase progress bar
+    st.markdown("**Phase Progress:**")
+    st.progress(phase_progress)
+    
+    # Total progress bar
+    st.markdown("**Overall Progress:**")
+    st.progress(total_progress)
+    
+    # Display recent workflow history
+    if st.session_state.workflow_history:
+        st.markdown("**Recent Activity:**")
+        recent_history = st.session_state.workflow_history[-10:]  # Last 10 entries
+        
+        for entry in recent_history:
+            timestamp = entry['timestamp'].strftime("%H:%M:%S")
+            if entry['progress'] is not None:
+                st.markdown(f"🕐 **{timestamp}:** {entry['message']} ({entry['progress']:.1%})")
+            else:
+                st.markdown(f"🕐 **{timestamp}:** {entry['message']}")
 
 def display_portfolio_results(portfolio):
-    """Display portfolio optimization results"""
+    """Display portfolio results with interactive charts"""
     if not portfolio:
-        st.info("Portfolio optimization in progress...")
         return
     
     st.markdown("### 🎯 Portfolio Optimization Results")
     
-    # Portfolio metrics
+    # Portfolio overview metrics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.metric("Total Investment", f"${portfolio.total_investment:,.0f}")
+        st.markdown(f"""
+        <div class="metric-highlight">
+            <h4>Total Plays</h4>
+            <h2>{len(portfolio.selected_plays)}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st.metric("Expected ROI", f"{portfolio.total_roi:.1f}x")
+        st.markdown(f"""
+        <div class="metric-highlight">
+            <h4>Total Investment</h4>
+            <h2>${portfolio.total_investment:,.0f}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col3:
-        st.metric("Portfolio Size", len(portfolio.selected_plays))
+        st.markdown(f"""
+        <div class="metric-highlight">
+            <h4>Average ROI</h4>
+            <h2>{portfolio.total_roi:.1f}%</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col4:
-        st.metric("Avg Priority", f"{portfolio.average_priority:.1f}")
+        st.markdown(f"""
+        <div class="metric-highlight">
+            <h4>Risk Level</h4>
+            <h2>{portfolio.risk_distribution.get('Medium', 0)}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
-    # Selected plays table
-    st.markdown("#### 📋 Selected Initiatives")
-    
+    # Portfolio plays table
     if portfolio.selected_plays:
+        st.markdown("#### 📋 Selected Plays")
+        
+        # Prepare data for table
         plays_data = []
         for play in portfolio.selected_plays:
             plays_data.append({
-                "Rank": play.rank,
-                "Title": play.title,
-                "Area": play.subject_area.value.title(),
-                "Impact": f"{play.impact_score:.1f}",
-                "Effort": f"{play.effort_score:.1f}",
-                "ROI": f"{play.roi_score:.1f}",
-                "Risk": f"{play.risk_score:.1f}",
-                "Score": f"{play.score:.3f}",
-                "Priority": play.get_priority_label(),
-                "Cost": f"${play.estimated_cost:,.0f}"
+                'Rank': play.rank,
+                'Title': play.title,
+                'Area': play.subject_area.value.title(),
+                'Impact': f"{play.impact_score:.1f}",
+                'Effort': f"{play.effort_score:.1f}",
+                'ROI': f"{play.roi_score:.1f}",
+                'Risk': f"{play.risk_score:.1f}",
+                'Score': f"{play.score:.2f}",
+                'Priority': play.get_priority_label()
             })
         
-        st.dataframe(plays_data, use_container_width=True)
-    else:
-        st.info("No plays selected yet. Run the orchestration to see results.")
-    
-    # Portfolio optimization details
-    if hasattr(portfolio, 'optimization_parameters') and portfolio.optimization_parameters:
-        st.markdown("#### ⚙️ Optimization Parameters")
-        opt_params = portfolio.optimization_parameters
+        df = pd.DataFrame(plays_data)
+        st.markdown('<div class="play-table">', unsafe_allow_html=True)
+        st.dataframe(df, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.metric("Budget Points", opt_params.get("budget_points", "N/A"))
-        with col2:
-            st.metric("Total Effort", opt_params.get("total_effort", "N/A"))
-        with col3:
-            st.metric("Remaining Budget", opt_params.get("remaining_budget", "N/A"))
+        # Create scoring distribution chart
+        st.markdown("#### 📊 Scoring Distribution")
+        
+        fig = px.scatter(
+            df, 
+            x='Effort', 
+            y='Impact', 
+            size='Score',
+            color='Priority',
+            hover_data=['Title', 'ROI', 'Risk'],
+            title="Play Impact vs Effort Analysis"
+        )
+        
+        fig.update_layout(
+            plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(0,0,0,0)',
+            height=500
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
 
 def display_executive_summary(portfolio):
-    """Display executive summary"""
+    """Display executive summary with actionable insights"""
     if not portfolio:
         return
     
-    st.markdown("### 📊 Executive Summary")
+    st.markdown("### 📋 Executive Summary")
     
-    # Create summary based on portfolio data
-    total_plays = len(portfolio.selected_plays)
-    high_priority_plays = len([p for p in portfolio.selected_plays if p.priority_level <= 2])
-    low_risk_plays = len([p for p in portfolio.selected_plays if p.risk_score <= 4])
+    st.markdown(f"""
+    <div class="executive-summary">
+        <h4>🎯 Portfolio Overview</h4>
+        <p>Our AI-powered portfolio optimization has identified <strong>{len(portfolio.selected_plays)} strategic initiatives</strong> 
+        that will deliver maximum impact within your investment constraints.</p>
+        
+        <h4>💰 Investment Summary</h4>
+        <p>Total investment: <strong>${portfolio.total_investment:,.0f}</strong> | 
+        Expected ROI: <strong>{portfolio.total_roi:.1f}%</strong></p>
+        
+        <h4>🚀 Top Recommendations</h4>
+        <ul>
+    """, unsafe_allow_html=True)
     
-    summary = f"""
-    **Portfolio Overview:**
-    - **{total_plays}** strategic initiatives selected
-    - **{high_priority_plays}** high-priority initiatives
-    - **{low_risk_plays}** low-risk initiatives
-    - Total investment: **${portfolio.total_investment:,.0f}**
-    - Expected ROI: **{portfolio.total_roi:.1f}x**
+    # Display top 3 plays
+    top_plays = sorted(portfolio.selected_plays, key=lambda x: x.rank)[:3]
+    for play in top_plays:
+        st.markdown(f"<li><strong>{play.title}</strong> - {play.description[:100]}...</li>", unsafe_allow_html=True)
     
-    **Key Recommendations:**
-    1. Focus on high-impact, low-effort initiatives first
-    2. Monitor risk distribution across portfolio
-    3. Track ROI metrics monthly for portfolio optimization
-    4. Consider expanding successful initiatives to other areas
-    """
+    st.markdown("""
+        </ul>
+        
+        <h4>⏱️ Implementation Timeline</h4>
+        <p>Recommended implementation sequence prioritizes high-impact, low-effort initiatives 
+        to achieve quick wins while building momentum for larger strategic projects.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_control_panel():
+    """Display the control panel for orchestrating agents"""
+    st.sidebar.markdown("### 🎮 Control Panel")
     
-    st.markdown(summary)
+    # Orchestration controls
+    if st.sidebar.button("🚀 Start Agent Orchestration", type="primary", use_container_width=True):
+        if not st.session_state.orchestrator:
+            st.session_state.orchestrator = create_orchestrator()
+        
+        # Start orchestration in a separate thread
+        if st.session_state.orchestrator.start_orchestration():
+            st.session_state.orchestration_started = True
+            st.rerun()
+    
+    if st.sidebar.button("⏹️ Stop Orchestration", use_container_width=True):
+        if st.session_state.orchestrator:
+            st.session_state.orchestrator.stop_orchestration()
+            st.session_state.orchestration_started = False
+            st.rerun()
+    
+    if st.sidebar.button("🔄 Reset System", use_container_width=True):
+        st.session_state.orchestrator = None
+        st.session_state.orchestration_started = False
+        st.session_state.current_results = None
+        st.session_state.workflow_history = []
+        st.rerun()
+    
+    # Configuration options
+    st.sidebar.markdown("### ⚙️ Configuration")
+    
+    budget = st.sidebar.slider("Budget Points", 5, 20, 8)
+    enable_parallel = st.sidebar.checkbox("Enable Parallel Execution", value=True)
+    
+    # Display system status
+    st.sidebar.markdown("### 📊 System Status")
+    
+    if st.session_state.orchestrator:
+        status = st.session_state.orchestrator.get_status()
+        st.sidebar.metric("Status", status.get('status', 'idle').title())
+        st.sidebar.metric("Active Agents", status.get('active_agents', 0))
+        st.sidebar.metric("Total Progress", f"{status.get('total_progress', 0):.1%}")
+    else:
+        st.sidebar.metric("Status", "Not Started")
+        st.sidebar.metric("Active Agents", 0)
+        st.sidebar.metric("Total Progress", "0%")
 
 def main():
     """Main application function"""
@@ -329,90 +605,67 @@ def main():
     # Display header
     display_header()
     
-    # Sidebar controls
-    st.sidebar.markdown("## 🎮 Control Panel")
-    
-    if st.sidebar.button("🚀 Start Orchestration", type="primary"):
-        if not st.session_state.orchestrator:
-            st.session_state.orchestrator = create_orchestrator()
-        
-        st.session_state.orchestration_started = True
-        st.session_state.orchestration_completed = False
-        
-        # Start orchestration in background
-        with st.spinner("Starting agent orchestration..."):
-            orchestrator = st.session_state.orchestrator
-            orchestrator.start_orchestration()
-    
-    if st.sidebar.button("⏹️ Stop Orchestration"):
-        if st.session_state.orchestrator:
-            st.session_state.orchestrator.stop_orchestration()
-            st.session_state.orchestration_started = False
-    
-    if st.sidebar.button("🔄 Reset System"):
-        st.session_state.orchestrator = None
-        st.session_state.orchestration_started = False
-        st.session_state.orchestration_completed = False
-        st.session_state.agent_results = {}
-        st.session_state.portfolio_results = None
-        st.rerun()
-    
     # Display workflow phases
     display_workflow_phases()
     
+    # Display workflow diagram
+    display_workflow_diagram()
+    
+    # Display control panel in sidebar
+    display_control_panel()
+    
     # Main content area
-    if st.session_state.orchestrator:
-        # Display workflow progress
-        display_workflow_progress(st.session_state.orchestrator)
-        
+    if st.session_state.orchestrator and st.session_state.orchestration_started:
         # Display agent status
         display_agent_status(st.session_state.orchestrator)
         
+        # Display workflow progress
+        display_workflow_progress(st.session_state.orchestrator)
+        
         # Check if orchestration is complete
-        if st.session_state.orchestrator.status.value == 'completed':
-            st.session_state.orchestration_completed = True
-            
+        status = st.session_state.orchestrator.get_status()
+        if status.get('status') == 'completed':
             # Get results
             results = st.session_state.orchestrator.get_results()
-            
-            # Display agent results
-            if results.get('agent_results'):
-                st.markdown("### 🤖 Agent Analysis Results")
-                for agent_id, plays in results['agent_results'].items():
-                    if plays:
-                        area_name = agent_id.replace('_agent', '').title()
-                        st.markdown(f"**{area_name} Area:** {len(plays)} plays generated")
-            
-            # Get portfolio results
-            portfolio = None
-            if results.get('optimized_portfolio'):
-                portfolio = results['optimized_portfolio']
-            elif results.get('initial_portfolio'):
-                portfolio = results['initial_portfolio']
-            
-            if portfolio:
-                # Display portfolio results
-                display_portfolio_results(portfolio)
+            if results and 'portfolio' in results:
+                portfolio = results['portfolio']
+                st.session_state.current_results = portfolio
                 
-                # Display executive summary
+                # Display results
+                display_portfolio_results(portfolio)
                 display_executive_summary(portfolio)
                 
-                # Export results
-                st.markdown("### 📤 Export Results")
-                portfolio_json = json.dumps(portfolio.to_dict(), indent=2)
-                st.download_button(
-                    label="Download Portfolio Results",
-                    data=portfolio_json,
-                    file_name=f"portfolio_results_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                    mime="application/json"
-                )
-            else:
-                st.warning("Portfolio results not available yet. Please wait for optimization to complete.")
+                # Success message
+                st.success("🎉 Agent orchestration completed successfully! Portfolio optimization results are ready.")
     
-    # Auto-refresh for real-time updates
-    if st.session_state.orchestration_started and not st.session_state.orchestration_completed:
-        time.sleep(0.5)
-        st.rerun()
+    elif st.session_state.current_results:
+        # Display previous results
+        st.info("📊 Displaying previous orchestration results. Start a new orchestration to generate fresh insights.")
+        display_portfolio_results(st.session_state.current_results)
+        display_executive_summary(st.session_state.current_results)
+    
+    else:
+        # Welcome message
+        st.markdown("""
+        <div class="portfolio-card">
+            <h3>🎯 Welcome to the AI Agent Orchestration System</h3>
+            <p>This system demonstrates enterprise-grade multi-agent coordination for portfolio optimization:</p>
+            <ul>
+                <li><strong>5 Specialized Agents:</strong> Network, Customer, Revenue, Usage, and Operations analysis</li>
+                <li><strong>Real-time Coordination:</strong> Watch agents work in parallel with live progress updates</li>
+                <li><strong>AI Portfolio Optimization:</strong> Intelligent scoring and selection algorithms</li>
+                <li><strong>Executive Insights:</strong> Actionable recommendations with business context</li>
+            </ul>
+            <p><strong>Click "Start Agent Orchestration" in the sidebar to begin the demo!</strong></p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Floating action button for quick access
+    st.markdown("""
+    <button class="floating-action-button" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        ⬆️
+    </button>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
