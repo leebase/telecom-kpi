@@ -61,6 +61,10 @@ class Play:
     roi_score: float = 0.0
     risk_score: float = 0.0
     
+    # Portfolio optimization scores
+    score: float = 0.0
+    rank: int = 0
+    
     # Business context
     estimated_cost: float = 0.0
     estimated_duration_months: int = 0
@@ -125,6 +129,8 @@ class Play:
             "effort_score": self.effort_score,
             "roi_score": self.roi_score,
             "risk_score": self.risk_score,
+            "score": self.score,
+            "rank": self.rank,
             "estimated_cost": self.estimated_cost,
             "estimated_duration_months": self.estimated_duration_months,
             "priority_level": self.priority_level,
@@ -156,10 +162,13 @@ class Portfolio:
     # Metadata
     created_at: datetime = field(default_factory=datetime.now)
     optimization_parameters: Dict[str, Any] = field(default_factory=dict)
+    executive_summary: str = ""
     
     def __post_init__(self):
         """Calculate portfolio metrics"""
         self._calculate_portfolio_metrics()
+        if not self.executive_summary:
+            self.executive_summary = "AI-optimized portfolio summary will be generated during optimization."
     
     def _calculate_portfolio_metrics(self):
         """Calculate portfolio-level metrics"""
@@ -233,7 +242,8 @@ class Portfolio:
             "average_priority": self.average_priority,
             "risk_distribution": self.risk_distribution,
             "created_at": self.created_at.isoformat(),
-            "optimization_parameters": self.optimization_parameters
+            "optimization_parameters": self.optimization_parameters,
+            "executive_summary": self.executive_summary
         }
 
 
