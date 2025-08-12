@@ -57,12 +57,23 @@ def substitute_env_vars(content: str) -> str:
 def validate_config_security(config: Dict[str, Any]) -> bool:
     """Validate configuration for security issues"""
     try:
-        # Check for hardcoded API keys (should not contain actual keys)
+        # Optional override to allow secrets stored in config.secrets.yaml for local/dev use
+        security_section = config.get('security', {}) or {}
+        allow_file_secrets = (
+            bool(security_section.get('allow_file_secrets', False))
+            or os.getenv('ALLOW_FILE_SECRETS', '').lower() in {'1', 'true', 'yes'}
+        )
+
+        # Check for hardcoded API keys (should not contain actual keys unless explicitly allowed)
         llm_config = config.get('llm', {})
         api_key = llm_config.get('api_key', '')
         
         # API key should either be empty or be an environment variable reference
         if api_key and not api_key.startswith('${') and len(api_key) > 10:
+            if allow_file_secrets:
+                # Permit for local/dev when explicitly enabled
+                security_logger.warning("Hardcoded API key detected in configuration, allowed by override")
+                return True
             security_logger.error("Hardcoded API key detected in configuration")
             return False
         
