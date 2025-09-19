@@ -26,7 +26,7 @@ export DASHBOARD_METADATA_PATH=/path/to/pack.yaml
 # Launch the metadata-driven Streamlit stub
 streamlit run apps/meta/app.py
 ```
-The stub loads metadata once per session, renders subject-area tabs, and enumerates KPIs belonging to each area. Use this to preview pack structure before the full widget registry lands.
+The stub loads metadata once per session and now renders the **Network Performance** tab through the widget registry and layout interpreter. KPI cards and the latency chart pull deterministic stub data from the metadata-aware provider. Remaining tabs still display placeholder copy until their layouts migrate in Sprint 3.
 
 ## Change a KPI
 1. Open the pack file and locate the KPI block (`kpis[]`).

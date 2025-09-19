@@ -45,20 +45,20 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 ## Epic B – Widget Registry & Layout Interpreter
 
 ### B1. Widget Registry Mapping
-- [ ] **Status:** Not started
-- **Files:** `src/ui/metadata_widgets.py`, update `kpi_components.py` to expose registry-friendly functions.
-- **Acceptance:** Registry maps metadata `type` values (`kpi_card`, `timeseries_line`, `bar_chart`, `area_chart`, `distribution`, `table`, `benchmark_editor`, `ai_insights_button`) to callable factories; fallbacks log warnings.
-- **Diffs:** New registry module + minimal adapters in existing widget helpers (no UX change when flag off).
+- [x] **Status:** Completed (Sprint 2 MVP for cards + line/bar charts)
+- **Files:** `src/ui/metadata_widgets.py`, `tests/ui/test_widget_registry.py`.
+- **Acceptance:** Registry maps metadata `type` values (`kpi_card`, `timeseries_line`, `bar_chart`) to callable factories; fallbacks log warnings.
+- **Diffs:** New registry module registered default widgets; tests exercise registration overrides.
 - **Tests:** `pytest tests/ui/test_widget_registry.py` using fake metadata payloads.
 - **Risk/Rollback:** Medium—touches shared UI helpers. Rollback by reverting registry imports and stubs.
 - **Effort:** 4 points.
 
 ### B2. Layout Interpreter (12-Column Grid)
-- [ ] **Status:** Not started
-- **Files:** `src/ui/layout_engine.py`, updates to `app.py` to call interpreter when flag true.
-- **Acceptance:** Layout interpreter reads metadata sections → renders Streamlit columns/expanders, supports responsive breakpoints + print mode; unit snapshots confirm structure.
-- **Diffs:** New engine + guarded hook in `app.py` (flagged).
-- **Tests:** `pytest tests/ui/test_layout_engine.py`; optional headless snapshot via `streamlit testing` harness.
+- [x] **Status:** Completed (Sprint 2 limited to Network Performance tab)
+- **Files:** `src/ui/layout_engine.py`, `apps/meta/app.py`, `tests/ui/test_layout_engine.py`.
+- **Acceptance:** Layout interpreter renders metadata rows/columns and delegates to widget registry for cards/charts.
+- **Diffs:** New engine + meta app integration (network tab only).
+- **Tests:** `pytest tests/ui/test_layout_engine.py`.
 - **Risk/Rollback:** High—touches `app.py`. Rollback by toggling flag to false and reverting hook.
 - **Effort:** 5 points.
 
@@ -74,6 +74,7 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 - **Tests:** `pytest tests/data/test_datasource.py` with mocks; integration `pytest tests/integration/test_datasource_runtime.py -m integration`.
 - **Risk/Rollback:** Medium—introduces new dependencies. Rollback by disabling metadata path.
 - **Effort:** 5 points.
+- **Note:** Sprint 2 delivered a stub provider (`src/data/metadata_provider.py`) used by the meta app; the full datasource abstraction remains open.
 
 ### C2. Query Compilation & Filter Binding
 - [ ] **Status:** Not started

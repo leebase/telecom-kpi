@@ -222,7 +222,7 @@ python -m metadata_cli validate metadata/dashboard_telco.yaml
 streamlit run apps/meta/app.py
 ```
 
-The stub loads metadata once per session, generates subject-area tabs, and lists each KPI as a placeholder for the forthcoming widget registry.
+Sprint 2 extends the stub with a widget registry, layout interpreter, and synthetic data provider for the Network Performance tab—KPI cards and the latency chart are now metadata-driven. Remaining tabs will migrate in Sprint 3.
 
 ## 🔒 Security & Production Setup
 
