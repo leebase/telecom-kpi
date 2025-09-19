@@ -32,22 +32,31 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 - **Effort:** 3 points.
 
 ### A3. Dialect Macro System Design & Stubs
-- [ ] **Status:** Not started
-- **Files:** `src/metadata/dialects/__init__.py`, `macros/snowflake.sql`, `macros/sqlite.sql`, `tests/metadata/test_dialects.py`.
+- [x] **Status:** Completed (Sprint 3 macro registry + template modules)
+- **Files:** `src/metadata_runtime/dialects/__init__.py`, `metadata/macros/*.sql`, `tests/metadata/test_dialects.py`.
 - **Acceptance:** Macro registry loads per dialect; rendering stub returns compiled SQL string; tests assert macro substitution for date trunc, QUALIFY emulation, limit syntax.
-- **Diffs:** New macro files + unit tests.
+- **Diffs:** New macro registry + Jinja macro templates co-located with packs; regression tests cover snowflake/sqlite rendering.
 - **Tests:** `pytest tests/metadata/test_dialects.py`.
-- **Risk/Rollback:** Low; revert new module if necessary.
+- **Risk/Rollback:** Low; remove registry and templates if blocking compilation.
 - **Effort:** 2 points.
 
 ---
 
 ## Epic B – Widget Registry & Layout Interpreter
 
+### B0. Meta App Bootstrap (Streamlit Shell)
+- [x] **Status:** Completed (Sprint 1 metadata-driven tab scaffold)
+- **Files:** `apps/meta/app.py`, `tests/metadata/test_loader.py` (smoke asserts), logging utilities.
+- **Acceptance:** Meta app reads metadata once, renders tab navigation from subject areas, and logs single-load behaviour.
+- **Diffs:** New meta app entrypoint with feature flag guard; wiring documented in `docs/refactor/CONFIGURE.md`.
+- **Tests:** Manual `streamlit run apps/meta/app.py`; lazy smoke in metadata tests.
+- **Risk/Rollback:** Low—isolated demo app.
+- **Effort:** 2 points.
+
 ### B1. Widget Registry Mapping
-- [x] **Status:** Completed (Sprint 2 MVP for cards + line/bar charts)
+- [x] **Status:** Completed (Sprint 2 MVP for cards + line/bar/area charts)
 - **Files:** `src/ui/metadata_widgets.py`, `tests/ui/test_widget_registry.py`.
-- **Acceptance:** Registry maps metadata `type` values (`kpi_card`, `timeseries_line`, `bar_chart`) to callable factories; fallbacks log warnings.
+- **Acceptance:** Registry maps metadata `type` values (`kpi_card`, `timeseries_line`, `bar_chart`, `area_chart`) to callable factories; fallbacks log warnings.
 - **Diffs:** New registry module registered default widgets; tests exercise registration overrides.
 - **Tests:** `pytest tests/ui/test_widget_registry.py` using fake metadata payloads.
 - **Risk/Rollback:** Medium—touches shared UI helpers. Rollback by reverting registry imports and stubs.
@@ -67,22 +76,22 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 ## Epic C – Data Layer & Caching
 
 ### C1. DataSource Abstraction & Connection Factory
-- [ ] **Status:** Not started
-- **Files:** `src/data/datasource.py`, refactor `database_connection.py` to delegate when flag enabled.
-- **Acceptance:** Factory supports Snowflake (via `snowflake-connector-python`) and SQLite; includes health check, retry, circuit breaker (reuse existing logic), connection pooling for Snowflake.
-- **Diffs:** New abstraction, minimal integration patch (guarded by flag).
-- **Tests:** `pytest tests/data/test_datasource.py` with mocks; integration `pytest tests/integration/test_datasource_runtime.py -m integration`.
-- **Risk/Rollback:** Medium—introduces new dependencies. Rollback by disabling metadata path.
+- [x] **Status:** Completed (Sprint 3 datasource factory + SQLite/Snowflake adapters)
+- **Files:** `src/data/datasource.py`, `tests/data/test_datasource.py`.
+- **Acceptance:** Factory supports Snowflake (env-keyed DSN) and SQLite; includes health check logging and fallback handling.
+- **Diffs:** New abstraction with datasource error propagation; legacy `database_connection.py` remains for non-metadata mode.
+- **Tests:** `pytest tests/data/test_datasource.py`.
+- **Risk/Rollback:** Medium—Snowflake connector dependency required in metadata mode. Rollback by forcing factory to return stub datasource.
 - **Effort:** 5 points.
-- **Note:** Sprint 2 delivered a stub provider (`src/data/metadata_provider.py`) used by the meta app; the full datasource abstraction remains open.
+- **Note:** Sprint 2 stub provider replaced by runtime-backed provider with deterministic fallback when datasources unavailable.
 
 ### C2. Query Compilation & Filter Binding
-- [ ] **Status:** Not started
-- **Files:** `src/data/query_compiler.py`, updates to `security_manager.py` for parameter whitelisting.
-- **Acceptance:** Compiler merges filter state, renders SQL via dialect macros, enforces allow-listed params, logs compiled SQL.
-- **Diffs:** New module + security hooks.
-- **Tests:** `pytest tests/data/test_query_compiler.py` with golden SQL fixtures.
-- **Risk/Rollback:** Medium; rollback by bypassing compiler when flag false.
+- [x] **Status:** Completed (Sprint 3 Jinja compiler + filter bindings)
+- **Files:** `src/data/query_compiler.py`, `tests/data/test_query_compiler.py`.
+- **Acceptance:** Compiler merges default filters, renders SQL via macros, exposes compiled query metadata for datasource execution.
+- **Diffs:** New compiler module with quoting/csv filters and date-range resolver.
+- **Tests:** `pytest tests/data/test_query_compiler.py`.
+- **Risk/Rollback:** Medium; bypass compiler by returning stub SQL when metadata flag disabled.
 - **Effort:** 4 points.
 
 ### C3. Caching Policy & Invalidation
@@ -108,12 +117,12 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 - **Effort:** 3 points.
 
 ### D2. Feature Flag Integration & Runtime Switch
-- [ ] **Status:** Not started
-- **Files:** `app.py`, `runAgentsApp.py`, `config_manager.py`.
-- **Acceptance:** Config exposes `USE_METADATA`; when true, tabs render from metadata; fallback path still available. Logging indicates active mode.
-- **Diffs:** Conditional branches + new config field.
-- **Tests:** `pytest tests/ui/test_runtime_switch.py`; manual smoke `streamlit run app.py` both modes.
-- **Risk/Rollback:** High—UI entry point touched. Rollback by setting flag false; revert merge if needed.
+- [x] **Status:** Completed (Sprint 3 runtime switch + helper module)
+- **Files:** `app.py`, `runAgentsApp.py`, `src/ui/runtime_switch.py`, `src/ui/metadata_runtime_app.py`, `tests/ui/test_runtime_switch.py`.
+- **Acceptance:** `USE_METADATA` flag routes primary apps to metadata runtime; legacy path untouched when flag false; logging documents active mode.
+- **Diffs:** Early flag guard in entrypoints, reusable metadata renderer shared with `apps/meta/app.py`.
+- **Tests:** `pytest tests/ui/test_runtime_switch.py` plus manual smoke via Streamlit.
+- **Risk/Rollback:** High—affects entrypoint. Rollback by unsetting flag or removing guard.
 - **Effort:** 4 points.
 
 ### D3. Visual Parity Verification

@@ -6,6 +6,19 @@
 - Snowflake credentials stored in environment (`SNOWFLAKE_DSN`, `SNOWFLAKE_USER`, `SNOWFLAKE_PASSWORD`, `SNOWFLAKE_WAREHOUSE`, etc.).
 - Optional SQLite cache located at `./data/telecom_db.sqlite` (auto-created when running legacy app).
 
+### Sprint 3 Environment Prep
+- Create a `.env.metadata` (or update your secrets manager entry) with:
+  - `SNOWFLAKE_ACCOUNT`, `SNOWFLAKE_USER`, `SNOWFLAKE_PASSWORD`, `SNOWFLAKE_ROLE`, `SNOWFLAKE_WAREHOUSE`, `SNOWFLAKE_DATABASE`, `SNOWFLAKE_SCHEMA`.
+  - `SQLITE_DB_PATH` pointing to a writable location (default `data/telecom_metadata.sqlite`).
+- Export `USE_METADATA=false` by default so the legacy dashboard remains active until Sprint 3 work is verified.
+- Install any new dependencies required by the datasource stack:
+  ```bash
+  pip install snowflake-connector-python==3.*
+  pip install sqlalchemy==2.*
+  ```
+- For local integration tests, seed the SQLite database with fixture tables via `python metadata/tools/seed_sqlite.py` (provided in Sprint 3).
+- Capture credentials in `docs/refactor/INVENTORY.md` if additional secrets are introduced.
+
 ## Validate Changes
 ```bash
 # Validate schema & references (exits non-zero on failure)
