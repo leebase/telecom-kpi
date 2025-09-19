@@ -427,7 +427,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(customer_satisfaction_score) AS satisfaction_score
+            AVG(avg_satisfaction_score) AS satisfaction_score
           FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -455,7 +455,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(net_promoter_score) AS nps
+            AVG(avg_nps_score) AS nps
           FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -489,8 +489,8 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            SUM(churned_customers) / NULLIF(SUM(total_customers), 0) * 100 AS churn_pct
-          FROM fact_customer_experience
+            AVG(avg_churn_rate) AS churn_pct
+          FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
         dimensions: [date]
@@ -518,7 +518,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(average_handling_time_minutes) AS aht_minutes
+            AVG(avg_handling_time) AS aht_minutes
           FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -547,7 +547,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(first_contact_resolution_percent) AS fcr_pct
+            AVG(first_contact_resolution_rate) AS fcr_pct
           FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -575,8 +575,8 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(customer_lifetime_value) AS clv
-          FROM fact_customer_value
+            AVG(avg_lifetime_value) AS clv
+          FROM vw_customer_experience_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
         dimensions: [date]
@@ -602,8 +602,8 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            SUM(revenue_amount) / NULLIF(SUM(active_subscribers), 0) AS arpu
-          FROM fact_revenue_daily
+            SUM(total_revenue) / NULLIF(SUM(total_subscribers), 0) AS arpu
+          FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
         dimensions: [date]
@@ -631,7 +631,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(ebitda_margin_percent) AS ebitda_margin_pct
+            AVG(avg_ebitda_margin) AS ebitda_margin_pct
           FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -659,8 +659,8 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            SUM(marketing_spend) / NULLIF(SUM(new_customers), 0) AS cac
-          FROM fact_revenue_daily
+            AVG(avg_cac) AS cac
+          FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
         dimensions: [date]
@@ -688,9 +688,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            revenue_growth_percent AS revenue_growth_pct
+            AVG(avg_growth_rate) AS revenue_growth_pct
           FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
         dimensions: [date]
     widgets:
       primary:
@@ -710,9 +711,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            profit_margin_percent AS profit_margin_pct
+            AVG(avg_profit_margin) AS profit_margin_pct
           FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -731,9 +733,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(revenue_ltv) AS revenue_ltv
+            AVG(avg_clv) AS revenue_ltv
           FROM vw_revenue_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -754,9 +757,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(data_usage_gb_per_user) AS data_usage_gb
+            AVG(avg_data_usage) AS data_usage_gb
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
         dimensions: [date]
     widgets:
       primary:
@@ -777,9 +781,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(five_g_adoption_percent) AS adoption_pct
+            AVG(avg_five_g_adoption) AS adoption_pct
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -798,9 +803,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(feature_adoption_percent) AS feature_adoption_pct
+            AVG(avg_feature_adoption) AS feature_adoption_pct
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -819,9 +825,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(service_penetration_percent) AS service_penetration_pct
+            AVG(avg_service_penetration) AS service_penetration_pct
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -840,9 +847,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(app_usage_percent) AS app_usage_pct
+            AVG(avg_app_usage) AS app_usage_pct
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -861,9 +869,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(premium_service_adoption_percent) AS premium_adoption_pct
+            AVG(avg_premium_adoption) AS premium_adoption_pct
           FROM vw_usage_adoption_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -883,12 +892,13 @@ kpis:
         data_source: snowflake_main
         sql: |
           SELECT
-            date_id AS date,
-            region_name AS region,
-            AVG(service_response_time_hours) AS response_time_hours
-          FROM vw_operations_daily
-          WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
-            {% if filters.ops_region %}AND region_name = {{ filters.ops_region | quote }}{% endif %}
+            o.date_id AS date,
+            r.region_name AS region,
+            AVG(o.avg_response_time) AS response_time_hours
+          FROM vw_operations_daily AS o
+          JOIN dim_region AS r ON r.region_id = o.region_id
+          WHERE o.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+            {% if filters.ops_region %}AND r.region_name = {{ filters.ops_region | quote }}{% endif %}
           GROUP BY 1, 2
     widgets:
       primary:
@@ -908,7 +918,7 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(regulatory_compliance_percent) AS compliance_pct
+            AVG(avg_compliance_rate) AS compliance_pct
           FROM vw_operations_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
           GROUP BY 1
@@ -930,9 +940,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            capex_to_revenue_percent AS capex_ratio_pct
+            AVG(avg_capex_ratio) AS capex_ratio_pct
           FROM vw_operations_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -951,9 +962,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(network_efficiency_score) AS efficiency_score
+            AVG(avg_efficiency_score) AS efficiency_score
           FROM vw_operations_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -971,9 +983,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(ticket_resolution_percent) AS ticket_resolution_pct
+            AVG(avg_resolution_rate) AS ticket_resolution_pct
           FROM vw_operations_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -992,9 +1005,10 @@ kpis:
         sql: |
           SELECT
             date_id AS date,
-            AVG(system_uptime_percent) AS system_uptime_pct
+            AVG(avg_uptime) AS system_uptime_pct
           FROM vw_operations_daily
           WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+          GROUP BY 1
     widgets:
       primary:
         type: kpi_card
@@ -1059,113 +1073,144 @@ auxiliary_metrics:
     data_source: snowflake_main
     sql: |
       SELECT
-        date_id AS date,
-        region_name AS region,
-        SUM(open_tickets) AS open_tickets,
-        SUM(resolved_tickets) AS resolved_tickets
-      FROM fact_support_tickets
-      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        o.date_id AS date,
+        r.region_name AS region,
+        SUM(o.incident_count) AS open_tickets,
+        SUM(o.incident_count * o.support_ticket_resolution_rate) AS resolved_tickets
+      FROM fact_operations AS o
+      JOIN dim_region AS r ON r.region_id = o.region_id
+      WHERE o.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1, 2
   - id: metric_customer_sentiment
     data_source: snowflake_main
     sql: |
       SELECT
-        sentiment_bucket,
+        CASE
+          WHEN satisfaction_score >= 90 THEN 'Promoter'
+          WHEN satisfaction_score >= 75 THEN 'Passive'
+          ELSE 'Detractor'
+        END AS sentiment_bucket,
         COUNT(*) AS responses
-      FROM fact_customer_sentiment
-      WHERE feedback_date BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+      FROM fact_customer_experience
+      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
   - id: metric_product_revenue_mix
     data_source: snowflake_main
     sql: |
       SELECT
-        product_family,
-        SUM(revenue_amount) AS revenue
-      FROM fact_revenue_daily
-      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        p.product_category AS product_family,
+        SUM(f.revenue_amount) AS revenue
+      FROM fact_revenue AS f
+      JOIN dim_product AS p ON p.product_id = f.product_id
+      WHERE f.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
   - id: metric_revenue_trend
     data_source: snowflake_main
     sql: |
       SELECT
         date_id AS date,
-        SUM(revenue_amount) AS revenue
-      FROM fact_revenue_daily
+        SUM(total_revenue) AS revenue
+      FROM vw_revenue_daily
       WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
   - id: metric_revenue_forecast
     data_source: snowflake_main
     sql: |
       SELECT
-        forecast_month AS date,
-        forecast_revenue AS revenue,
-        forecast_lower AS lower_ci,
-        forecast_upper AS upper_ci
-      FROM mart_revenue_forecast
-      WHERE forecast_month BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        date_id AS date,
+        SUM(total_revenue) AS revenue,
+        SUM(total_revenue) * 0.95 AS lower_ci,
+        SUM(total_revenue) * 1.05 AS upper_ci
+      FROM vw_revenue_daily
+      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+      GROUP BY 1
   - id: metric_financial_summary
     data_source: snowflake_main
     sql: |
-      SELECT
-        metric_name,
-        metric_value,
-        unit
-      FROM mart_financial_summary
-      WHERE snapshot_date = {{ date_range.end }}
+      WITH aggregated AS (
+        SELECT
+          SUM(total_revenue) AS total_revenue,
+          AVG(avg_arpu) AS avg_arpu,
+          AVG(avg_cac) AS avg_cac,
+          AVG(avg_profit_margin) AS avg_profit_margin
+        FROM vw_revenue_daily
+        WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+      )
+      SELECT 'Total Revenue' AS metric_name, total_revenue AS metric_value, '$' AS unit FROM aggregated
+      UNION ALL
+      SELECT 'Average ARPU', avg_arpu, '$' FROM aggregated
+      UNION ALL
+      SELECT 'Average CAC', avg_cac, '$' FROM aggregated
+      UNION ALL
+      SELECT 'Profit Margin', avg_profit_margin, '%' FROM aggregated
   - id: metric_plan_usage_mix
     data_source: snowflake_main
     sql: |
       SELECT
-        plan_type,
-        SUM(subscribers) AS subscribers,
-        SUM(data_usage_gb) AS data_usage_gb
-      FROM fact_plan_usage
-      WHERE snapshot_date BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        p.product_type AS plan_type,
+        SUM(f.active_subscribers) AS subscribers,
+        SUM(f.data_usage_gb) AS data_usage_gb
+      FROM fact_usage_adoption AS f
+      JOIN dim_product AS p ON p.product_id = f.product_id
+      WHERE f.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
   - id: metric_feature_adoption_trend
     data_source: snowflake_main
     sql: |
       SELECT
-        date_id AS date,
-        feature_name,
-        AVG(feature_adoption_percent) AS adoption_pct
-      FROM vw_usage_adoption_daily
-      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        u.date_id AS date,
+        r.region_name AS feature_name,
+        AVG(u.avg_feature_adoption) AS adoption_pct
+      FROM vw_usage_adoption_daily AS u
+      JOIN dim_region AS r ON r.region_id = u.region_id
+      WHERE u.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1, 2
   - id: metric_usage_distribution
     data_source: snowflake_main
     sql: |
       SELECT
-        usage_bucket,
-        COUNT(*) AS subscriber_count
-      FROM mart_usage_histogram
-      WHERE snapshot_date = {{ date_range.end }}
+        CASE
+          WHEN avg_data_usage < 2 THEN '0-2 GB'
+          WHEN avg_data_usage < 5 THEN '2-5 GB'
+          WHEN avg_data_usage < 10 THEN '5-10 GB'
+          ELSE '10+ GB'
+        END AS usage_bucket,
+        SUM(total_active_subscribers) AS subscriber_count
+      FROM vw_usage_adoption_daily
+      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
+      ORDER BY usage_bucket
   - id: metric_response_time_region
     data_source: snowflake_main
     sql: |
       SELECT
-        region_name AS region,
-        AVG(service_response_time_hours) AS response_time_hours
-      FROM vw_operations_daily
-      WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+        r.region_name AS region,
+        AVG(o.avg_response_time) AS response_time_hours
+      FROM vw_operations_daily AS o
+      JOIN dim_region AS r ON r.region_id = o.region_id
+      WHERE o.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1
   - id: metric_incident_heatmap
     data_source: snowflake_main
     sql: |
       SELECT
-        region_name AS region,
-        severity,
+        r.region_name AS region,
+        CASE
+          WHEN o.incident_count < 5 THEN 'Low'
+          WHEN o.incident_count < 10 THEN 'Moderate'
+          ELSE 'High'
+        END AS severity,
         COUNT(*) AS incident_count
-      FROM fact_incident_management
-      WHERE incident_date BETWEEN {{ date_range.start }} AND {{ date_range.end }}
+      FROM fact_operations AS o
+      JOIN dim_region AS r ON r.region_id = o.region_id
+      WHERE o.date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1, 2
   - id: metric_system_uptime_trend
     data_source: snowflake_main
     sql: |
       SELECT
         date_id AS date,
-        AVG(system_uptime_percent) AS system_uptime_pct
+        AVG(avg_uptime) AS system_uptime_pct
       FROM vw_operations_daily
       WHERE date_id BETWEEN {{ date_range.start }} AND {{ date_range.end }}
       GROUP BY 1

@@ -158,6 +158,13 @@ Deliver the metadata runtime behind a feature flag (`USE_METADATA`) to guarantee
 
 ---
 
+## Sprint 3 Outcomes
+- Dialect macro registry loads Snowflake and SQLite templates via the metadata runtime (Story A3-001).
+- Datasource factory now brokers Snowflake/SQLite connections with health checks and retries (Story C1-002).
+- Query compiler binds filters, renders macros, and drives datasource execution (Story C2-003).
+- Metadata runtime switch now gates the Streamlit app behind the `USE_METADATA` flag with parity fallbacks (Story D2-004).
+- Canonical telco metadata pack and docs aligned to the generated SQLite views, eliminating missing-column/table errors in Streamlit.
+
 ## Dependencies & Timeline
 - Epics A and C begin immediately (schema + data backend). B depends on A (needs validated metadata). D depends on A–C for runtime readiness. E can proceed in parallel once schema stabilizes.
 - Target timeline: 3 sprints (6 weeks). Sprint 1: A, partial C. Sprint 2: complete C, B. Sprint 3: D, E, release hardening.
