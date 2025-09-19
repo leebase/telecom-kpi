@@ -210,6 +210,20 @@ streamlit run app.py
 
 Access the dashboard at `http://localhost:8501`
 
+## 🧪 Metadata Runtime (Experimental)
+
+Sprint 1 of the metadata refactor introduces a validation CLI and a Streamlit stub that renders tabs directly from the metadata pack.
+
+```bash
+# Validate the canonical metadata pack
+python -m metadata_cli validate metadata/dashboard_telco.yaml
+
+# Launch the metadata-driven stub (respects DASHBOARD_METADATA_PATH)
+streamlit run apps/meta/app.py
+```
+
+The stub loads metadata once per session, generates subject-area tabs, and lists each KPI as a placeholder for the forthcoming widget registry.
+
 ## 🔒 Security & Production Setup
 
 ### **Security Features**
